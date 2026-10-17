@@ -76,10 +76,10 @@ theorem monotone_tranchePayoff {a d : ℝ} (had : a < d) : Monotone (tranchePayo
     rcases max_cases (L' - a) 0 with g | g <;> rcases max_cases (L' - d) 0 with g' | g' <;>
     linarith [h.1, h'.1, h.2, h'.2, g.1, g'.1, g.2, g'.2]
 
-/-! ### The LHP stop-loss closed form -/
-
 /- `bivariateNormalCDF` (`N₂(a, b; r)`) is defined in `MathFin.Foundations.BivariateNormalCDF`;
 this file only consumes it. -/
+
+/-! ### The LHP stop-loss closed form -/
 
 /-- `(Φ(t) − Φ(k))⁺` is the standard normal probability of `(k, t]`. -/
 lemma posPart_Phi_sub_Phi (k t : ℝ) :
