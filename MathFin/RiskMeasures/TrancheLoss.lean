@@ -6,6 +6,7 @@ Authors: Yang Ye
 module
 
 public import Mathlib
+public import MathFin.Foundations.BivariateNormalCDF
 public import MathFin.RiskMeasures.VasicekIRB
 
 /-!
@@ -37,8 +38,6 @@ the second is `N₂` at correlation `√(1 − ρ)`, since `√(1 − (√(1 −
 
 * `tranchePayoff`, `tranchePayoff_mem_Icc`, `monotone_tranchePayoff`: the tranche loss lies in
   `[0, 1]` and is increasing in the portfolio loss.
-* `bivariateNormalCDF`: `N₂(a, b; r) = P(r Z₂ + √(1 − r²) Z₁ ≤ a, Z₂ ≤ b)` for independent
-  standard normals `Z₁, Z₂`.
 * `integral_posPart_oneFactorPD_sub`: the LHP stop-loss closed form.
 * `integral_tranchePayoff_oneFactorPD`: the LHP tranche expected loss as a difference of two
   bivariate normal CDFs.
@@ -77,18 +76,10 @@ theorem monotone_tranchePayoff {a d : ℝ} (had : a < d) : Monotone (tranchePayo
     rcases max_cases (L' - a) 0 with g | g <;> rcases max_cases (L' - d) 0 with g' | g' <;>
     linarith [h.1, h'.1, h.2, h'.2, g.1, g'.1, g.2, g'.2]
 
-/-! ### The bivariate normal CDF -/
-
-/-- The **standard bivariate normal CDF** with correlation `r ∈ [−1, 1]`:
-`N₂(a, b; r) = P(X ≤ a, Y ≤ b)` for `X = r Z₂ + √(1 − r²) Z₁` and `Y = Z₂`, where `Z₁` and `Z₂`
-are independent standard normals (the coordinates of `N(0,1) ⊗ N(0,1)`). This is the Cholesky
-construction of a standard bivariate normal pair with correlation `r`; it is taken here as the
-definition, and the joint law of `(X, Y)` is not separately characterised. -/
-noncomputable def bivariateNormalCDF (a b r : ℝ) : ℝ :=
-  ((gaussianReal 0 1).prod (gaussianReal 0 1)).real
-    {p : ℝ × ℝ | r * p.2 + √(1 - r ^ 2) * p.1 ≤ a ∧ p.2 ≤ b}
-
 /-! ### The LHP stop-loss closed form -/
+
+/- `bivariateNormalCDF` (`N₂(a, b; r)`) is defined in `MathFin.Foundations.BivariateNormalCDF`;
+this file only consumes it. -/
 
 /-- `(Φ(t) − Φ(k))⁺` is the standard normal probability of `(k, t]`. -/
 lemma posPart_Phi_sub_Phi (k t : ℝ) :
