@@ -130,8 +130,9 @@ Public lemmas (all in `namespace MathFin.Bootstrapping`):
   `boot_reprices_swapChain` — the FRA and swap strips inside the induction;
 * `fraBootstrap_flatCurve` — the flat-curve capstone.
 
-Supporting declarations (the threshold bridge `threshold_affine`; and the
-unfolding lemma `boot_succ`) are `private`.
+Supporting declarations (the threshold bridge `threshold_affine`; the
+slope-weighted residual identity `abs_affine_sub_eq`; and the unfolding
+lemma `boot_succ`) are `private`.
 -/
 
 set_option autoImplicit false

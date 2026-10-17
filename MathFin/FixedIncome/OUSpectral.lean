@@ -107,9 +107,11 @@ value is `He_n(x)`. -/
 noncomputable def hermiteReal (n : ℕ) : Polynomial ℝ :=
   (Polynomial.hermite n).map (Int.castRingHom ℝ)
 
+/-- `He₀ = 1`. -/
 theorem hermiteReal_zero : hermiteReal 0 = 1 := by
   simp [hermiteReal, Polynomial.hermite_zero]
 
+/-- The Hermite recursion transported to `ℝ`: `He_{n+1} = X·He_n - He_n'`. -/
 theorem hermiteReal_succ (n : ℕ) :
     hermiteReal (n + 1) = X * hermiteReal n - (hermiteReal n).derivative := by
   rw [hermiteReal, Polynomial.hermite_succ, Polynomial.map_sub, Polynomial.map_mul,
@@ -147,6 +149,7 @@ scaling `X ↦ s⁻¹ • X`. -/
 noncomputable def scaledHermite (s : ℝ) (n : ℕ) : Polynomial ℝ :=
   (hermiteReal n).comp (s⁻¹ • X)
 
+/-- `q_n(x) = He_n(x/s)`, pointwise. -/
 theorem scaledHermite_eval (n : ℕ) (x s : ℝ) :
     Polynomial.eval x (scaledHermite s n) = Polynomial.eval (x / s) (hermiteReal n) := by
   have hx : Polynomial.eval x (s⁻¹ • X) = x / s := by
@@ -212,6 +215,7 @@ theorem ouGen_heigen_scaled {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 =
       = -(n : ℝ) * κ * Polynomial.eval x (scaledHermite s n) := by
   rw [ouGen_heigen_scaled_poly hs h n, Polynomial.eval_smul, smul_eq_mul]
 
+/-- `He₂ = X² - 1` over `ℝ`. -/
 theorem hermiteReal_two : hermiteReal 2 = X * X - 1 := by
   have h2 : Polynomial.hermite 2 = (X : Polynomial ℤ) * X - 1 := by
     rw [show (2 : ℕ) = 1 + 1 from rfl, Polynomial.hermite_succ, Polynomial.hermite_one,
@@ -270,7 +274,7 @@ theorem gaussianNoFlux_ou {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 = �
 /-! ## The gap bias (the "asymptotic rate" remark, two modes)
 
 The chapter's effective decay rate of a multimodal expansion is the weighted average
-`Σ λ_n c_n e^{-λ_n t} / Σ c_n e^{-λ_n t}`. With two modes and weights of one sign, that
+`Σ λ_n c_n e^{-λ_n t} / Σ c_n e^{-λ_n t}`. With two modes and positive weights, that
 average sits above the slowest rate `λ₁` for every `t` — so fitting a single exponential
 to a two-mode decay reads off a rate above `λ₁` and overstates mean reversion (the
 chapter's second, independent route to the ch. 20 estimation bias). -/
@@ -348,14 +352,16 @@ theorem swirl_isotropy (θ a b d : ℝ)
     simp [ha, hd]
 
 /-- **Stretch — the stationary variance as a limit of the OU law.** The variance factor
-`(s²/k)(1 - e^{-kt})` of the explicit OU law tends to `s²/k` as the horizon grows — the
-stationary scale `s²/k` is `σ²/2κ` in generator parametrization. -/
-theorem ouStationaryVariance_tendsto {k s : ℝ} (hk : 0 < k) :
-    Tendsto (fun t : ℝ ↦ s ^ 2 / k * (1 - Real.exp (-(k * t)))) atTop (𝓝 (s ^ 2 / k)) := by
+`(σ²/k)(1 - e^{-kt})` of the explicit OU law (here `k = 2κ` is the mean-reversion rate
+doubled and `σ` the law's own diffusion coefficient — NOT the stationary scale `s` used
+elsewhere in this file, where `s² = σ²/2κ`) tends to `σ²/k` as the horizon grows: that
+limit `σ²/k` is `σ²/2κ` in generator parametrization, i.e. the stationary variance `s²`. -/
+theorem ouStationaryVariance_tendsto {k σ : ℝ} (hk : 0 < k) :
+    Tendsto (fun t : ℝ ↦ σ ^ 2 / k * (1 - Real.exp (-(k * t)))) atTop (𝓝 (σ ^ 2 / k)) := by
   have he : Tendsto (fun t : ℝ ↦ Real.exp (-(k * t))) atTop (𝓝 0) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp
       ((tendsto_const_mul_atTop_of_pos hk).mpr tendsto_id)
-  simpa using (tendsto_const_nhds (x := s ^ 2 / k)).mul
+  simpa using (tendsto_const_nhds (x := σ ^ 2 / k)).mul
     ((tendsto_const_nhds (x := (1 : ℝ))).sub he)
 
 end MathFin.OUSpectral
