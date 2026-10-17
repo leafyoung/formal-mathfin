@@ -47,7 +47,7 @@ correlated multi-obligor migration are not formalized.
 ### Calendar-spread arbitrage (2026-10-17)
 
 Two entries added, `mf-calendar-arbitrage-total-variance` and `mf-svi-calendar-free-iff`
-(both `full`). Corpus 537 → 539.
+(both `full`). Corpus 539 → 541.
 
 `BlackScholes/CalendarArbitrage.lean` (Gatheral–Jacquier 2014, Lemma 2.1): calls on a real
 martingale are non-decreasing in maturity (conditional Jensen, `ConvexOn.map_condExp_le`);
