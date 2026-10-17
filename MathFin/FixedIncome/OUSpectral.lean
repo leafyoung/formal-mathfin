@@ -19,7 +19,7 @@ maps real polynomials to real polynomials, and on that invariant subspace it is 
 diagonal: the scaled Hermite polynomials `He_n(x/s)` (with stationary scale
 `s² = σ²/2κ`) satisfy `L He_n(x/s) = -nκ He_n(x/s)` — eq. 14.16's OU case, Calc 14.14.
 This file proves that polynomial core by induction on `Polynomial.hermite_succ`
-(`Mathlib/RingTheory/Polynomial/Hermite/Basic.lean:54`), together with:
+(`Mathlib/RingTheory/Polynomial/Hermite/Basic.lean`), together with:
 
 * the commutator identities that drive the induction (`ouGen_derivative`, `ouGen_X_mul`);
 * the Gaussian stationary no-flux condition of Calc 14.13 (`gaussianScore_ou`,
@@ -31,7 +31,8 @@ This file proves that polynomial core by induction on `Polynomial.hermite_succ`
 ## Status
 
 * **Proved here:** every declaration in this file, no proof holes. The commutators carry
-  the κ and σ² coefficients explicitly, and the eigeninduction closes iff `σ² = 2κ`.
+  the κ and σ² coefficients explicitly, and the eigeninduction closes when `σ² = 2κ`
+  (only this direction is proved; the converse — that it fails off that scale — is not).
 * **Not here (gated chapter mathematics, by design):** the `L²(π)` operator theory —
   self-adjointness of the generator against the stationary law (Calc 14.13's pairing,
   eq. 14.18), the eigenfunction expansion `P_t f = Σ c_n e^{-λ_n t} φ_n` (eq. 14.17),
@@ -70,7 +71,7 @@ The two identities below say how the generator commutes with `d/dx` and with
 multiplication by `X` — the only two operations the Hermite recursion
 `hermite (n+1) = X * hermite n - derivative (hermite n)` is built from. They are stated
 in their general form: the coefficients that appear are exactly `κ` and `σ²`, and the
-eigeninduction closes precisely when `σ² = 2κ` (the `s = 1` stationary scale). -/
+eigeninduction closes when `σ² = 2κ` (the `s = 1` stationary scale). -/
 
 /-- **Commutator with the derivative.** `L p' = (L p)' + κ • p'`: differentiating and
 generating commute up to the drift coefficient `κ` re-supplied to the derivative term. -/
@@ -98,10 +99,10 @@ The unit normalization at which the eigenidentity holds with eigenvalue `-n` is 
 the operator `p ↦ -X * p' + p''`. This is exactly the classical Hermite ODE
 `He_n'' - x He_n' = -n He_n`, so the induction is the recursion
 `hermite_succ : hermite (n+1) = X * hermite n - derivative (hermite n)`
-(`Mathlib/RingTheory/Polynomial/Hermite/Basic.lean:54`) plus the two commutators. -/
+(`Mathlib/RingTheory/Polynomial/Hermite/Basic.lean`) plus the two commutators. -/
 
 /-- The `n`-th probabilists' Hermite polynomial over `ℝ`: `hermite n` (native to `ℤ[X]`,
-`Hermite/Basic.lean:48`) mapped through the integer cast. At a real point `x` its
+`Hermite/Basic.lean`) mapped through the integer cast. At a real point `x` its
 value is `He_n(x)`. -/
 noncomputable def hermiteReal (n : ℕ) : Polynomial ℝ :=
   (Polynomial.hermite n).map (Int.castRingHom ℝ)
@@ -237,7 +238,7 @@ The reversibility mechanism of the spectral route, at its Gaussian instance: the
 stationary density `π(x) ∝ exp(-x²/(2s²))` has score `π'/π = -x/s²`, so the drift and
 diffusion fluxes cancel — `(σ²/2)·π' = -κx·π` exactly when `s² = σ²/2κ`. The
 family-level engine behind this computation on the stack is the Rodrigues formula
-`hermite_eq_deriv_gaussian` (`Mathlib/RingTheory/Polynomial/Hermite/Gaussian.lean:61`:
+`hermite_eq_deriv_gaussian` (`Mathlib/RingTheory/Polynomial/Hermite/Gaussian.lean`:
 Hermite polynomials as
 Gaussian-density derivatives); the two lemmas below are its `n = 0` and `n = 1`
 footprint at the density level. -/
@@ -306,8 +307,8 @@ reversibility). Plus the stationary-variance limit of the OU law. -/
 
 /-- **Stretch — the swirl's characteristic polynomial.** The eigenvalues of `-A` are the
 roots of `(X + 1)² + θ²`, i.e. `-1 ± iθ` — off the real line for `θ ≠ 0`, the spectral
-signature of a non-reversible drift. (`Matrix.charpoly_fin_two` at
-`Charpoly/Coeff.lean:229`.) -/
+signature of a non-reversible drift. (`Matrix.charpoly_fin_two` in
+`Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff`.) -/
 theorem swirl_charpoly (θ : ℝ) :
     (Matrix.charpoly (!![-1, -θ; θ, -1] : Matrix (Fin 2) (Fin 2) ℝ))
       = (X + 1) ^ 2 + Polynomial.C (θ ^ 2) := by

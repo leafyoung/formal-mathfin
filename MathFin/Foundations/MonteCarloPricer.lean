@@ -93,7 +93,7 @@ constant bound is replaced by domination through the discounted terminal):
 * `secondMoment_callPayoff` — the call-side truncated second moment of the lognormal
   in closed form (the `Ioi` mirror of `secondMoment_payoff`);
   `secondMoment_mcCallPayoff` — the discounted second moment `𝔼[C²]`;
-  `mc_call_variance` — the call's CLT limit variance in closed form;
+  `mc_call_variance` — the call's CLT limit variance in closed form.
 
 Multi-dimensional seed:
 
@@ -523,18 +523,6 @@ theorem variance (h : BSCallHyp μ S_0 K r σ T Z) :
   rw [secondMoment h, mean_eq_bsPut h]
 
 end Moments
-
-/-! ### Terminal-price moments
-
-The lognormal moment layer (`LognormalMoments.lean`) re-exported for the terminal price
-the estimator is driven by: its second moment and variance, unchanged. Single-draw
-context: `Z : Ω → ℝ`. -/
-
-section TerminalMoments
-variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabilityMeasure μ]
-  {S_0 K r σ T : ℝ} {Z : Ω → ℝ}
-
-end TerminalMoments
 
 /-! ### The call variants
 

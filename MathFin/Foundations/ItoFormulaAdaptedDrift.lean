@@ -79,9 +79,10 @@ Headline (conditional on a version `M`): `itoDrift_expectation_identity_adapted`
 integrated Itô–drift identity stated above, for bounded adapted path-continuous coefficients,
 under the hypotheses on `M` and `X` above. Its unconditional companion — the same identity for
 the process the library constructs, derived from `ItoFormulaAdapted.ito_formula_adapted` by
-centering and Fubini, with weaker hypotheses on `f` (C², no third derivative) but with `X` fixed to the
-constructed process and `B` additionally assumed path-continuous (`hBcont`) — is
-`itoDrift_expectation_identity_adapted_uncond` in `MathFin.Foundations.ItoFormulaAdaptedDriftUncond`.
+centering and Fubini, with weaker hypotheses on `f` (C², no third derivative) but with `X`
+fixed to the constructed process and `B` additionally assumed path-continuous (`hBcont`) — is
+`itoDrift_expectation_identity_adapted_uncond` in
+`MathFin.Foundations.ItoFormulaAdaptedDriftUncond`.
 Under `hBcont`, the headline's own conclusion follows from that companion by a.e. congruence
 (`itoDrift_expectation_identity_adapted_of_uncond`, same module, needing neither `hMadap` nor
 `hXcont` nor a third derivative), so this file's remaining extra reach is a `B` without
@@ -126,8 +127,9 @@ variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabilit
 
 The integrated Itô–drift identity for an Itô process with random adapted coefficients.
 The data: a pre-Brownian motion `B` with measurable sections (path continuity of `B` is not
-assumed), bounded adapted path-continuous `β, δ`, and two hypothesized processes: a `natFiltration`-adapted `M` with `M t =ᵐ (δ●B)_t` for every
-`t ≥ 0` (`hMeq`, the process values of `itoProcessCLM` at the σ-realization `processToLp δ`),
+assumed), bounded adapted path-continuous `β, δ`, and two hypothesized processes: a
+`natFiltration`-adapted `M` with `M t =ᵐ (δ●B)_t` for every `t ≥ 0` (`hMeq`, the process
+values of `itoProcessCLM` at the σ-realization `processToLp δ`),
 and an `X` with `X t = c + ∫₀ᵗ β_s ds + M t` (`hXrel`) whose every path is continuous
 (`hXcont`), which forces every path of `M` to be continuous.
 No lemma in the library supplies such an `M` for general `δ` (see the module docstring).

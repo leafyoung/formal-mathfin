@@ -12,7 +12,7 @@ public import MathFin.BlackScholes.BreedenLitzenberger
 # LSV leverage-posterior core
 
 Chapter 11's theorem *shape* is `L²(t,K) · E[v_t | S_t = K] = σ_loc²(t,K)` (eq. 11.1; Bagaria,
-*Notes on Fixed Income Derivative Pricing*, ch. 11): the local-stochastic-volatility leverage
+*Fixed Income & Derivative Pricing*, ch. 11): the local-stochastic-volatility leverage
 function `L` is pinned by the posterior mean of the stochastic variance on the state, and
 everything about the fit flows through that equation.
 This file proves the **algebraic and analytic core behind the form** — the parts that follow

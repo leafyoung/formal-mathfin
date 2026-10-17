@@ -42,8 +42,8 @@ The module layers:
 * **The CDS legs under `λ(t)`** — the risky annuity and default-density
   integrals (`cdsAnnuity`, `cdsLosses`), the explicit legs (`premiumLeg`,
   `protectionLeg`), the balance theorem `cdsFairSpreadTV_balances`, the
-  constant-`λ` case `cdsFairSpreadTV_const` (collapsing to `cdsFairSpread`), and the default probability as the integral
-  of the default density (undiscounted).
+  constant-`λ` case `cdsFairSpreadTV_const` (collapsing to `cdsFairSpread`), and the
+  default probability as the integral of the default density (undiscounted).
 * **Restricted Cox mixing** — on the product of a path space with the clock
   space, `(μ₁ ⊗ Exp(1)){Λ_t < ξ} = ∫ e^{−Λ_t} dμ₁` for any `Λ ≥ 0` with
   measurable time sections; a default time enters only when hypothesized

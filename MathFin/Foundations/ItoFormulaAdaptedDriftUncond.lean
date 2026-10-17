@@ -135,7 +135,8 @@ theorem itoDrift_expectation_identity_adapted_uncond (hB : IsPreBrownianReal B �
     (hf : ∀ x, HasDerivAt f (f' x) x) (hf' : ∀ x, HasDerivAt f' (f'' x) x)
     (hf''c : Continuous f'')
     {C1 C2 : ℝ} (hg1 : ∀ x, |f' x| ≤ C1) (hg2 : ∀ x, |f'' x| ≤ C2) :
-    ∫ ω, f (adaptedItoProcess T hBmeas (processToLp (μ := μ) T hBmeas hδadap hδcont hδbdd) c β T ω) ∂μ
+    ∫ ω, f (adaptedItoProcess T hBmeas
+        (processToLp (μ := μ) T hBmeas hδadap hδcont hδbdd) c β T ω) ∂μ
       = f c + ∫ s in Set.Ioc (0 : ℝ≥0) T,
           ((∫ ω, f' (adaptedItoProcess T hBmeas (processToLp (μ := μ) T hBmeas hδadap hδcont hδbdd)
               c β s ω) * β s ω ∂μ)
