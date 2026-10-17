@@ -552,10 +552,6 @@ function of the instrument layer, the earlier factor read off the head of `p`
 theorem fraChain_eq (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (p : List ℝ) (i : ℕ) :
     fraChain δ K i (x :: p) = fraValue δ x (fraForwardRate (p.head?.getD 1) x δ) (K i) := rfl
 
-/-- Special case of `fraChain_eq`: on `x :: p :: r` the earlier factor is `p`. -/
-private theorem fraChain_eq_cons (δ : ℝ) (K : ℕ → ℝ) (x p : ℝ) (r : List ℝ) (i : ℕ) :
-    fraChain δ K i (x :: p :: r) = fraValue δ x (fraForwardRate p x δ) (K i) := rfl
-
 /-- The anchor: on the empty prefix the strip instrument is the spot deposit,
 the FRA whose earlier discount factor is the valuation-date factor `1`. -/
 theorem fraChain_spot (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (i : ℕ) :
