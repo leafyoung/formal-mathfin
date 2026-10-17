@@ -609,6 +609,7 @@ import MathFin.RiskMeasures.Elicitability
 import MathFin.RiskMeasures.Expectile
 import MathFin.RiskMeasures.StandardDeviationPrinciple
 import MathFin.RiskMeasures.BernoulliMixture
+import MathFin.RiskMeasures.CreditMetrics
 import MathFin.RiskMeasures.VasicekIRB
 -- LHP tranche expected loss: the Vasicek (2002) stop-loss closed form and the finite-pool limit
 import MathFin.RiskMeasures.TrancheLoss
