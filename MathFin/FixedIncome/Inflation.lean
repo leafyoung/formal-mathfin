@@ -23,9 +23,9 @@ The year-on-year convexity is the quanto correction transplanted to the nominal/
 rate pair: with both rates Gaussian, the expectation of the exponential of the two-rate
 deviation is computed by the same ρ-decomposition of a correlated driver into
 independent normals that powers `MathFin.quantoForward_of_gaussian`
-(`MathFin.BlackScholes.QuantoGrounding`), with the 1-D Gaussian MGF
-`integral_exp_mul_gaussianReal_zero` (`MathFin.Foundations.BrownianMartingale`) applied
-twice (`yoyRatioExp_gaussian`).
+(`MathFin.BlackScholes.QuantoGrounding`), with the shared standard-normal MGF
+`ProbabilityTheory.integral_exp_mul_stdNormal` (`MathFin.Foundations.BrownianMartingale`)
+applied twice (`yoyRatioExp_gaussian`).
 Composing with the Hull–White bond-reconstitution deterministics `Dⁱ = −½Bⁱ²Vⁱ`
 collapses the exponent — the real-variance halves cancel, the nominal halves double — to
 the chapter's eq. (17.10) (`yoyConvexity_eq`), with the naive ratio of forwards carried
@@ -141,15 +141,6 @@ correlation `ρ`, and Hull–White factors `Bⁿ, Bʳ` over `[S, T]`. -/
 namespace MathFin.Inflation.Gaussian
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
-
-/-- **Standard-normal MGF** via `HasLaw` transfer: `𝔼[exp(a·Z)] = exp(a²/2)` for
-`Z ~ N(0,1)` — the mirror of `MathFin.BlackScholes.QuantoGrounding`'s private helper,
-backed by `integral_exp_mul_gaussianReal_zero`. -/
-private lemma integral_exp_mul_stdNormal {Z : Ω → ℝ}
-    (hZ : HasLaw Z (gaussianReal 0 1) μ) (a : ℝ) :
-    ∫ ω, Real.exp (a * Z ω) ∂μ = Real.exp (a ^ 2 / 2) := by
-  simpa using (hZ.integral_comp (f := fun x : ℝ ↦ Real.exp (a * x)) (by fun_prop)).trans
-    (integral_exp_mul_gaussianReal_zero a 1)
 
 /-- **The two-rate exponential moment (eq. 17.10's Gaussian core).** For independent
 standard normals `Z₁, Z₂` and Gaussian rate deviations `yⁿ = mⁿ + √Vⁿ·Z₁` and
