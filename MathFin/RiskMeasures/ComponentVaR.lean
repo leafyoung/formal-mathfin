@@ -23,7 +23,7 @@ algebra once the marginal/component VaR are *defined* via the textbook closed fo
 
 * `weightedSigmaX`: the matrix-vector product `(Σx)ᵢ = ∑ⱼ σᵢⱼ xⱼ`.
 * `portfolioVaRN`: the parametric VaR `α · √(x'Σx)`.
-* `marginalVaR`: `∂VaR/∂xᵢ = α(Σx)ᵢ/√(x'Σx)`.
+* `marginalVaR`: defined as `α(Σx)ᵢ/√(x'Σx)` (`= ∂VaR/∂xᵢ` for symmetric `σ`).
 * `componentVaR`: `CVaRᵢ = xᵢ · marginalVaRᵢ`.
 * `sum_componentVaR_eq_portfolioVaRN`: **Euler decomposition** `∑ᵢ CVaRᵢ = VaR` (needs
   `0 < x'Σx`, i.e. the portfolio variance is strictly positive).
@@ -45,11 +45,12 @@ def weightedSigmaX (i : ι) : ℝ := ∑ j ∈ s, σ i j * x j
 `Portfolio/MarkowitzNAsset.lean`. -/
 noncomputable def portfolioVaRN : ℝ := α * Real.sqrt (portfolioVarN s x σ)
 
-/-- **Marginal VaR**: `∂VaR/∂xᵢ = α·(Σx)ᵢ/√(x'Σx)`. -/
+/-- **Marginal VaR**: *defined* as the textbook closed form `α·(Σx)ᵢ/√(x'Σx)`; this equals
+`∂VaR/∂xᵢ` when `σ` is symmetric (the general derivative is `α·((Σx)ᵢ + (Σᵀx)ᵢ)/(2√(x'Σx))`). -/
 noncomputable def marginalVaR (i : ι) : ℝ :=
   α * weightedSigmaX s x σ i / Real.sqrt (portfolioVarN s x σ)
 
-/-- **Component VaR**: `CVaRᵢ = xᵢ · ∂VaR/∂xᵢ`. -/
+/-- **Component VaR**: `CVaRᵢ = xᵢ · marginalVaRᵢ` (`= xᵢ · ∂VaR/∂xᵢ` for symmetric `σ`). -/
 noncomputable def componentVaR (i : ι) : ℝ := x i * marginalVaR s x σ α i
 
 /-- The portfolio variance is the quadratic form `x'Σx = ∑ᵢ xᵢ(Σx)ᵢ`. -/
@@ -79,8 +80,9 @@ theorem sum_componentVaR_eq_portfolioVaRN (hvar : 0 < portfolioVarN s x σ) :
       portfolioVarN s x σ := Real.mul_self_sqrt hvar.le
   rw [hsum, ← portfolioVarN_eq_sum_mul_weightedSigmaX, div_eq_iff hsqrt, mul_assoc, hsq]
 
-/-- The min-variance hedge ratio for hedging a position of size `W` against asset `i` using the
-portfolio `p`: `a* = -W·Cov(Rp,Rᵢ)/σᵢ²`. -/
+/-- The textbook min-variance hedge ratio for hedging a position of size `W` in portfolio `p` with
+asset `i`: `a* = -W·Cov(Rp,Rᵢ)/σᵢ²` units of `i` minimise `Var(W·Rp + a·Rᵢ)` (minimality itself is
+not proven here). -/
 noncomputable def minVarianceHedgeRatio (W covRpRi varRi : ℝ) : ℝ :=
   -W * covRpRi / varRi
 

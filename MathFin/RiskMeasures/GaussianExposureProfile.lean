@@ -21,11 +21,18 @@ closed forms in `Φ` and the standard normal density `φ`:
   `PFE_α = μ + σΦ⁻¹(α)`.
 
 As in `RiskMeasures/Gaussian.lean`, we take the closed form as the *definition* of the exposure
-metric (the library has no `Φ⁻¹`-integral machinery for the truncated-normal expectation itself);
-`PFE_α` is literally the Gaussian VaR of `RiskMeasures/GaussianValueAtRisk.lean` restated in
-exposure language. What we prove are the genuinely new algebraic relations among these closed
-forms, plus the path-level aggregates (average and effective EPE) over a discrete exposure
-profile, mirroring the positive-part pattern of `Performance/DownsideMetrics.lean`.
+metric rather than wiring it to the truncated-normal expectation `E[max(V,0)]` itself — a
+derivation exists in principle: `RiskMeasures/RockafellarUryasev.lean`'s
+`integral_shortfall_gaussian`, at the threshold `c = 0` defining `EPE`, gives
+`σ·(φ(-μ/σ) + (μ/σ)·(1 - Φ(-μ/σ)))`, which is exactly `μΦ(μ/σ) + σφ(μ/σ)` after the standard-normal
+symmetries `φ(-z) = φ(z)` and `Φ(-z) = 1 - Φ(z)`, and `RiskMeasures/GaussianExpectedShortfall.lean`'s
+`rockafellarUryasev_of_hasLaw_gaussianReal` is the law-level bridge that would carry it to an
+actual random variable; connecting the two is left for a follow-up rather than done here.
+`PFE_α` is literally the Gaussian
+VaR of `RiskMeasures/GaussianValueAtRisk.lean` restated in exposure language. What we prove are the
+algebraic relations among these closed forms (rearrangements of the definitions), plus the
+path-level aggregates (average and effective EPE) over a discrete exposure profile, mirroring the
+positive-part pattern of `Performance/DownsideMetrics.lean`.
 
 ## Main definitions and results
 
@@ -35,16 +42,15 @@ profile, mirroring the positive-part pattern of `Performance/DownsideMetrics.lea
   rearrangement `EPE + ENE = 2·EPE - μ`; `gaussianExposure_epe_sub_ene`: `EPE - ENE = μ`.
 * `potentialFutureExposure_eq_gaussianVaR`: `PFE_α` is exactly `gaussianVaR μ σ (Φ⁻¹ α)`.
 * `averageExposure`: the trapezoid-weighted time-average of a discrete EPE profile.
-* `effectiveExposure`: the running maximum of a discrete EPE profile (monotone, by construction).
+* `effectiveExposure`: the running maximum of a discrete EPE profile — Basel's *Effective EE*
+  (monotone, by construction); not to be confused with *Effective EPE*, its time-average.
 -/
 
 @[expose] public section
 
 namespace MathFin
 
-open Set ProbabilityTheory
-
-variable {μ σ α : ℝ}
+open ProbabilityTheory
 
 /-- **Expected positive exposure** of a Gaussian mark-to-market `V ~ N(μ,σ²)`:
 `EPE = μΦ(μ/σ) + σφ(μ/σ)`. -/
@@ -89,27 +95,26 @@ lemma potentialFutureExposure_eq (μ σ α : ℝ) :
     potentialFutureExposure μ σ α = μ + σ * PhiInv α := rfl
 
 /-- At the `50%` level, `PFE` reduces to the expected mark-to-market `μ` (since `Φ⁻¹(1/2) = 0` by
-`Phi_zero` and `Phi_eq_iff`). -/
+`PhiInv_half`). -/
 lemma potentialFutureExposure_half (μ σ : ℝ) :
     potentialFutureExposure μ σ (1 / 2) = μ := by
-  have hhalf : (1:ℝ)/2 ∈ Ioo (0:ℝ) 1 := by constructor <;> norm_num
-  have hz : PhiInv (1/2 : ℝ) = 0 := ((Phi_eq_iff hhalf).mp Phi_zero).symm
-  rw [potentialFutureExposure_eq, hz]
+  rw [potentialFutureExposure_eq, PhiInv_half]
   ring
 
 /-- A discrete exposure profile `EPE(tᵢ)` at times `t`, weighted by the trapezoid rule over
 consecutive gaps `t_{i+1} - t_i`: the **average EPE** over `[t_0, t_n]`. -/
 noncomputable def averageExposure {n : ℕ} (t : Fin (n + 1) → ℝ) (epe : Fin (n + 1) → ℝ) : ℝ :=
-  if t (Fin.last n) = t 0 then 0 else
-    (∑ i : Fin n, (epe i.castSucc + epe i.succ) / 2 * (t i.succ - t i.castSucc)) /
-      (t (Fin.last n) - t 0)
+  (∑ i : Fin n, (epe i.castSucc + epe i.succ) / 2 * (t i.succ - t i.castSucc)) /
+    (t (Fin.last n) - t 0)
 
-/-- **Effective EPE**: the running maximum of a discrete EPE profile, `EEPE(tₖ) = max_{i ≤ k}
-EPE(tᵢ)`, mirroring `maximumDrawdown`'s running-extremum pattern. -/
+/-- **Effective EE** (Basel terminology: *Effective Expected Exposure*, not to be confused with
+*Effective EPE*, its time-average over the first year): the running maximum of a discrete EPE
+profile, `EE_eff(tₖ) = max_{i ≤ k} EPE(tᵢ)`, mirroring `maximumDrawdown`'s running-extremum
+pattern. -/
 noncomputable def effectiveExposure {n : ℕ} (epe : Fin (n + 1) → ℝ) : Fin (n + 1) → ℝ :=
   fun k ↦ (Finset.univ.filter (· ≤ k)).sup' ⟨0, by simp⟩ epe
 
-/-- **Effective EPE is monotone** in the profile index: `i ≤ j → EEPE(tᵢ) ≤ EEPE(tⱼ)`, since the
+/-- **Effective EE is monotone** in the profile index: `i ≤ j → EE_eff(tᵢ) ≤ EE_eff(tⱼ)`, since the
 running-maximum window only grows. -/
 theorem effectiveExposure_monotone {n : ℕ} (epe : Fin (n + 1) → ℝ) :
     Monotone (effectiveExposure epe) := by
@@ -120,7 +125,7 @@ theorem effectiveExposure_monotone {n : ℕ} (epe : Fin (n + 1) → ℝ) :
   simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk ⊢
   exact hk.trans hij
 
-/-- **Effective EPE dominates the raw exposure**: `EPE(tₖ) ≤ EEPE(tₖ)`, since `k` is itself one of
+/-- **Effective EE dominates the raw exposure**: `EPE(tₖ) ≤ EE_eff(tₖ)`, since `k` is itself one of
 the indices in the running-max window. -/
 theorem le_effectiveExposure {n : ℕ} (epe : Fin (n + 1) → ℝ) (k : Fin (n + 1)) :
     epe k ≤ effectiveExposure epe k := by
