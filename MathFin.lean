@@ -495,6 +495,8 @@ import MathFin.BlackScholes.PowerCall
 -- BS-family Garman normal form (`V = A·Φ(d_1) − K·DF·Φ(d_2)`): the single
 -- numéraire-parameterised template consumed by ExchangeOption, Black-76, KMVMerton
 import MathFin.BlackScholes.GarmanNormalForm
+-- Basket option pricing via moment-matching to a single lognormal (approximation)
+import MathFin.BlackScholes.BasketMomentMatching
 import MathFin.BlackScholes.ExchangeOption
 -- Margrabe BSCallHyp grounding from a joint two-GBM gaussian model (leap-3 closure)
 import MathFin.BlackScholes.MargrabeGrounding
@@ -560,6 +562,10 @@ import MathFin.FixedIncome.CIRRiccati
 import MathFin.FixedIncome.ForwardMeasure
 -- Inflation is FX: the zero-coupon inflation swap and the YoY convexity (eqs 17.6, 17.7, 17.10)
 import MathFin.FixedIncome.Inflation
+-- ABCD instantaneous volatility: closed-form integrated variance over a window
+import MathFin.FixedIncome.ABCDVolatility
+-- GSR (Gaussian short rate): two-piece piecewise-constant-volatility bond price
+import MathFin.FixedIncome.GSRPiecewiseVol
 
 -- Portfolio
 import MathFin.Portfolio.Markowitz
@@ -768,3 +774,10 @@ import MathFin.FixedIncome.FxForwardParity
 import MathFin.FixedIncome.LoanAmortization
 -- Key-rate-duration partition-of-unity identity
 import MathFin.FixedIncome.KeyRateDuration
+
+-- Fisher/Sraffa own-rate-of-interest identity relating spot, forward, and own rates
+import MathFin.Commodities.FisherSraffaOwnRate
+-- Theory of storage: convenience yield and the kink point in the storage-cost curve
+import MathFin.Commodities.TheoryOfStorage
+-- AR(1) <-> Ornstein-Uhlenbeck parameter inversion for commodity calibration
+import MathFin.Commodities.AR1OUCalibration
