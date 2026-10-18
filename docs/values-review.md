@@ -125,17 +125,24 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
-## 2026-10-18 — corpus 541 — #278: Uniswap v2/v3 mechanics and Aave/Compound/Dai lending mechanics
+## 2026-10-18 — corpus 543 — #278: Uniswap v2/v3 mechanics and Aave/Compound/Dai lending mechanics
 
 Scope: four `MathFin/DeFi/` modules by Yang Ye (merging `defi-uniswap-curve` and
 `defi-lending-protocols` into one combined branch, then into `integration-244-family`):
 `UniswapCurveMechanics` (impermanent loss, TWAP, the v2 fee invariant, v3 virtual reserves),
-`Aave`, `Compound`, `Dai`. No corpus entries; the corpus stays at 541 (these are library
-modules, not benchmark theorems). `lake build` (8689 jobs) and `lake lint` both clean;
-`tools.verify.ledger status` reports fresh: 541 stale: 0 missing: 0; `pytest` 58 passed, 1
-skipped. Four independent read-only review rounds (math re-derivation, headers/naming/build/
-lint, commit/style conventions, edge-case and hypothesis-strength analysis) plus a Fable-model
-gate pass executed in this session.
+`Aave`, `Compound`, `Dai`. No corpus entries of their own (library modules, not benchmark
+theorems). On the pre-merge branch the corpus stood at 541 (`lake build` 8689 jobs, `lake
+lint` clean, ledger fresh 541/0/0, pytest 58/1). PR #279 (`risk-stats-combined`) landed on
+`integration-244-family` concurrently with this session's review, bringing the shared base
+to corpus 543 (`fork/integration-244-family` moved 2c84e25 → 1c3c69e); this branch was merged
+onto that new tip and every check below was re-run on the merged tree: `lake build` (9372
+jobs) and `lake lint` both clean; `tools.verify.ledger status` reports fresh: 543 stale: 0
+missing: 0; `pytest` 58 passed, 1 skipped — unchanged counts for this PR's own tests, the
+corpus/job-count growth is entirely #279's. Ten independent read-only review rounds (five
+before the merge, four after, math re-derivation, headers/naming/build/lint, commit/style
+conventions, edge-case and hypothesis-strength analysis, merge-interaction checks against
+#279's content) plus two Fable-model gate passes (pre- and post-merge) executed in this
+session.
 
 ### Standing first pass: prose against statement
 
@@ -146,7 +153,12 @@ this session: `Aave.lean` cited the kinked-rate model and health factor to white
 itself (the whitepaper's `LiquidityRate_t = BorrowRate_t · U_t` has no reserve factor at all —
 corrected to cite §3.1 and attribute the refinement to the contract, not the paper). `Dai.lean`'s
 URL (`makerdao.com/en/whitepaper`) serves the 2020 Multi-Collateral Dai whitepaper, not the cited
-2017 "The Dai Stablecoin System" — title/year brought in line with the URL. Every other docstring
+2017 "The Dai Stablecoin System" — title/year brought in line with the URL. A second,
+post-merge gate pass fetched the actual MCD whitepaper page and found `Dai.lean`'s
+`§"Liquidation Ratio"`/`§"Stability Fee"` citations named non-existent sections — both are
+named parameter entries under "Risk Parameters Controlled by Maker Governance", and the
+liquidation criterion itself is in "Liquidation of Risky Maker Vaults"; the header now cites
+those actual headings and drops the `§` marks. Every other docstring
 (Curve/StableSwap non-claim, `lpFeeShare` scope, `twap_eq_average`'s `t1 ≤ t2` junk-value
 disclosure, the Aave/Compound reserves-free simplifications, `kinkedRate_apply_optimal`'s
 non-`ContinuousAt` caveat) was independently re-verified against its theorem and found accurate.
