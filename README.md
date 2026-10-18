@@ -261,7 +261,8 @@ Raphael Coelho maintains the library, with contributions from:
   performance metrics.
 - [Mert Unsal](https://github.com/mertunsall): the Black–Scholes charm.
 - [Yang Ye](https://github.com/leafyoung): the integrated Itô–drift identity, Hull–White
-  calibration, a Monte Carlo pricer, Cox credit, CMS rates and curve bootstrapping.
+  calibration, a Monte Carlo pricer, Cox credit, CMS rates, curve bootstrapping and the
+  birthday paradox citation.
 
 Each module's header names its authors.
 
