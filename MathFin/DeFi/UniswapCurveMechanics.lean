@@ -1,4 +1,17 @@
 /-
+Copyright (c) 2026 Yang Ye. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yang Ye
+-/
+module
+
+public import Mathlib
+public import MathFin.DeFi.ConstantProductAMM
+
+/-!
+# Uniswap v2/v3 AMM mechanics: impermanent loss, TWAP, fee invariant,
+v3 virtual reserves
+
 This file extends the constant-product AMM formalization
 (`MathFin/DeFi/ConstantProductAMM.lean`, adapted from Pusceddu-Bartoletti
 2024) with further closed-form identities from the Uniswap v2/v3 AMM
@@ -14,19 +27,6 @@ Curve Finance's StableSwap invariant (Michael Egorov, "StableSwap -
 efficient mechanism for Stablecoin liquidity", 2019,
 <https://curve.fi/files/stableswap-paper.pdf>) is not formalized in this
 file; no StableSwap-specific result appears below.
-
-Copyright (c) 2026 Yang Ye. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yang Ye
--/
-module
-
-public import Mathlib
-public import MathFin.DeFi.ConstantProductAMM
-
-/-!
-# Uniswap v2/v3 AMM mechanics: impermanent loss, TWAP, fee invariant,
-v3 virtual reserves
 
 This file formalises four further closed-form results about automated
 market makers, building on the constant-product substrate in
