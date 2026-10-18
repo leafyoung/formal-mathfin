@@ -740,3 +740,14 @@ import MathFin.RiskMeasures.GaussianExposureProfile
 import MathFin.RiskMeasures.CollateralizedExposure
 import MathFin.FixedIncome.DVA
 import MathFin.FixedIncome.FVA
+
+-- Clean/dirty price and accrued interest, on- and between-coupon dates
+import MathFin.FixedIncome.CleanPriceAccrued
+-- Bond forward price via cash-and-carry replication, no-arbitrage strike
+import MathFin.FixedIncome.BondForward
+-- FX forward via covered interest parity and the implied forward curve
+import MathFin.FixedIncome.FxForwardParity
+-- Bullet and equal-principal loan amortization recurrences
+import MathFin.FixedIncome.LoanAmortization
+-- Key-rate-duration partition-of-unity identity
+import MathFin.FixedIncome.KeyRateDuration
