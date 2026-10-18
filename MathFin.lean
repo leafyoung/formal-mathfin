@@ -501,6 +501,9 @@ import MathFin.BlackScholes.GarmanNormalForm
 -- Basket option pricing via moment-matching to a single lognormal (approximation)
 import MathFin.BlackScholes.BasketMomentMatching
 import MathFin.BlackScholes.ExchangeOption
+-- Exact two-asset closed forms consuming the bivariate normal CDF (Foundations/BivariateNormalCDF)
+import MathFin.BlackScholes.StulzTwoAssetRainbow
+import MathFin.BlackScholes.HeynenKatTwoAssetBarrier
 -- Margrabe BSCallHyp grounding from a joint two-GBM gaussian model (leap-3 closure)
 import MathFin.BlackScholes.MargrabeGrounding
 -- Kirk's (1995) approximation for spread options (K ≠ 0), a Garman-normal-form instance
