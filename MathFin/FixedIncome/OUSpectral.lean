@@ -15,18 +15,19 @@ transform. For the OU process `dX = -κX dt + σ dW`, the generator
 
 `L p = -(κ • X) * p' + (σ²/2) • p''`
 
-maps real polynomials to real polynomials, and on that invariant subspace it is exactly
-diagonal: the scaled Hermite polynomials `He_n(x/s)` (with stationary scale
-`s² = σ²/2κ`) satisfy `L He_n(x/s) = -nκ He_n(x/s)` — eq. 14.16's OU case, Calc 14.14.
-This file proves that polynomial core by induction on `Polynomial.hermite_succ`
+maps real polynomials to real polynomials, and on that invariant subspace the scaled
+Hermite polynomials `He_n(x/s)` (with stationary scale `s² = σ²/2κ`) are eigenfunctions:
+`L He_n(x/s) = -nκ He_n(x/s)` — eq. 14.16's OU case, Calc 14.14. (Since `He_n(x/s)` has
+degree `n`, they diagonalise `L` on `ℝ[X]`; that basis fact is not formalized here.)
+This file proves the eigenidentities by induction on `Polynomial.hermite_succ`
 (`Mathlib/RingTheory/Polynomial/Hermite/Basic.lean`), together with:
 
 * the commutator identities that drive the induction (`ouGen_derivative`, `ouGen_X_mul`);
 * the Gaussian stationary no-flux condition of Calc 14.13 (`gaussianScore_ou`,
   `gaussianNoFlux_ou`) — the one-dimensional reversibility mechanism, at eval level;
 * the two-mode weighted-average gap inequality (`twoMode_rate_ge_slowest`): the effective
-  decay rate of a two-mode mixture sits above the slowest rate, so a one-exponential fit
-  overstates mean reversion.
+  decay rate of a two-mode mixture is at least the slowest rate, so a one-exponential fit
+  never understates mean reversion (the fit consequence itself is not formalized here).
 
 ## Status
 
@@ -50,7 +51,7 @@ open Polynomial Filter Topology Matrix
 
 /-! ## The generator on polynomials -/
 
-/-- **The OU generator as a map on real polynomials** (eq. 14.16's operator, OU case):
+/-- **The OU generator as a map on real polynomials** (Calc 14.4's operator):
 `L p = -(κ • X) * p.derivative + (σ²/2) • p.derivative.derivative` — drift term `-κx·p'`
 plus diffusion term `(σ²/2)·p''`. Polynomial algebra only: on `Polynomial ℝ` this map is
 triangular degree by degree (the drift preserves degree, the diffusion lowers it by two) —
@@ -59,7 +60,7 @@ eigenvectors exist. -/
 noncomputable def ouGen (κ σ : ℝ) (p : Polynomial ℝ) : Polynomial ℝ :=
   -(κ • Polynomial.X) * p.derivative + (σ ^ 2 / 2) • p.derivative.derivative
 
-/-- Subtraction variant (used by the eigeninduction: `He_{n+1} = X·He_n - He_n'`). -/
+/-- `ouGen` preserves subtraction (used by the eigeninduction: `He_{n+1} = X·He_n - He_n'`). -/
 theorem ouGen_sub (κ σ : ℝ) (p q : Polynomial ℝ) :
     ouGen κ σ (p - q) = ouGen κ σ p - ouGen κ σ q := by
   simp only [ouGen, derivative_sub, ← Polynomial.C_mul']
@@ -81,7 +82,7 @@ theorem ouGen_derivative (κ σ : ℝ) (p : Polynomial ℝ) :
     mul_one, ← Polynomial.C_mul']
   ring
 
-/-- **Commutator with multiplication by `X`.** `L (X p) = X • L p + σ² • p' - κ • (X p)`:
+/-- **Commutator with multiplication by `X`.** `L (X p) = X * L p + σ² • p' - κ • (X p)`:
 multiplying by `X` and generating commute up to the creation term `σ² • p'` (the
 diffusion coefficient acting on one derivative) minus the drift acting on the new
 factor. -/
@@ -123,7 +124,7 @@ The unit-normalized OU generator `ouGen 1 (Real.sqrt 2) = -X·d/dx + d²/dx²` (
 scale `σ² = 2κ = 2`) maps `He_n` to `-n • He_n`: the Hermite polynomials are eigenfunctions
 of the OU generator with eigenvalues `-n` — the eigenvalues the triangular moment ladder
 finds on the diagonal, now with their eigenvectors. Induction on
-`hermite_succ`; the commutators supply the two terms and the induction closes exactly
+`hermite_succ`; the commutators supply the two terms and the induction closes
 because `σ² = 2κ` (here `2 = 2`). -/
 theorem ouGen_hermite (n : ℕ) :
     ouGen 1 (Real.sqrt 2) (hermiteReal n) = -(n : ℝ) • hermiteReal n := by
@@ -223,11 +224,11 @@ theorem hermiteReal_two : hermiteReal 2 = X * X - 1 := by
   rw [hermiteReal, h2]
   simp
 
-/-- **The `n = 2` mechanism of Calc 14.14, verbatim.** With `f = (x/s)² - 1` (the
+/-- **The `n = 2` mechanism of Calc 14.14.** With `f = (x/s)² - 1` (the
 evaluated `He_2(x/s)`), the generator output evaluates to `-(2κ) · f` — the drift term
-preserves the degree, the diffusion term supplies exactly the constant that closes the
-polynomial back on itself, and the arithmetic uses `σ²/s² = 2κ` (via the stationary-scale
-hypothesis). -/
+preserves the degree (the chapter's text says it "lowers" it, a slip), the diffusion term
+supplies exactly the constant that closes the polynomial back on itself, and the
+arithmetic uses `σ²/s² = 2κ` (via the stationary-scale hypothesis). -/
 theorem ouGen_heigen_two {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 = σ ^ 2) (x : ℝ) :
     Polynomial.eval x (ouGen κ σ (scaledHermite s 2))
       = -(2 : ℝ) * κ * ((x / s) ^ 2 - 1) := by
@@ -240,12 +241,12 @@ theorem ouGen_heigen_two {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 = σ
 
 The reversibility mechanism of the spectral route, at its Gaussian instance: the
 stationary density `π(x) ∝ exp(-x²/(2s²))` has score `π'/π = -x/s²`, so the drift and
-diffusion fluxes cancel — `(σ²/2)·π' = -κx·π` exactly when `s² = σ²/2κ`. The
-family-level engine behind this computation on the stack is the Rodrigues formula
-`hermite_eq_deriv_gaussian` (`Mathlib/RingTheory/Polynomial/Hermite/Gaussian.lean`:
-Hermite polynomials as
-Gaussian-density derivatives); the two lemmas below are its `n = 0` and `n = 1`
-footprint at the density level. -/
+diffusion fluxes cancel — `(σ²/2)·π' = -κx·π` when `s² = σ²/2κ`. The score computed
+below is the scale-`s` counterpart of the `n = 1` case of the Rodrigues formula
+`hermite_eq_deriv_gaussian` (`Mathlib/RingTheory/Polynomial/Hermite/Gaussian.lean`, unit
+scale: Hermite polynomials as Gaussian-density derivatives), proved here directly by the
+chain rule; the no-flux lemma is that score times `σ²/2` under the stationary-scale
+identity. -/
 
 /-- **The Gaussian score (Calc 14.13's derivative, eval level).** The stationary
 Gaussian density `π(x) = exp(-x²/(2s²))` satisfies `π'(x) = -(x/s²)·π(x)`: the log-density
@@ -261,10 +262,10 @@ theorem gaussianScore_ou (s : ℝ) (x : ℝ) :
     exact h1.neg
   exact (h2.exp.deriv).trans (by ring)
 
-/-- **The no-flux condition (eq. 14.19's stationary Gaussian instance).** At the
+/-- **The no-flux condition (Calc 14.13, stationary Gaussian instance).** At the
 stationary scale `s² = σ²/2κ`, the drift flux `-κx·π` balances the diffusion flux
-`(σ²/2)·π'`: `μπ = ½(σ²π)'` of Calc 14.13, which is what makes the generator symmetric
-on its polynomial domain. -/
+`(σ²/2)·π'`: the condition `μπ = ½(σ²π)'` that yields the divergence form (14.19)
+and hence the generator's symmetry (the symmetry itself is not proved here). -/
 theorem gaussianNoFlux_ou {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 = σ ^ 2) (x : ℝ) :
     σ ^ 2 / 2 * deriv (fun y ↦ Real.exp (-(y ^ 2 / (2 * s ^ 2)))) x
       = -(κ * x) * Real.exp (-(x ^ 2 / (2 * s ^ 2))) := by
@@ -275,15 +276,17 @@ theorem gaussianNoFlux_ou {κ σ s : ℝ} (hs : s ≠ 0) (h : 2 * κ * s ^ 2 = �
 
 The chapter's effective decay rate of a multimodal expansion is the weighted average
 `Σ λ_n c_n e^{-λ_n t} / Σ c_n e^{-λ_n t}`. With two modes and positive weights, that
-average sits above the slowest rate `λ₁` for every `t` — so fitting a single exponential
-to a two-mode decay reads off a rate above `λ₁` and overstates mean reversion (the
-chapter's second, independent route to the ch. 20 estimation bias). -/
+average is at least the slowest rate `λ₁` for every `t` — so fitting a single exponential
+to a two-mode decay reads off a rate at least `λ₁` and never understates mean reversion
+(the chapter's second, independent route to the ch. 20 estimation bias). Only the
+pointwise bound is proved here; the fitted-exponential consequence is not formalized. -/
 
 /-- **The two-mode gap inequality.** For rates `λ₁ ≤ λ₂`, positive mode weights
 `0 < c₁, c₂` and any `t`, the effective decay rate of the two-mode mixture — the
 weighted average of the rates, weighted by the surviving mode masses — is at least the
 slowest rate `λ₁`. The gap `λ₂ - λ₁` shows up as the excess carried by the fast mode;
-the chapter's one-exponential-fit warning is exactly this inequality read backwards. -/
+the chapter's one-exponential-fit warning is a consequence of this pointwise bound (not
+proved here). -/
 theorem twoMode_rate_ge_slowest {l₁ l₂ c₁ c₂ t : ℝ} (hl₂ : l₁ ≤ l₂)
     (hc₁ : 0 < c₁) (hc₂ : 0 < c₂) :
     l₁ ≤ (l₁ * c₁ * Real.exp (-(l₁ * t)) + l₂ * c₂ * Real.exp (-(l₂ * t)))
@@ -303,15 +306,20 @@ theorem twoMode_rate_ge_slowest {l₁ l₂ c₁ c₂ t : ℝ} (hl₂ : l₁ ≤ 
 
 The chapter's two-dimensional counterexample — the swirl `dZ = -AZ dt + dW` with
 `A = [[1, θ], [-θ, 1]]`, whose antisymmetric part rotates — contributes two matrix
-fragments that need no process theory: the characteristic polynomial of `-A` (roots
-`-1 ± iθ`: the spectrum leaves the real line, so no real orthogonal expansion exists),
-and the isotropy of the stationary covariance (`AΣ + ΣAᵀ = I` forces `Σ = ½I`: the
-rotation drops out of the snapshot, which is exactly why the snapshot cannot detect
-reversibility). Plus the stationary-variance limit of the OU law. -/
+fragments that need no process theory: the characteristic polynomial of `-A` (only the real
+identity `(X + 1)² + θ²` is proved; the chapter reads off from it the complex roots `-1 ± iθ`,
+off the real line for `θ ≠ 0`, ruling out a real orthogonal expansion — neither the complex roots
+nor that consequence is formalized here),
+and the isotropy of the stationary covariance (a symmetric `Σ` with `AΣ + ΣAᵀ = I` is `½I`: the
+rotation drops out of the snapshot, which in the chapter's argument is why a snapshot cannot
+detect non-reversibility — not formalized here). Plus the stationary-variance limit of the
+OU law. -/
 
-/-- **Stretch — the swirl's characteristic polynomial.** The eigenvalues of `-A` are the
-roots of `(X + 1)² + θ²`, i.e. `-1 ± iθ` — off the real line for `θ ≠ 0`, the spectral
-signature of a non-reversible drift. (`Matrix.charpoly_fin_two` in
+/-- **Stretch — the swirl's characteristic polynomial.** The Lean statement proves the
+characteristic-polynomial identity `(X + 1)² + θ²` over `ℝ` only. The chapter (Ex. 14.2) reads
+off from it that `-A`'s eigenvalues are the complex roots `-1 ± iθ` — off the real line for
+`θ ≠ 0`, the spectral signature of a non-reversible drift; those two further steps (the complex
+roots, and the non-reversibility reading) are not formalized here. (`Matrix.charpoly_fin_two` in
 `Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff`.) -/
 theorem swirl_charpoly (θ : ℝ) :
     (Matrix.charpoly (!![-1, -θ; θ, -1] : Matrix (Fin 2) (Fin 2) ℝ))
@@ -322,9 +330,10 @@ theorem swirl_charpoly (θ : ℝ) :
 
 /-- **Stretch — the swirl's stationary covariance is isotropic.** Any symmetric `Σ`
 solving the stationary-covariance equation `AΣ + ΣAᵀ = I` for the swirl matrix
-`A = [[1, θ], [-θ, 1]]` is `½I`: the rotation term `θ` cancels out of the equation, so
-the snapshot carries no trace of the circulation — reversibility fails where the
-spectrum went complex, not where the stationary law is visible. -/
+`A = [[1, θ], [-θ, 1]]` is `½I`: the solution does not depend on the rotation `θ`, so the
+snapshot carries no trace of the circulation. In the chapter's argument (Ex. 14.2) this is why a
+stationary snapshot alone cannot detect that the drift is non-reversible for `θ ≠ 0`
+(`swirl_charpoly`) — that non-reversibility conclusion itself is not formalized here. -/
 theorem swirl_isotropy (θ a b d : ℝ)
     (h : (!![(1 : ℝ), θ; -θ, 1] : Matrix (Fin 2) (Fin 2) ℝ) * !![a, b; b, d]
         + !![a, b; b, d] * !![(1 : ℝ), -θ; θ, 1] = 1) :
