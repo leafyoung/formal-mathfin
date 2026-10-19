@@ -127,8 +127,8 @@ should *generate work*, not certify "OK").
 
 ## 2026-10-19 — corpus 544 — the 2026-10-17/18 exotic-options/commodities/fixed-income batch
 
-Scope: a round-2 rule-10 review found ~9 merges / ~2100 lines of new Lean library content
-landed between 2026-10-17 13:29 and 2026-10-18 21:49 with no trace in this file, invisible to
+Scope: a round-2 rule-10 review found ~9 merges / ~2600 lines of new Lean library content
+landed between 2026-10-17 13:29 and 2026-10-18 23:56 with no trace in this file, invisible to
 `test_values_review_is_current` because none of them add benchmark-corpus entries:
 
 - `haug-barrier-batch` (merge `e25cff5`): `BlackScholes/BinaryBarrierOption.lean`,
@@ -138,8 +138,8 @@ landed between 2026-10-17 13:29 and 2026-10-18 21:49 with no trace in this file,
 - `exotic-options-batch1` (merge `cbbc2ab`, #276): `BlackScholes/KirkSpreadApproximation.lean`.
 - `exotic-options-batch2` (merge `116d784`): `BlackScholes/BasketMomentMatching.lean`.
 - `rates-vol-models-batch` (merge `79fde8d`): `FixedIncome/ABCDVolatility.lean`,
-  `GSRPiecewiseVol.lean` (the Fable-gate fix entry above only covers one stale-prose fix to this
-  file, not a full review of it — included here for that).
+  `GSRPiecewiseVol.lean` (the Fable-gate fix commits `8a765d6`/`962f8ed` only touched stale
+  prose in this file, not a full review of it — included here for that).
 - `commodity-storage-ou` (merge `b236ade`): `Commodities/AR1OUCalibration.lean`,
   `FisherSraffaOwnRate.lean`, `TheoryOfStorage.lean`.
 - `fixed-income-building-blocks` (merge `e703a7b`, #277): `FixedIncome/CleanPriceAccrued.lean`,
@@ -162,9 +162,10 @@ an **exact** closed form (`BinaryBarrierOption`, `PartialTimeBarrierOption`, `So
 is exact) or an explicit **approximation** (`BasketMomentMatching`'s header states "This is an
 approximation, not an exact closed form"; `SABRImpliedVol` is Hagan et al.'s asymptotic
 expansion, not an exact SABR price). `GSRPiecewiseVol.lean`'s two-piece scope is honestly
-disclosed in its own module doc (a Fable-gate pass separately removed a stale third-copy claim
-and a dangling reference to a non-existent roadmap item from this file — both the Lean-fix and
-documentation-fix entries are about separate problems in the same file). `BondForward.lean`'s
+disclosed in its own module doc (Fable-gate pass commits `8a765d6`/`962f8ed` separately removed
+a stale third-copy claim and a dangling reference to a non-existent roadmap item from this
+file — those are Lean-prose fixes, separate from this entry's own review-log-gap closure).
+`BondForward.lean`'s
 cash-and-carry no-arbitrage identity is a straightforward replication argument, verified sound.
 
 ### Settled / not upgrades
@@ -235,14 +236,15 @@ proofs:
 Scope: the four branches merged into `integration-244-family` between corpus 537 (#245) and
 543 (#278) that actually grew the benchmark corpus, none of which had received an 8-lens
 review of its own before this entry — a rule-10 Fable-gate pass over the integration branch
-found the gap (the two library-module merges reviewed in the adjacent entries above, RollSpread
-and #278's DeFi modules, don't add benchmark entries and are documented separately):
+found the gap (the roll-spread-estimator merge and #278's DeFi modules, reviewed in the
+adjacent entries below, add no benchmark entries and are documented separately):
 
 - `calendar-arbitrage-gatheral` (PR #269, merge `0ef17ce`): `MathFin/BlackScholes/CalendarArbitrage.lean`,
   adding `mf-calendar-arbitrage-total-variance` and `mf-svi-calendar-free-iff` (`full`).
 - `creditmetrics-rating-transition` (PR #268, merge `7f3d57e`): `MathFin/RiskMeasures/CreditMetrics.lean`
   (`pow_mem_rowStochastic`, `monotone_pow_apply_absorbing`, `thresholdMatrix_mem_rowStochastic`,
-  `gaussianThresholdMatrix_mem_rowStochastic`) — library module, no corpus entries of its own.
+  `gaussianThresholdMatrix_mem_rowStochastic`), adding `qrm-creditmetrics-default-absorbing-monotone`
+  and `qrm-creditmetrics-gaussian-threshold-row-stochastic` (`quantitative_risk_management.json`).
 - `sa-ccr-ead` (merge `a6a21ad`): `MathFin/RiskMeasures/SACCRExposure.lean`, adding
   `mf-saccr-ead-mono` (`full`) and `mf-saccr-effnotional-diversification-bound` (`reduced_core`).
 - `schwartz-one-factor-futures` (merge `c338b0a`): `MathFin/Futures/SchwartzOneFactor.lean`, adding
@@ -275,9 +277,10 @@ Lean content and found accurate, with no overclaiming found:
 ### Settled / not upgrades
 
 - No `sorry`/`admit`/`axiom` in any of the four files; no dead hypotheses found.
-- None of the four needed a `verification_ledger.json` entry beyond what already exists — the
-  two library modules (CreditMetrics, and SACCRExposure's definitions) and two benchmark files
-  (CalendarArbitrage, SchwartzOneFactor) are each wired into `MathFin.lean` and build clean.
+- All four files carry benchmark entries verified fresh in `verification_ledger.json`
+  (CalendarArbitrage and CreditMetrics in `quantitative_risk_management.json`'s `qrm-*` IDs,
+  SACCRExposure and SchwartzOneFactor in `mathematical_finance.json`'s `mf-*` IDs) and are each
+  wired into `MathFin.lean`, building clean.
 
 ### Ranked backlog
 
@@ -290,12 +293,13 @@ Lean content and found accurate, with no overclaiming found:
 
 Scope: `MathFin/Execution/RollSpread.lean` by Yang Ye (`rollCovariance`, `rollSpreadEstimator`),
 merged into `integration-244-family` via the `risk-stats-combined` staging branch (`a9c0f3b`
-"Merge roll-spread-estimator into risk-stats-combined", reaching integration through
-`c63fff8`/`68cc48e`; standalone branch `roll-spread-estimator`, originating commit `0426770`).
+"Merge roll-spread-estimator into risk-stats-combined", reaching integration through `39460dd`
+(PR #279), later re-merged via `c63fff8`; standalone branch `roll-spread-estimator`, originating
+commit `0426770`).
 No corpus entry of its own (library
 module, not a benchmark theorem, consistent with sibling `Execution`/`DeFi` modules). This
 review was triggered by a rule-10 whole-diff Fable-gate pass over the integration branch
-(alongside the already-reviewed `defi-uniswap-curve` merge, #278 above) that found the file
+(alongside the already-reviewed `defi-uniswap-curve` merge, #278 below) that found the file
 had no values-review record despite real fixes landing on it; this entry closes that gap
 retroactively.
 
