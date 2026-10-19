@@ -125,6 +125,46 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-19 — corpus 544 — roll-spread-estimator merge on integration-244-family
+
+Scope: `MathFin/Execution/RollSpread.lean` by Yang Ye (`rollCovariance`, `rollSpreadEstimator`),
+merged into `integration-244-family` as commit `a9c0f3b` (standalone branch
+`roll-spread-estimator`, originating commit `0426770`). No corpus entry of its own (library
+module, not a benchmark theorem, consistent with sibling `Execution`/`DeFi` modules). This
+review was triggered by a rule-10 whole-diff Fable-gate pass over the integration branch
+(alongside the already-reviewed `defi-uniswap-curve` merge, #278 above) that found the file
+had no values-review record despite real fixes landing on it; this entry closes that gap
+retroactively.
+
+### Standing first pass: prose against statement
+
+`rollCovariance`'s independence hypotheses were checked by hand against the actual
+covariance-expansion cross terms: the proof never multiplies `dm2`-`q2` or `dm1`-`q0`
+together, matching the docstring's claim that within-change independence is unused — only
+pairwise independence across the relevant lags is assumed, and the docstring says exactly
+that (not "i.i.d.", which would overclaim). `rollSpreadEstimator`'s docstring discloses the
+`γ̂₁ ≥ 0` case (positive or zero sample autocovariance): `Real.sqrt`'s junk-value convention
+silently returns spread `0` there instead of signalling "undefined", and the estimator is
+only economically meaningful when the autocovariance is negative (the bid-ask bounce
+prediction). That caveat was added in the Fable-gate fix commit `a8983d5` (also backported
+standalone to the originating branch at `roll-spread-estimator@da0fe28` per rule 10 §6's
+bidirectional-backport requirement) and is confirmed accurate against the lemma's actual
+`0 ≤ s` precondition.
+
+### Settled / not upgrades
+
+- No `sorry`/`admit`/`axiom` in the file; no dead hypotheses after the fix commit dropped the
+  unused `_hk1`-style leftover pattern seen in the sibling Uniswap file (RollSpread itself
+  never had one).
+- `MathFin.lean` imports the module; no `formalization.yaml`/`verification_ledger.json` entry
+  needed, matching every other library (non-benchmark) `Execution`/`DeFi` module.
+
+### Ranked backlog
+
+1. (low) Consider a second constructor/lemma for the `γ̂₁ < 0` case that returns the spread as
+   a plain nonnegative real without routing through `Real.sqrt`'s junk-value branch, so callers
+   don't need to separately check the sign precondition — deferred, no caller currently needs it.
+
 ## 2026-10-18 — corpus 543 — #278: Uniswap v2/v3 mechanics and Aave/Compound/Dai lending mechanics
 
 Scope: four `MathFin/DeFi/` modules by Yang Ye (merging `defi-uniswap-curve` and
