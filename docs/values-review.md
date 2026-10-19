@@ -125,6 +125,56 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-19 — corpus 544 — the 2026-10-17/18 exotic-options/commodities/fixed-income batch
+
+Scope: a round-2 rule-10 review found ~9 merges / ~2100 lines of new Lean library content
+landed between 2026-10-17 11:17 and 2026-10-18 21:49 with no trace in this file, invisible to
+`test_values_review_is_current` because none of them add benchmark-corpus entries:
+
+- `haug-barrier-batch` (merge `e25cff5`): `BlackScholes/BinaryBarrierOption.lean`,
+  `PartialTimeBarrierOption.lean`, `SoftBarrierOption.lean`.
+- `bivariate-exotic-options` (merge `2cde7ec`): `BlackScholes/HeynenKatTwoAssetBarrier.lean`,
+  `StulzTwoAssetRainbow.lean`, plus an extension to `Foundations/BivariateNormalCDF.lean`.
+- `exotic-options-batch1` (merge `cbbc2ab`, #276): `BlackScholes/KirkSpreadApproximation.lean`.
+- `exotic-options-batch2` (merge `116d784`): `BlackScholes/BasketMomentMatching.lean`.
+- `rates-vol-models-batch` (merge `79fde8d`): `FixedIncome/ABCDVolatility.lean` (its sibling
+  `GSRPiecewiseVol.lean` from the same merge is covered by the Fable-gate fix entry above).
+- `commodity-storage-ou` (merge `b236ade`): `Commodities/AR1OUCalibration.lean`,
+  `FisherSraffaOwnRate.lean`, `TheoryOfStorage.lean`.
+- `fixed-income-building-blocks` (merge `e703a7b`, #277): `FixedIncome/CleanPriceAccrued.lean`,
+  `FxForwardParity.lean`, `KeyRateDuration.lean`, `LoanAmortization.lean` (sibling
+  `BondForward.lean` from the same merge is already covered elsewhere).
+- `vasicek-physical-risk-neutral-bridge` (merge `f059a33`): `FixedIncome/VasicekMarketPriceOfRisk.lean`.
+- `sabr-turnbull-wakeman` (merge `9271e78` + fix `f7fd61e`): `BlackScholes/SABRImpliedVol.lean`.
+
+All these files are library modules (no benchmark-corpus entries of their own).
+
+### Standing first pass: prose against statement
+
+No `sorry`/`admit`/`axiom` in any of the files touched by this batch. Spot-read five of them in
+full (`VasicekMarketPriceOfRisk.lean`, `LoanAmortization.lean`, `KeyRateDuration.lean`,
+`ABCDVolatility.lean`, `KirkSpreadApproximation.lean`): proofs sound, docstrings match the Lean
+content, approximation/scope caveats honestly disclosed (Kirk's heuristic is labeled as such,
+`ABCDVolatility`'s `c ≠ 0` hypothesis is stated, `LoanAmortization`'s `n = 0` truncated-subtraction
+edge case is noted). Skimmed the remaining module docstrings: each correctly labels whether it is
+an **exact** closed form (`BinaryBarrierOption`, `PartialTimeBarrierOption`, `SoftBarrierOption`,
+`HeynenKatTwoAssetBarrier`, `StulzTwoAssetRainbow`, `FxForwardParity` — covered interest parity
+is exact) or an explicit **approximation** (`BasketMomentMatching`'s header states "This is an
+approximation, not an exact closed form"; `SABRImpliedVol` is Hagan et al.'s asymptotic
+expansion, not an exact SABR price).
+
+### Settled / not upgrades
+
+- None of these files need a `verification_ledger.json`/`formalization.yaml` entry — library
+  modules, consistent with the repo convention.
+
+### Ranked backlog
+
+1. (low) Consider whether any of `BinaryBarrierOption`/`PartialTimeBarrierOption`/
+   `SoftBarrierOption`/`HeynenKatTwoAssetBarrier`/`StulzTwoAssetRainbow` warrant promotion to a
+   benchmark-corpus entry (`formalization.yaml`) given they're exact closed forms, not
+   approximations — deferred, no current consumer.
+
 ## 2026-10-19 — corpus 544 — the risk-measures/portfolio merge batch (fn6814, backtest, student-t, fn6902)
 
 Scope: four more merges on `integration-244-family` with no review-log entry of their own, found
