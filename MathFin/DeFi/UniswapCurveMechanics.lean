@@ -177,14 +177,17 @@ noncomputable def twap (p : ℕ → ℝ) (t1 t2 : ℕ) : ℝ :=
 /-- The TWAP equals the arithmetic mean of the price series over the
 window `(t1, t2]`, i.e. the telescoping accumulator identity really does
 compute a time-weighted average — for `t1 < t2`; at `t1 = t2` both sides
-reduce to `_ / 0 = 0` by Lean's junk-value convention for division. -/
+reduce to `_ / 0 = 0` by Lean's junk-value convention for division, not a
+genuine average over an empty window. -/
 theorem twap_eq_average (p : ℕ → ℝ) (t1 t2 : ℕ) (h : t1 ≤ t2) :
     twap p t1 t2 = (∑ i ∈ Finset.Ico (t1 + 1) (t2 + 1), p i) / ((t2 : ℝ) - (t1 : ℝ)) := by
   unfold twap
   rw [twapAccumulator_sub_eq_sum p t1 t2 h]
 
 /-- **Reciprocal caveat**: the harmonic mean of a finite nonempty family of
-strictly positive values `q`. -/
+values `q` (typically strictly positive, e.g. prices, though no positivity
+hypothesis is required below — the identity is a `div`/`div` junk-value
+tautology that holds unconditionally). -/
 noncomputable def harmonicMean (s : Finset ℕ) (q : ℕ → ℝ) : ℝ :=
   (s.card : ℝ) / ∑ i ∈ s, (1 / q i)
 
