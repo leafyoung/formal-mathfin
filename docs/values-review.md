@@ -128,7 +128,7 @@ should *generate work*, not certify "OK").
 ## 2026-10-19 — corpus 544 — the 2026-10-17/18 exotic-options/commodities/fixed-income batch
 
 Scope: a round-2 rule-10 review found ~9 merges / ~2100 lines of new Lean library content
-landed between 2026-10-17 11:17 and 2026-10-18 21:49 with no trace in this file, invisible to
+landed between 2026-10-17 13:29 and 2026-10-18 21:49 with no trace in this file, invisible to
 `test_values_review_is_current` because none of them add benchmark-corpus entries:
 
 - `haug-barrier-batch` (merge `e25cff5`): `BlackScholes/BinaryBarrierOption.lean`,
@@ -137,13 +137,13 @@ landed between 2026-10-17 11:17 and 2026-10-18 21:49 with no trace in this file,
   `StulzTwoAssetRainbow.lean`, plus an extension to `Foundations/BivariateNormalCDF.lean`.
 - `exotic-options-batch1` (merge `cbbc2ab`, #276): `BlackScholes/KirkSpreadApproximation.lean`.
 - `exotic-options-batch2` (merge `116d784`): `BlackScholes/BasketMomentMatching.lean`.
-- `rates-vol-models-batch` (merge `79fde8d`): `FixedIncome/ABCDVolatility.lean` (its sibling
-  `GSRPiecewiseVol.lean` from the same merge is covered by the Fable-gate fix entry above).
+- `rates-vol-models-batch` (merge `79fde8d`): `FixedIncome/ABCDVolatility.lean`,
+  `GSRPiecewiseVol.lean` (the Fable-gate fix entry above only covers one stale-prose fix to this
+  file, not a full review of it — included here for that).
 - `commodity-storage-ou` (merge `b236ade`): `Commodities/AR1OUCalibration.lean`,
   `FisherSraffaOwnRate.lean`, `TheoryOfStorage.lean`.
 - `fixed-income-building-blocks` (merge `e703a7b`, #277): `FixedIncome/CleanPriceAccrued.lean`,
-  `FxForwardParity.lean`, `KeyRateDuration.lean`, `LoanAmortization.lean` (sibling
-  `BondForward.lean` from the same merge is already covered elsewhere).
+  `FxForwardParity.lean`, `KeyRateDuration.lean`, `LoanAmortization.lean`, `BondForward.lean`.
 - `vasicek-physical-risk-neutral-bridge` (merge `f059a33`): `FixedIncome/VasicekMarketPriceOfRisk.lean`.
 - `sabr-turnbull-wakeman` (merge `9271e78` + fix `f7fd61e`): `BlackScholes/SABRImpliedVol.lean`.
 
@@ -161,7 +161,11 @@ an **exact** closed form (`BinaryBarrierOption`, `PartialTimeBarrierOption`, `So
 `HeynenKatTwoAssetBarrier`, `StulzTwoAssetRainbow`, `FxForwardParity` — covered interest parity
 is exact) or an explicit **approximation** (`BasketMomentMatching`'s header states "This is an
 approximation, not an exact closed form"; `SABRImpliedVol` is Hagan et al.'s asymptotic
-expansion, not an exact SABR price).
+expansion, not an exact SABR price). `GSRPiecewiseVol.lean`'s two-piece scope is honestly
+disclosed in its own module doc (a Fable-gate pass separately removed a stale third-copy claim
+and a dangling reference to a non-existent roadmap item from this file — both the Lean-fix and
+documentation-fix entries are about separate problems in the same file). `BondForward.lean`'s
+cash-and-carry no-arbitrage identity is a straightforward replication argument, verified sound.
 
 ### Settled / not upgrades
 
@@ -189,11 +193,11 @@ this file:
   resolved docstring-only — no logic change on either side of the conflict).
 - `fn6902-convex-qp-kkt` (merge `f7bd2ca`): `MathFin/Portfolio/ConvexQPKKT.lean`.
 
-All eight files are library modules (no benchmark-corpus entries of their own).
+All nine files are library modules (no benchmark-corpus entries of their own).
 
 ### Standing first pass: prose against statement
 
-No `sorry`/`admit`/`axiom` in any of the eight files. Docstrings read accurately against their
+No `sorry`/`admit`/`axiom` in any of the nine files. Docstrings read accurately against their
 proofs:
 
 - `BacktestStatistics.lean` is explicit that its Sharpe/CAGR/vol/drawdown are *sample* statistics
@@ -205,9 +209,12 @@ proofs:
   machinery in favor of the closed form specific to `x ↦ √(x'Σx)`.
 - `GaussianExposureProfile.lean`'s `EPE`/`ENE` closed forms were caught with an inverted
   funding-benefit/ENE sign on the originating branch (commits `94e0e8a` "FVA: fix inverted
-  funding-benefit sign" and the matching `GaussianExposureProfile` ENE-sign fix) *before* this
-  merge landed — the merged content already carries the corrected sign; verified against the
-  current `EPE = μΦ(μ/σ) + σφ(μ/σ)` / `ENE` pair.
+  funding-benefit sign" and the matching `GaussianExposureProfile` ENE-sign fix). The first
+  merge of this branch onto the integration branch (`ea29ad0`, PR #272, 2026-10-17 20:33) did
+  carry the inverted `discreteFVA`/`ENE` signs for roughly 30 hours; they were corrected only by
+  the re-merge `523c916` (2026-10-19 02:14) after `94e0e8a`/`4f59adc` landed on the originating
+  branch. The current content is verified against the corrected
+  `EPE = μΦ(μ/σ) + σφ(μ/σ)` / `ENE` pair.
 - `ConvexQPKKT.lean` explicitly disclaims proving KKT necessity, only sufficiency plus
   uniqueness-under-positive-definiteness (consistent with the fn6902 entry's PR title).
 - `StudentTValueAtRisk.lean`'s merge-conflict resolution diffed clean: both sides of the conflict
@@ -215,7 +222,7 @@ proofs:
 
 ### Settled / not upgrades
 
-- None of the eight needed a `verification_ledger.json`/`formalization.yaml` entry — all are
+- None of the nine needed a `verification_ledger.json`/`formalization.yaml` entry — all are
   library modules, consistent with the repo's convention for non-benchmark substrate.
 
 ### Ranked backlog
@@ -282,8 +289,10 @@ Lean content and found accurate, with no overclaiming found:
 ## 2026-10-19 — corpus 544 — roll-spread-estimator merge on integration-244-family
 
 Scope: `MathFin/Execution/RollSpread.lean` by Yang Ye (`rollCovariance`, `rollSpreadEstimator`),
-merged into `integration-244-family` as commit `a9c0f3b` (standalone branch
-`roll-spread-estimator`, originating commit `0426770`). No corpus entry of its own (library
+merged into `integration-244-family` via the `risk-stats-combined` staging branch (`a9c0f3b`
+"Merge roll-spread-estimator into risk-stats-combined", reaching integration through
+`c63fff8`/`68cc48e`; standalone branch `roll-spread-estimator`, originating commit `0426770`).
+No corpus entry of its own (library
 module, not a benchmark theorem, consistent with sibling `Execution`/`DeFi` modules). This
 review was triggered by a rule-10 whole-diff Fable-gate pass over the integration branch
 (alongside the already-reviewed `defi-uniswap-curve` merge, #278 above) that found the file
