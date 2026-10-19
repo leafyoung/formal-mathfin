@@ -234,7 +234,7 @@ proofs:
 ## 2026-10-19 — corpus 544 — the four merges that grew the corpus 537 → 544
 
 Scope: the four branches merged into `integration-244-family` between corpus 537 (#245) and
-543 (#278) that actually grew the benchmark corpus, none of which had received an 8-lens
+544 that actually grew the benchmark corpus, none of which had received an 8-lens
 review of its own before this entry — a rule-10 Fable-gate pass over the integration branch
 found the gap (the roll-spread-estimator merge and #278's DeFi modules, reviewed in the
 adjacent entries below, add no benchmark entries and are documented separately):
@@ -247,8 +247,10 @@ adjacent entries below, add no benchmark entries and are documented separately):
   and `qrm-creditmetrics-gaussian-threshold-row-stochastic` (`quantitative_risk_management.json`).
 - `sa-ccr-ead` (merge `a6a21ad`): `MathFin/RiskMeasures/SACCRExposure.lean`, adding
   `mf-saccr-ead-mono` (`full`) and `mf-saccr-effnotional-diversification-bound` (`reduced_core`).
-- `schwartz-one-factor-futures` (merge `c338b0a`): `MathFin/Futures/SchwartzOneFactor.lean`, adding
-  `mf-schwartz-futures-price` (`full`).
+- `schwartz-one-factor-futures` (merge `c338b0a`): `MathFin/Futures/SchwartzOneFactor.lean`;
+  its benchmark entry `mf-schwartz-futures-price` (`full`) was added post-merge in `eaee691`
+  "fix(Schwartz): add benchmark/ledger entry" (2026-10-18 23:46) — the 543 → 544 step, after
+  #278's "corpus 543" review, not between corpus 537 and 543 like the other three.
 
 ### Standing first pass: prose against statement
 
@@ -278,9 +280,10 @@ Lean content and found accurate, with no overclaiming found:
 
 - No `sorry`/`admit`/`axiom` in any of the four files; no dead hypotheses found.
 - All four files carry benchmark entries verified fresh in `verification_ledger.json`
-  (CalendarArbitrage and CreditMetrics in `quantitative_risk_management.json`'s `qrm-*` IDs,
-  SACCRExposure and SchwartzOneFactor in `mathematical_finance.json`'s `mf-*` IDs) and are each
-  wired into `MathFin.lean`, building clean.
+  (CalendarArbitrage, SACCRExposure and SchwartzOneFactor in
+  `benchmarks/mathematical_finance.json`'s `mf-*` IDs; CreditMetrics in
+  `benchmarks/quantitative_risk_management.json`'s `qrm-*` IDs) and are each wired into
+  `MathFin.lean`, building clean.
 
 ### Ranked backlog
 
