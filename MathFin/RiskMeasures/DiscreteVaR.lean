@@ -20,26 +20,33 @@ the quantile average `ES_α = (1 − α)⁻¹ ∫_α^1 VaR_u du` (`finiteES`). F
 
 The file works the two-bond example. A single `$100` bond defaulting with probability `1/25` has
 `VaR₀.₉₅ = 0`: the loss is 0 with probability `24/25 ≥ 0.95`. The same exposure split into two
-`$50` bonds defaulting independently has `VaR₀.₉₅ = 50`, so VaR penalises the diversified position.
+`$50` bonds defaulting independently has `VaR₀.₉₅ = 50`, so VaR penalizes the diversified position.
 At the single bond, expected shortfall is `80` while the conditional tail mean `E[L | L ≥ VaR₀.₉₅]`
 is the unconditional mean `4`.
 
-These are worked instances of general results in the library: the exact superadditivity window
-for independent Bernoulli losses is `valueAtRisk_sum_bernoulli_superadditive_iff`
-(`RiskMeasures/VaRSuperadditivity.lean`), and the dual representation of ES over bounded densities
-is `isGreatest_integral_mul_expectedShortfall` (`RiskMeasures/ExpectedShortfall.lean`).
+These are worked instances of general results in the library. In
+`RiskMeasures/VaRSuperadditivity.lean`, `valueAtRisk_sum_bernoulli_of_card_two` is the two-loan
+example for independent (`iIndepFun`), identically distributed unit losses sharing one default
+probability `p`: on `(1 − p)² < α ≤ 1 − p` each loan has VaR `0` and the portfolio VaR `1`. The
+exact superadditivity window, for `α ∈ (0, 1)` and any number of independent, identically
+distributed Bernoulli losses (same shared `p`), is `valueAtRisk_sum_bernoulli_superadditive_iff`.
+For an integrable loss and `α ∈ (0, 1)`, the dual representation of ES over bounded densities is
+`isGreatest_integral_mul_expectedShortfall` (`RiskMeasures/ExpectedShortfall.lean`).
 
 ## Main results
 
-* `finiteVaR_eq_valueAtRisk`, `finiteES_eq_expectedShortfall`: the finite forms agree with the
-  general definitions at the law `∑ i, q i • δ_i`.
-* `finiteVaR_eq_value_min`: for `α ∈ (0, 1]`, VaR at a finite law is attained at a loss value.
-* `finiteVaR_two_point`: VaR of a loss that is `0` with mass `a` and `c > 0` with mass `1 - a`.
+* `finiteVaR_eq_valueAtRisk`, `finiteES_eq_expectedShortfall`: for `α ∈ (0, 1)` and a probability
+  vector `q`, the finite forms agree with the general definitions at the law `∑ i, q i • δ_i`.
+* `finiteVaR_eq_value_min`: for `α ∈ (0, 1]` and a probability vector `q`, VaR at a finite law is
+  attained at a loss value.
+* `finiteVaR_two_point`: for `α ∈ (0, 1]`, VaR of a loss that is `0` with mass `a` and `c > 0` with
+  mass `1 - a`.
 * `vaR_one_bond`, `vaR_two_halves`: `VaR₀.₉₅` is `0` for the single bond and `50` for the split
   position.
 * `vaR_subadditivity_fails`: on the joint space of the two half-bonds, the halves' `VaR₀.₉₅`
   sum to less than the total's (the values are `0`, `0` and `50`).
-* `vaR_counterexample_window`: subadditivity fails exactly for `(24/25)² < α ≤ 24/25`.
+* `vaR_counterexample_window`: for `α ∈ (0, 1]`, subadditivity fails exactly for
+  `(24/25)² < α ≤ 24/25`.
 * `es_one_bond_eq_80`: `ES₀.₉₅ = 80` for the single bond.
 * `condTailMean_one_bond`: at the single bond the tail event `{L ≥ VaR₀.₉₅}` is the whole space,
   so the conditional tail mean is `E[L] = 4`.
@@ -60,12 +67,15 @@ variable {ι : Type*} [Fintype ι]
 
 /-- **VaR at a finite law**: the infimum of the loss levels `x` at which the `q`-mass of
 `{i | L i ≤ x}` reaches `α`. The lemmas that need `q` to be a probability vector take
-`q ∈ stdSimplex ℝ ι` as a hypothesis. -/
+`q ∈ stdSimplex ℝ ι` as a hypothesis; for such `q` and `α ∈ (0, 1]` the set is nonempty and
+bounded below, which is the only range used in this file. Outside that range (or for weights that
+don't sum to `1`) the set can be empty or all of `ℝ`, where `sInf` returns the junk value `0`. -/
 noncomputable def finiteVaR (q L : ι → ℝ) (α : ℝ) : ℝ :=
   sInf {x | α ≤ ∑ i with L i ≤ x, q i}
 
-/-- **ES at a finite law**: the quantile average, `(1 - α)⁻¹` times the integral of the quantile
-function `u ↦ finiteVaR q L u` over `[α, 1]`. -/
+/-- **ES at a finite law**: the quantile average, `(1 - α)⁻¹` times the oriented interval integral
+`∫ u in α..1` of the quantile function `u ↦ finiteVaR q L u` — an integral over `[α, 1]` when
+`α ≤ 1`, the only range used in this file. -/
 noncomputable def finiteES (q L : ι → ℝ) (α : ℝ) : ℝ :=
   (1 - α)⁻¹ * ∫ u in α..1, finiteVaR q L u
 
@@ -84,7 +94,9 @@ lemma isProbabilityMeasure_finiteLaw (hq : q ∈ stdSimplex ℝ ι) :
 
 variable [MeasurableSingletonClass ι]
 
-/-- Under `finiteLaw q`, the probability of `{L ≤ x}` is the mass summed in `finiteVaR`. -/
+/-- For nonnegative weights `q`, under `finiteLaw q` the measure (mass) of `{L ≤ x}` is the sum in
+`finiteVaR` — a probability only once `q` is a probability vector
+(`isProbabilityMeasure_finiteLaw`). -/
 lemma finiteLaw_real_le (hq : ∀ i, 0 ≤ q i) (L : ι → ℝ) (x : ℝ) :
     (finiteLaw q).real {i | L i ≤ x} = ∑ i with L i ≤ x, q i := by
   rw [measureReal_def, finiteLaw, Measure.coe_finsetSum, Finset.sum_apply]
@@ -94,7 +106,8 @@ lemma finiteLaw_real_le (hq : ∀ i, 0 ≤ q i) (L : ι → ℝ) (x : ℝ) :
   refine Finset.sum_congr rfl fun i _ ↦ ?_
   by_cases hi : L i ≤ x <;> simp [Measure.dirac_apply, hi, hq i]
 
-/-- `finiteVaR` is `valueAtRisk` at the law `∑ i, q i • δ_i`. -/
+/-- For `α ∈ (0, 1)` and a probability vector `q`, `finiteVaR` is `valueAtRisk` at the law
+`∑ i, q i • δ_i`. -/
 theorem finiteVaR_eq_valueAtRisk (hq : q ∈ stdSimplex ℝ ι) {L : ι → ℝ} {α : ℝ}
     (hα : α ∈ Ioo 0 1) : finiteVaR q L α = valueAtRisk L (finiteLaw q) α := by
   have := isProbabilityMeasure_finiteLaw hq
@@ -104,7 +117,8 @@ theorem finiteVaR_eq_valueAtRisk (hq : q ∈ stdSimplex ℝ ι) {L : ι → ℝ}
     simp [valueAtRisk_le_iff (measurable_of_finite L).aemeasurable hα, finiteLaw_real_le hq.1]
   rw [finiteVaR, hset, csInf_Ici]
 
-/-- `finiteES` is `expectedShortfall` at the law `∑ i, q i • δ_i`. -/
+/-- For `α ∈ (0, 1)` and a probability vector `q`, `finiteES` is `expectedShortfall` at the law
+`∑ i, q i • δ_i`. -/
 theorem finiteES_eq_expectedShortfall (hq : q ∈ stdSimplex ℝ ι) {L : ι → ℝ} {α : ℝ}
     (hα : α ∈ Ioo 0 1) : finiteES q L α = expectedShortfall L (finiteLaw q) α := by
   rw [finiteES, expectedShortfall, intervalIntegral.integral_of_le hα.2.le,
@@ -129,8 +143,9 @@ theorem finiteVaR_eq_of_mem_of_forall_lt {v₀ : ℝ}
     finiteVaR q L α = v₀ :=
   IsLeast.csInf_eq ⟨hmem, fun x hx ↦ not_lt.1 fun h ↦ (hbelow x h).not_ge hx⟩
 
-/-- The loss values `v` at which the mass of `{L ≤ v}` is at least α form a nonempty finite set:
-at the largest loss value that mass is the full mass `1 ≥ α`. -/
+/-- For a probability vector `q` and `α ≤ 1`, the loss values `v` at which the mass of `{L ≤ v}`
+is at least α form a nonempty finite set: at the largest loss value that mass is the full mass
+`1 ≥ α`. -/
 theorem nonempty_values_mass_ge (hq : q ∈ stdSimplex ℝ ι) (hα1 : α ≤ 1) :
     {v ∈ Finset.univ.image L | α ≤ ∑ i with L i ≤ v, q i}.Nonempty := by
   have hne := (Finset.nonempty_of_sum_ne_zero (by rw [hq.2]; norm_num)).image L
@@ -140,9 +155,9 @@ theorem nonempty_values_mass_ge (hq : q ∈ stdSimplex ℝ ι) (hα1 : α ≤ 1)
       Finset.le_max' _ _ (Finset.mem_image_of_mem _ (Finset.mem_univ _))
   exact ⟨_, Finset.mem_filter.2 ⟨Finset.max'_mem _ hne, by rwa [hfull, hq.2]⟩⟩
 
-/-- **Attainment.** For `α ∈ (0, 1]`, the infimum over `ℝ` is the minimum over the loss values
-`v ∈ Finset.image L univ` at which the `q`-mass of `{L ≤ v}` is at least α, so VaR is attained at
-a loss value. -/
+/-- **Attainment.** For `α ∈ (0, 1]` and a probability vector `q`, the infimum over `ℝ` is the
+minimum over the loss values `v ∈ Finset.image L univ` at which the `q`-mass of `{L ≤ v}` is at
+least α, so VaR is attained at a loss value. -/
 theorem finiteVaR_eq_value_min (hq : q ∈ stdSimplex ℝ ι) (hα0 : 0 < α) (hα1 : α ≤ 1) :
     finiteVaR q L α = {v ∈ Finset.univ.image L | α ≤ ∑ i with L i ≤ v, q i}.min'
       (nonempty_values_mass_ge hq hα1) := by
@@ -268,10 +283,10 @@ theorem vaR_two_halves : finiteVaR jointQ (halfL₁ + halfL₂) (19 / 20) = 50 :
   rw [vaR_joint_window _ (by norm_num) (by norm_num)]
   norm_num
 
-/-- **The failure window.** Subadditivity fails exactly for `9216/10000 < α ≤ 24/25`, where
-`9216/10000 = (24/25)²`. The right endpoint is included because the definition uses
-`α ≤ P(L ≤ x)`: at `α = 24/25` each half keeps VaR `0` while the total has VaR `50`. At
-`α = 9216/10000` the total VaR is still `0`, so the left endpoint is excluded. -/
+/-- **The failure window.** For the level `α ∈ (0, 1]`, subadditivity fails exactly for
+`9216/10000 < α ≤ 24/25`, where `9216/10000 = (24/25)²`. The right endpoint is included because
+the definition uses `α ≤ P(L ≤ x)`: at `α = 24/25` each half keeps VaR `0` while the total has
+VaR `50`. At `α = 9216/10000` the total VaR is still `0`, so the left endpoint is excluded. -/
 theorem vaR_counterexample_window (α : ℝ) (hα0 : 0 < α) (hα1 : α ≤ 1) :
     finiteVaR jointQ halfL₁ α + finiteVaR jointQ halfL₂ α
       < finiteVaR jointQ (halfL₁ + halfL₂) α ↔ 9216 / 10000 < α ∧ α ≤ 24 / 25 := by
@@ -324,7 +339,9 @@ theorem es_one_bond_eq_80 : finiteES oneQ oneL (19 / 20) = 80 := by
 /-! ## The conditional tail mean at an atom -/
 
 /-- **`E[L | L ≥ VaR_α]` at a finite law**: the `q`-weighted mean of `L` over the tail event
-`{i | finiteVaR q L α ≤ L i}`. -/
+`{i | finiteVaR q L α ≤ L i}`. For a probability vector `q` and `α ∈ (0, 1]` the tail mass is
+positive, so this is a genuine conditional mean; outside that range the tail mass can be `0` and
+the quotient returns the junk value `0`. -/
 noncomputable def condTailMean (q L : ι → ℝ) (α : ℝ) : ℝ :=
   (∑ i with finiteVaR q L α ≤ L i, q i * L i) /
     (∑ i with finiteVaR q L α ≤ L i, q i)
@@ -342,10 +359,10 @@ theorem condTailMean_one_bond : condTailMean oneQ oneL (19 / 20) = 4 := by
 /-! ## The bounded-density representation of ES at the single bond -/
 
 /-- For the single bond, `ES₀.₉₅` is the greatest value of `E[Z·L]` over densities `Z` with
-`0 ≤ Z ≤ (1 - 19/20)⁻¹ = 20` and `E[Z] = 1`; both equal `80` (`es_one_bond_eq_80`). The maximum
-is attained at `Z = 20` on default and `5/24` on survival. This is the two-state analogue of
-`isGreatest_integral_mul_expectedShortfall`; here the objective is `E[Z·L] = 4·Z(default)`, so
-the bound is the cap. -/
+`0 ≤ Z ≤ (1 - 19/20)⁻¹ = 20` and `E[Z] = 1`; both equal `80` (`es_one_bond_eq_80`). This is the
+two-state analogue of `isGreatest_integral_mul_expectedShortfall`. The objective is
+`E[Z·L] = 4·Z(default)`, so the maximum puts `Z(default)` at the cap `20`, and `E[Z] = 1` then
+gives `Z(survival) = 5/24`. -/
 theorem isGreatest_es_one_bond :
     IsGreatest ((fun Z : Bool → ℝ ↦ ∑ b, oneQ b * Z b * oneL b) ''
       {Z | (∀ b, 0 ≤ Z b ∧ Z b ≤ (1 - 19 / 20)⁻¹) ∧ ∑ b, oneQ b * Z b = 1})
