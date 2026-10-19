@@ -29,8 +29,9 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 ### Integration reconciliation: corpus 543 → 544 (2026-10-19)
 
 The `schwartz-one-factor-futures` branch (see "Schwartz one-factor commodity futures" below,
-corpus 537 → 538 on its own branch) and the branch carrying the SA-CCR/CreditMetrics/calendar-
-arbitrage entries above (corpus 541 → 543) were developed in parallel off a common ancestor and
+corpus 537 → 538 on its own branch) and the branch carrying the SA-CCR/CreditMetrics/calendar-spread
+arbitrage entries immediately below (SA-CCR, CreditMetrics, calendar-spread arbitrage; corpus
+541 → 543) were developed in parallel off a common ancestor and
 diverged before either saw the other's additions. Merging them unions the two benchmark-corpus
 theorem lists by id rather than picking one side, so the combined corpus is 544, not 543: all of
 the entries documented above and below this note are present, plus `mf-schwartz-futures-price`

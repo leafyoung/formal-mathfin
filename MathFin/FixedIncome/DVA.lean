@@ -29,12 +29,6 @@ from `GaussianExposureProfile.lean`. This is a deliberate loose coupling — a c
 `CollateralizedExposure.lean`, or any other exposure model, without this file depending on their
 distributional assumptions.
 
-Scope note: `EDNE` is taken as a free parameter (any `Fin n → ℝ` profile) rather than imported
-from `GaussianExposureProfile.lean`. This is a deliberate loose coupling — a caller can supply
-`expectedNegativeExposure` from that file, a collateralized `E_C`-style profile from
-`CollateralizedExposure.lean`, or any other exposure model, without this file depending on their
-distributional assumptions.
-
 ## Main definitions and results
 
 * `discreteDVA`: the DVA sum, indexed `i = 1, …, n` via `Fin n` buckets against a survival curve
