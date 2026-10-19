@@ -172,8 +172,9 @@ file — those are Lean-prose fixes, separate from this entry's own review-log-g
 cash-and-carry no-arbitrage identity is a straightforward replication argument, verified sound.
 `NelsonSiegelSvensson.lean`'s short-end limit (`β₀ + β₁`) is correctly stated on `𝓝[≠] 0` since
 the slope factor `s(x) = (1-e^{-x})/x` is a junk value at `x = 0`; the long-end limit needs
-`0 < l₁`/`0 < l₂` while the short-end limit and continuity only need `l₁ ≠ 0`/`l₂ ≠ 0` — both
-hypothesis levels are disclosed correctly in the respective theorem docstrings.
+`0 < l₁`/`0 < l₂` (stated in `tendsto_nssYield_atTop`'s own docstring) while the short-end limit
+and continuity carry the weaker `l₁ ≠ 0`/`l₂ ≠ 0` in their signatures (not called out in their
+docstrings' prose, but visible in the hypothesis list).
 
 ### Settled / not upgrades
 
