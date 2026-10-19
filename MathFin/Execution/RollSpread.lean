@@ -45,6 +45,13 @@ We state the result for three consecutive sign variables `q0 q1 q2` (representin
 time index through a stochastic process, since only these five variables and their pairwise
 independence ever enter the computation.
 
+The inversion is only meaningful when the sample autocovariance `γ̂₁` is negative, as the model
+predicts. If `γ̂₁ ≥ 0` — which real data can and does produce, since the model is an
+approximation — `rollSpreadEstimator` does not apply: `Real.sqrt` of a nonpositive argument
+returns `0` by Mathlib's junk-value convention, so naively evaluating `2 * Real.sqrt (-γ̂₁)` at
+`γ̂₁ ≥ 0` silently yields a spread estimate of `0` rather than signalling that the estimator is
+undefined there.
+
 ## Main results
 
 * `variance_id_rademacher`, `variance_one_of_hasLaw_rademacher`: a fair random sign has variance

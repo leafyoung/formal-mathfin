@@ -28,7 +28,7 @@ efficient mechanism for Stablecoin liquidity", 2019,
 <https://curve.fi/files/stableswap-paper.pdf>) is not formalized in this
 file; no StableSwap-specific result appears below.
 
-This file formalises four further closed-form results about automated
+This file formalises six further closed-form results about automated
 market makers, building on the constant-product substrate in
 `ConstantProductAMM.lean`.
 
@@ -192,9 +192,10 @@ noncomputable def harmonicMean (s : Finset ℕ) (q : ℕ → ℝ) : ℝ :=
 the **reciprocal of the harmonic mean of `q` equals the arithmetic mean of
 `p`** — not the reciprocal of the arithmetic mean of `q`. This is the
 caveat: naively averaging the reciprocal series and inverting gives the
-wrong (harmonic, not arithmetic) mean. Stated for a nonempty family of
-strictly positive values, the intended reading; the identity itself is a
-`div`/`div` junk-value tautology that also holds at `s = ∅`. -/
+wrong (harmonic, not arithmetic) mean. Stated here for strictly positive
+values, the intended reading; the identity itself is a `div`/`div`
+junk-value tautology that holds unconditionally for *any* finite family
+`s`, including the empty one (both sides reduce to `0`). -/
 theorem harmonicMean_reciprocal_eq_arithmeticMean
     (s : Finset ℕ) (p : ℕ → ℝ) :
     1 / harmonicMean s (fun i => 1 / p i) = (∑ i ∈ s, p i) / (s.card : ℝ) := by
@@ -249,7 +250,7 @@ noncomputable def lpFeeShare (k1 k2 : ℝ) : ℝ :=
 
 /-- `lpFeeShare` is nonnegative when the invariant has not shrunk,
 matching the fee economics (fees only grow `k`). -/
-theorem lpFeeShare_nonneg (k1 k2 : ℝ) (_hk1 : 0 < k1) (hk2 : 0 < k2) (h : k1 ≤ k2) :
+theorem lpFeeShare_nonneg (k1 k2 : ℝ) (hk2 : 0 < k2) (h : k1 ≤ k2) :
     0 ≤ lpFeeShare k1 k2 := by
   unfold lpFeeShare
   have : Real.sqrt (k1 / k2) ≤ 1 := by
@@ -260,11 +261,20 @@ theorem lpFeeShare_nonneg (k1 k2 : ℝ) (_hk1 : 0 < k1) (hk2 : 0 < k2) (h : k1 �
 /-! ## Uniswap v3 virtual-reserve curve -/
 
 /-- **Virtual reserve of token X** in a Uniswap v3 concentrated-liquidity
-position with liquidity `L`, current price `√P`, and range `[√p_a, √p_b]`. -/
+position with liquidity `L`, current price `√P`, and range `[√p_a, √p_b]`.
+This formula represents the position's *in-range* reserves only — valid
+while `√p_a ≤ √P ≤ √p_b`; once the price moves below the range the
+position's actual X reserve saturates instead of following this curve
+(and above the range it holds no X at all), which this file does not
+formalize. -/
 noncomputable def virtualReserveX (L sqrtP sqrtPb : ℝ) : ℝ :=
   L * (1 / sqrtP - 1 / sqrtPb)
 
-/-- **Virtual reserve of token Y** for the same position. -/
+/-- **Virtual reserve of token Y** for the same position. As with
+`virtualReserveX`, this represents the *in-range* reserve only — valid
+while `√p_a ≤ √P ≤ √p_b`; outside the range the actual Y reserve
+saturates rather than following this curve, which is not formalized
+here. -/
 noncomputable def virtualReserveY (L sqrtP sqrtPa : ℝ) : ℝ :=
   L * (sqrtP - sqrtPa)
 
