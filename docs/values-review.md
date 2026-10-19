@@ -125,6 +125,54 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-19 — corpus 544 — the risk-measures/portfolio merge batch (fn6814, backtest, student-t, fn6902)
+
+Scope: four more merges on `integration-244-family` with no review-log entry of their own, found
+by a round-2 rule-10 review pass looking specifically for merges not yet covered by any entry in
+this file:
+
+- `fn6814-risk-exposure-xva` (merge `523c916`): `MathFin/FixedIncome/DVA.lean`, `FVA.lean`,
+  `MathFin/Portfolio/SingleIndexModel.lean`, `MathFin/RiskMeasures/CollateralizedExposure.lean`,
+  `ComponentVaR.lean`, `GaussianExposureProfile.lean`.
+- `backtest-performance-stats` (merge `a06d899`): `MathFin/RiskMeasures/BacktestStatistics.lean`.
+- `student-t-parametric-var` (merge `ddf8e0e`, a real merge conflict in `StudentTValueAtRisk.lean`,
+  resolved docstring-only — no logic change on either side of the conflict).
+- `fn6902-convex-qp-kkt` (merge `f7bd2ca`): `MathFin/Portfolio/ConvexQPKKT.lean`.
+
+All eight files are library modules (no benchmark-corpus entries of their own).
+
+### Standing first pass: prose against statement
+
+No `sorry`/`admit`/`axiom` in any of the eight files. Docstrings read accurately against their
+proofs:
+
+- `BacktestStatistics.lean` is explicit that its Sharpe/CAGR/vol/drawdown are *sample* statistics
+  over a finite realized record, not probabilistic objects — a different kind of claim from a
+  process-level (population) drawdown result elsewhere in the repo.
+- `CollateralizedExposure.lean`'s margin-period-of-risk lag `C(t) = V(t-Δ)` and threshold
+  mechanics are disclosed as the simplified fixed-lag model, not a full CSA simulation.
+- `ComponentVaR.lean` correctly notes it sidesteps general Euler/homogeneous-function calculus
+  machinery in favor of the closed form specific to `x ↦ √(x'Σx)`.
+- `GaussianExposureProfile.lean`'s `EPE`/`ENE` closed forms were caught with an inverted
+  funding-benefit/ENE sign on the originating branch (commits `94e0e8a` "FVA: fix inverted
+  funding-benefit sign" and the matching `GaussianExposureProfile` ENE-sign fix) *before* this
+  merge landed — the merged content already carries the corrected sign; verified against the
+  current `EPE = μΦ(μ/σ) + σφ(μ/σ)` / `ENE` pair.
+- `ConvexQPKKT.lean` explicitly disclaims proving KKT necessity, only sufficiency plus
+  uniqueness-under-positive-definiteness (consistent with the fn6902 entry's PR title).
+- `StudentTValueAtRisk.lean`'s merge-conflict resolution diffed clean: both sides of the conflict
+  were docstring wording only, the Cornish-Fisher-style closed form itself is unchanged.
+
+### Settled / not upgrades
+
+- None of the eight needed a `verification_ledger.json`/`formalization.yaml` entry — all are
+  library modules, consistent with the repo's convention for non-benchmark substrate.
+
+### Ranked backlog
+
+1. (low) `CollateralizedExposure.lean`'s fixed-lag margin model could gain a variable-lag or
+   two-way-CSA variant — no current consumer needs it.
+
 ## 2026-10-19 — corpus 544 — the four merges that grew the corpus 537 → 544
 
 Scope: the four branches merged into `integration-244-family` between corpus 537 (#245) and
