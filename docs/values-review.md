@@ -146,6 +146,9 @@ landed between 2026-10-17 13:29 and 2026-10-18 23:56 with no trace in this file,
   `FxForwardParity.lean`, `KeyRateDuration.lean`, `LoanAmortization.lean`, `BondForward.lean`.
 - `vasicek-physical-risk-neutral-bridge` (merge `f059a33`): `FixedIncome/VasicekMarketPriceOfRisk.lean`.
 - `sabr-turnbull-wakeman` (merge `9271e78` + fix `f7fd61e`): `BlackScholes/SABRImpliedVol.lean`.
+- `rates-vol-batch2` (merge `4b783f2`, #283, landed 2026-10-19 — the same class of gap as the
+  above, found in a later round of the same rule-10 cycle): `FixedIncome/NelsonSiegelSvensson.lean`,
+  gate fix `3cfff03`.
 
 All these files are library modules (no benchmark-corpus entries of their own).
 
@@ -167,6 +170,10 @@ a stale third-copy claim and a dangling reference to a non-existent roadmap item
 file — those are Lean-prose fixes, separate from this entry's own review-log-gap closure).
 `BondForward.lean`'s
 cash-and-carry no-arbitrage identity is a straightforward replication argument, verified sound.
+`NelsonSiegelSvensson.lean`'s short-end limit (`β₀ + β₁`) is correctly stated on `𝓝[≠] 0` since
+the slope factor `s(x) = (1-e^{-x})/x` is a junk value at `x = 0`; the long-end limit needs
+`0 < l₁`/`0 < l₂` while the short-end limit and continuity only need `l₁ ≠ 0`/`l₂ ≠ 0` — both
+hypothesis levels are disclosed correctly in the respective theorem docstrings.
 
 ### Settled / not upgrades
 
@@ -297,8 +304,9 @@ Lean content and found accurate, with no overclaiming found:
 Scope: `MathFin/Execution/RollSpread.lean` by Yang Ye (`rollCovariance`, `rollSpreadEstimator`),
 merged into `integration-244-family` via the `risk-stats-combined` staging branch (`a9c0f3b`
 "Merge roll-spread-estimator into risk-stats-combined", reaching integration through `39460dd`
-(PR #279), later re-merged via `c63fff8`; standalone branch `roll-spread-estimator`, originating
-commit `0426770`).
+(PR #279), later carried into the `defi-combined-uniswap-aave` branch when it absorbed
+integration via `c63fff8`; standalone branch `roll-spread-estimator`, originating commit
+`0426770`).
 No corpus entry of its own (library
 module, not a benchmark theorem, consistent with sibling `Execution`/`DeFi` modules). This
 review was triggered by a rule-10 whole-diff Fable-gate pass over the integration branch
