@@ -47,15 +47,14 @@ integration domain at `T*` and reusing the quadratic-times-exponential antideriv
 from `VasicekBondPrice.vasicekIntegratedKernel_integral_sq`'s proof (reproduced here,
 evaluated at three points `0, T*, T` instead of just the two endpoints `0, T`).
 
-**Known debt, left deliberately unresolved**: this is the *third* copy of that
+**Known debt, left deliberately unresolved**: this is the *second* copy of that
 quadratic-times-exponential antiderivative in the repo (`VasicekBondPrice.lean`'s own
-inline proof, `HullWhiteCalibration.lean`'s analogous `kernel_integral_sq`, and this
-file's `vasKernelSqAntideriv`). The clean fix is to lift it out of
-`VasicekBondPrice.lean` as a shared, general (arbitrary-sub-interval) lemma that all
-three sites consume — not done here because it means editing an already-landed,
-ledger-tracked file purely for a refactor, which is out of scope for the session that
-landed this module and risks marking unrelated ledger entries stale for no semantic
-change. Left as a follow-up.
+inline proof inside `vasicekIntegratedKernel_integral_sq`, and this file's
+`vasKernelSqAntideriv`). The clean fix is to lift it out of `VasicekBondPrice.lean` as
+a shared, general (arbitrary-sub-interval) lemma that both sites consume — not done
+here because it means editing an already-landed, ledger-tracked file purely for a
+refactor, which is out of scope for the session that landed this module and risks
+marking unrelated ledger entries stale for no semantic change. Left as a follow-up.
 
 ## Main results
 

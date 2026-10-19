@@ -125,6 +125,62 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-19 — corpus 544 — the four merges that grew the corpus 537 → 544
+
+Scope: the four branches merged into `integration-244-family` between corpus 537 (#245) and
+543 (#278) that actually grew the benchmark corpus, none of which had received an 8-lens
+review of its own before this entry — a rule-10 Fable-gate pass over the integration branch
+found the gap (the two library-module merges reviewed in the adjacent entries above, RollSpread
+and #278's DeFi modules, don't add benchmark entries and are documented separately):
+
+- `calendar-arbitrage-gatheral` (PR #269, merge `0ef17ce`): `MathFin/BlackScholes/CalendarArbitrage.lean`,
+  adding `mf-calendar-arbitrage-total-variance` and `mf-svi-calendar-free-iff` (`full`).
+- `creditmetrics-rating-transition` (PR #268, merge `7f3d57e`): `MathFin/RiskMeasures/CreditMetrics.lean`
+  (`pow_mem_rowStochastic`, `monotone_pow_apply_absorbing`, `thresholdMatrix_mem_rowStochastic`,
+  `gaussianThresholdMatrix_mem_rowStochastic`) — library module, no corpus entries of its own.
+- `sa-ccr-ead` (merge `a6a21ad`): `MathFin/RiskMeasures/SACCRExposure.lean`, adding
+  `mf-saccr-ead-mono` (`full`) and `mf-saccr-effnotional-diversification-bound` (`reduced_core`).
+- `schwartz-one-factor-futures` (merge `c338b0a`): `MathFin/Futures/SchwartzOneFactor.lean`, adding
+  `mf-schwartz-futures-price` (`full`).
+
+### Standing first pass: prose against statement
+
+All four files' docstrings and `formalization_scope` entries were checked against their actual
+Lean content and found accurate, with no overclaiming found:
+
+- `bsSmile_calendar_free_iff`'s `formalization_scope` correctly scopes the `S = 1`,
+  `w(k,t) = variance (p t) k` instance and explicitly excludes SSVI / the slice-crossing
+  quartic, which are not formalized.
+- `CreditMetrics.lean`'s module doc correctly discloses that threshold *calibration*
+  (`z = Φ⁻¹` of cumulative row sums) and correlated multi-obligor migration are out of scope —
+  only the row-stochastic / absorbing-default / single-obligor threshold-construction results
+  are proven.
+- `mf-saccr-effnotional-diversification-bound`'s `reduced_core` status and scope note are
+  carefully worded: `effNotionalPair` is explicitly disclosed as *structurally analogous* to
+  Basel Annex 4's add-on formula (same quadratic-form shape as a two-variable variance), not a
+  literal specialization — Annex 4's actual cross term is quadratic in `ρ`, this building
+  block's is linear. The distinction is accurate and not hidden in the description.
+- `mf-schwartz-futures-price`'s scope note says the SDE-to-Wiener-representation bridge is
+  "cited, not proven here" and points at `mf-vasicek-sde-terminal-gaussian`'s own identical
+  disclosure — checked against `SchwartzOneFactor.lean`'s theorem docstring and found
+  consistent (the module-level "Main results" bullet for the same theorem had drifted into
+  overclaiming `E[S_T]` "for the SDE solution"; fixed separately in this same review pass to
+  match the theorem's own accurate docstring).
+
+### Settled / not upgrades
+
+- No `sorry`/`admit`/`axiom` in any of the four files; no dead hypotheses found.
+- None of the four needed a `verification_ledger.json` entry beyond what already exists — the
+  two library modules (CreditMetrics, and SACCRExposure's definitions) and two benchmark files
+  (CalendarArbitrage, SchwartzOneFactor) are each wired into `MathFin.lean` and build clean.
+
+### Ranked backlog
+
+1. (low) `CreditMetrics.lean`'s threshold-calibration and correlated-migration gaps are
+   explicitly disclosed, not blocking — a natural follow-up module once a consumer needs them.
+2. (low) SSVI and the slice-crossing quartic (noted out of scope in
+   `mf-svi-calendar-free-iff`) remain a candidate follow-up for the SVI library.
+
 ## 2026-10-19 — corpus 544 — roll-spread-estimator merge on integration-244-family
 
 Scope: `MathFin/Execution/RollSpread.lean` by Yang Ye (`rollCovariance`, `rollSpreadEstimator`),
