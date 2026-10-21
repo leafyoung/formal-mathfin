@@ -20,26 +20,37 @@ mean-reverting under the pricing measure:
 This is the Ornstein–Uhlenbeck dynamics of the Vasicek short rate, so, carrying
 `ln S_T` in its Wiener representation (the SDE bridge is cited, not proven — see
 `schwartzFuturesPrice_eq_integral`), it has the Gaussian law `N(m_T, v_T)` with
-`m_T = vasicekSDEMean` and `v_T = vasicekSDEVariance` (`vasicekShortRate_hasLaw_gaussian`).
-The futures
+`m_T = vasicekSDEMean` and `v_T = vasicekSDEVariance` (`vasicekShortRate_hasLaw_gaussian`),
+for `κ > 0`. The futures
 price is `F(0,T) = E[S_T] = E[e^{ln S_T}]`, the Gaussian moment-generating
 function at `1`:
 
   `F(0,T) = exp(m_T + v_T / 2)`.
 
-As `T → ∞` the futures curve flattens to `exp(θ + σ² / (4κ))`, independent of
+In the Lean, `E` is the expectation under an arbitrary probability measure `μ` carrying the
+Brownian motion: `μ` is *read* as the pricing measure, and that the futures price is
+`E^Q[S_T]` is the textbook identification, not proved here. `schwartzFuturesPrice` is the
+closed form, defined; `schwartzFuturesPrice_eq_integral` proves it equals `E[S_T]`.
+
+As `T → ∞` (for `κ > 0`) the closed form flattens to `exp(θ + σ² / (4κ))`, independent of
 the current spot.
 
 This formalizes only the constant-parameter Schwartz (1997) model; Hull's
-time-dependent level `q(t)` (the Hull-White-form drift calibrated to the
-quoted futures curve, OFOD ch. 35) is out of scope.
+time-dependent level `q(t)` (the Hull–White-form drift calibrated to the
+quoted futures curve) is out of scope.
+
+## References
+
+* E. S. Schwartz, *The Stochastic Behavior of Commodity Prices: Implications for Valuation
+  and Hedging*, Journal of Finance 52 (1997).
+* J. C. Hull, *Options, Futures, and Other Derivatives* (the time-dependent `q(t)` extension).
 
 ## Main results
 
 * `schwartzFuturesPrice` — the closed form `exp(m_T + v_T / 2)`.
 * `schwartzFuturesPrice_eq_integral` — it equals `E[S_T]` for the log spot in its
   Wiener representation (the SDE bridge is cited, not proven).
-* `schwartzFuturesPrice_tendsto` — the long-maturity flattening limit.
+* `tendsto_schwartzFuturesPrice_atTop` — the long-maturity flattening limit.
 -/
 
 @[expose] public section
@@ -51,8 +62,9 @@ open scoped NNReal
 open WienerIntegralL2
 
 /-- **Schwartz one-factor futures price** with initial log spot `x₀`, long-run
-log level `θ`, mean-reversion speed `κ`, volatility `σ` and maturity `T`:
-`exp(m_T + v_T / 2)`, the lognormal mean of the terminal spot. -/
+log level `θ`, mean-reversion speed `κ`, volatility `σ` and maturity `T`, defined as the
+closed form `exp(m_T + v_T / 2)`; `schwartzFuturesPrice_eq_integral` proves it is the mean
+`E[S_T]` of the terminal spot (for `κ > 0`, the log spot in its Wiener representation). -/
 noncomputable def schwartzFuturesPrice (x₀ θ κ σ T : ℝ) : ℝ :=
   Real.exp (vasicekSDEMean x₀ θ κ T + vasicekSDEVariance σ κ T / 2)
 
@@ -62,9 +74,9 @@ variable {Ω : Type*} {mΩ : MeasurableSpace Ω}
 
 /-- **Schwartz futures price = expected terminal spot.** With the log spot
 carried in its Wiener representation `ln S_T = m_T + σ ∫₀ᵀ e^{−κ(T−s)} dB_s`
-(the OU solution representation, as in `mf-vasicek-sde-terminal-gaussian` —
-the modelling bridge from the SDE is cited, not proven here), `E[S_T] =
-schwartzFuturesPrice`. -/
+(the OU solution representation of `vasicekShortRate_hasLaw_gaussian` — the
+modelling bridge from the SDE is cited, not proven here) and `κ > 0`, `E[S_T] =
+schwartzFuturesPrice`, the expectation taken under the given probability measure `μ`. -/
 theorem schwartzFuturesPrice_eq_integral (hB : IsPreBrownianReal B μ)
     (x₀ θ σ : ℝ) {κ : ℝ} (hκ : 0 < κ) (T : ℝ≥0) :
     ∫ ω, Real.exp (vasicekSDEMean x₀ θ κ (T : ℝ)
@@ -76,18 +88,13 @@ theorem schwartzFuturesPrice_eq_integral (hB : IsPreBrownianReal B μ)
 
 /-- **Long-maturity flattening**: as `T → ∞` the Schwartz futures price tends
 to `exp(θ + σ² / (4κ))`, independent of the initial spot. -/
-theorem schwartzFuturesPrice_tendsto (x₀ θ σ : ℝ) {κ : ℝ} (hκ : 0 < κ) :
+theorem tendsto_schwartzFuturesPrice_atTop (x₀ θ σ : ℝ) {κ : ℝ} (hκ : 0 < κ) :
     Tendsto (schwartzFuturesPrice x₀ θ κ σ) atTop
       (𝓝 (Real.exp (θ + σ ^ 2 / (4 * κ)))) := by
   have hm : Tendsto (fun t ↦ vasicekSDEMean x₀ θ κ t) atTop (𝓝 θ) :=
     (vasicekDeterministic_tendsto_mean x₀ θ κ hκ).congr fun t ↦ by
       unfold vasicekDeterministic vasicekSDEMean; ring
-  have he : Tendsto (fun t : ℝ ↦ Real.exp (-(2 * κ * t))) atTop (𝓝 0) :=
-    Real.tendsto_exp_neg_atTop_nhds_zero.comp
-      (Tendsto.const_mul_atTop (by positivity) tendsto_id)
-  have hv : Tendsto (fun t ↦ vasicekSDEVariance σ κ t) atTop (𝓝 (σ ^ 2 / (2 * κ))) := by
-    unfold vasicekSDEVariance
-    simpa using ((he.const_sub 1).const_mul (σ ^ 2)).div_const (2 * κ)
+  have hv := tendsto_vasicekSDEVariance_atTop σ hκ
   have hlim : θ + σ ^ 2 / (2 * κ) / 2 = θ + σ ^ 2 / (4 * κ) := by ring
   rw [← hlim]
   exact Real.continuous_exp.tendsto _ |>.comp (hm.add (hv.div_const 2))

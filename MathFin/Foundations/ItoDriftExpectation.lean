@@ -30,12 +30,14 @@ process `X_t = X₀ + b·t + σ·B_t`:
   `f'`, `f''`, `f'''` bounded, the exponential-growth hypotheses of `ito_formula_itoProcess`
   hold at `λ = 0`.
 
-An adapted-coefficient analogue, `itoDrift_expectation_identity_adapted`
-(`ItoFormulaAdaptedDrift`), assumes rather than constructs a `natFiltration`-adapted version
-`M` of the Itô integral of `δ` with every path continuous; it is not used to derive the
-constant-coefficient case here. For the process the library constructs, the pathwise formula
-for adapted coefficients is `ItoFormulaAdapted.ito_formula_adapted`; its expectation form holds
-unconditionally as `itoDrift_expectation_identity_adapted_uncond` (`ItoFormulaAdaptedDriftUncond`).
+The adapted-coefficient case is proved twice elsewhere, and neither proof is used here.
+`ItoDriftConditional.itoDrift_expectation_identity_adapted` (`ItoFormulaAdaptedDrift`)
+uses the discrete Itô formula and takes as hypotheses a `natFiltration`-adapted version `M` of
+the Itô integral of `δ` and an almost surely path-continuous `X = c + ∫ β + M`.
+`itoDrift_expectation_identity_adaptedItoProcess` (`ItoFormulaAdaptedDriftConstructed`) takes
+the expectation of the pathwise formula `ItoFormulaAdapted.ito_formula_adapted` for the process
+the library constructs, with no hypothesized `M`; that module also shows the constructed process
+meets the hypotheses of the first proof when every path of `B` is continuous.
 -/
 
 @[expose] public section
@@ -169,7 +171,8 @@ theorem expectation_pathIntegral_eq {w : ℝ≥0 → Ω → ℝ}
   exact (tendsto_nhds_unique hdet' hdct).symm
 
 /-- **The integrated Itô–drift identity, constant-coefficient case.** For the
-constant-coefficient Itô process `X_t = X₀ + b·t + σ·B_t` and `f` three times differentiable
+constant-coefficient Itô process `X_t = X₀ + b·t + σ·B_t`, with `B` a pre-Brownian motion with
+measurable sections and every path continuous (`hBcont`), and `f` three times differentiable
 with `f'`, `f''`, `f'''` bounded,
 
   `𝔼[f(X_T)] = 𝔼[f(X₀ + b·0 + σ·B₀)] + ∫₀ᵀ 𝔼[f'(X_s)·b + ½·f''(X_s)·σ²] ds`.

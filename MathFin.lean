@@ -27,13 +27,16 @@
   * `Actuarial/`     — net premium, Gompertz force of mortality.
   * `Execution/`     — Market microstructure and execution: Glosten-Milgrom
                        adverse-selection spread, Roll (1984) bid-ask bounce
-                       spread estimator.
+                       autocovariance and spread inversion.
   * `DeFi/`          — Decentralized-finance market microstructure:
                        constant-product AMMs (Uniswap v2-style), swap
                        output, invariant preservation, internal price;
                        Uniswap v2/v3 mechanics (impermanent loss, TWAP,
-                       fee invariant, virtual reserves); Aave/Compound/Dai
-                       lending-protocol mechanics.
+                       fee invariant, v3 real-reserves curve);
+                       Aave/Compound/Dai lending-protocol mechanics.
+  * `Commodities/`   — own rate of interest (Fisher/Sraffa), theory of
+                       storage (convenience yield, kink point), AR(1)–OU
+                       calibration.
 -/
 
 -- Foundations
@@ -54,7 +57,8 @@ import MathFin.Foundations.PoissonInterarrival
 -- Poisson probability generating function E[x^N] = e^{r(x−1)} (absent from
 -- Mathlib); the engine behind Merton-mixture compensation identities
 import MathFin.Foundations.PoissonPgf
--- CreditRisk+ sector pgf: Poisson default count mixed over a Gamma sector factor
+-- CreditRisk+ sector pgf: Poisson default count mixed over a Gamma sector factor, as an
+-- iterated integral
 import MathFin.Foundations.GammaPoissonMixturePgf
 -- The freezing lemma: E[g(X, Y)] = ∫ x, E[g(x, Y)] d(law X) for independent X, Y
 import MathFin.Foundations.IndepFreezing
@@ -78,7 +82,7 @@ import MathFin.Foundations.GaussianCDFDeriv
 -- The Esscher transform of a law on ℝ (Mathlib's `Measure.tilted`): tilted moments, a law with
 -- every exponential moment is fixed by its MGF, and the Gaussian tilt N(m, v) ↦ N(m + θv, v)
 import MathFin.Foundations.Esscher
-import MathFin.Foundations.GaussianGirsanov
+import MathFin.Bridges.GaussianGirsanov
 import MathFin.Foundations.FeynmanKacHeatEquation
 import MathFin.Foundations.BrownianMartingale
 -- Continuous-time first FTAP: discounted GBM price is a Q-martingale (Wald exponential)
@@ -138,15 +142,15 @@ import MathFin.Foundations.AlmgrenChriss
 import MathFin.Foundations.DerivOfDeriv
 import MathFin.Foundations.MarketMakingRiccati
 import MathFin.Foundations.MatrixMarketMakingRiccati
-import MathFin.Foundations.ConvexPricingFunctional
+import MathFin.Bridges.ConvexPricingFunctional
 import MathFin.Foundations.ConvexSeparation
 -- Phase 1 (convex-duality unification): cone-separation root generalizing
 -- ConvexSeparation from a subspace (two-sided `= 0`) to a closed convex cone (`≤ 0`)
 import MathFin.Foundations.ConvexDuality
 -- Phase 30 (Bridge A): BSCallHyp / BachelierHyp from IsPreBrownian
-import MathFin.Foundations.BSCallHypFromBrownian
+import MathFin.Bridges.BSCallHypFromBrownian
 -- Phase 31: Pricing entry points from IsPreBrownian (composite corollaries)
-import MathFin.Foundations.PricingFromBrownian
+import MathFin.Bridges.PricingFromBrownian
 -- Phase 32: Variance-swap log-price squared-increment from BrownianQuadraticVariation
 import MathFin.Foundations.VarianceSwapFromQV
 -- Phase 33: Variance-swap equipartition sum from BrownianQuadraticVariation
@@ -268,14 +272,14 @@ import MathFin.Foundations.ItoDriftExpectation
 -- conditional on a hypothesized adapted, path-continuous version `M` of the Itô integral
 -- (the library does not construct one for general δ)
 import MathFin.Foundations.ItoFormulaAdaptedDrift
--- The unconditional companion: the same identity for the constructed process,
--- derived from ito_formula_adapted (centering + Fubini)
-import MathFin.Foundations.ItoFormulaAdaptedDriftUncond
+-- The companion with no hypothesized M (for B with continuous paths): the same identity for
+-- the constructed process, derived from ito_formula_adapted (centering + Fubini)
+import MathFin.Foundations.ItoFormulaAdaptedDriftConstructed
 -- Cross-horizon consistency of the CLM Itô integral: one pinned `M` (`hMeq`) represents
 -- the CLM integral at every horizon `τ ≤ T` (band-transfer kernel + freeze law)
 import MathFin.Foundations.ItoIntegralCrossHorizon
-import MathFin.Foundations.HullWhiteCalibration
-import MathFin.Foundations.MonteCarloPricer
+import MathFin.FixedIncome.HullWhiteCalibration
+import MathFin.BlackScholes.MonteCarloPricer
 -- Martingale representation, step 3: the Doléans exponential of a deterministic step
 -- integrand is an Itô integral (time locality of `∫·dB` + unbounded `𝓕_a`-scaling)
 import MathFin.Foundations.DoleansStepRepresentation
@@ -300,8 +304,8 @@ import MathFin.Foundations.ItoFormulaUnrestrictedLocMart
 import MathFin.Foundations.FTAPTwoState
 -- Phase 38: Constant-product AMM (adapted from Pusceddu-Bartoletti FMBC 2024)
 import MathFin.DeFi.ConstantProductAMM
--- DeFi/AMM group: Uniswap v2/v3 mechanics (impermanent loss, TWAP, fee invariant, v3 virtual reserves)
-import MathFin.DeFi.UniswapCurveMechanics
+-- DeFi/AMM group: Uniswap v2/v3 mechanics (impermanent loss, TWAP, fee invariant, v3 real reserves)
+import MathFin.DeFi.UniswapMechanics
 -- DeFi/lending group: Aave kinked-rate + health factor, Compound cToken exchange rate
 import MathFin.DeFi.Aave
 import MathFin.DeFi.Compound
@@ -312,16 +316,16 @@ import MathFin.Foundations.ItoLemma
 -- Time-dependent (2D) Itô formula + GBM-as-SDE-solution (genuine exp partials)
 import MathFin.Foundations.ItoLemma2D
 -- Phase 45: Variance swap log-payoff and QV-limit form equivalence
-import MathFin.Foundations.VarianceSwapEquivalence
+import MathFin.BlackScholes.VarianceSwapEquivalence
 -- Phase 53: Pricing kernel from two-state FTAP (state-prices composition)
-import MathFin.Foundations.PricingKernel
+import MathFin.Bridges.PricingKernel
 -- Shared change-of-measure helper: a positive normalised density gives an
 -- equivalent probability measure (consumed by the one-period FTAP files)
 import MathFin.Foundations.EquivMeasure
 -- Phase 42: Multi-state FTAP backward (hypothesis-form, forward direction proved)
 import MathFin.Foundations.FTAPMultiState
 import MathFin.Foundations.FTAPDiscrete
--- General-Ω one-period FTAP (Föllmer–Schied 1.55 / one-period DMW, scalar)
+-- General-Ω one-period FTAP (Föllmer–Schied §1.2 / one-period DMW, scalar)
 import MathFin.Foundations.FTAPOnePeriod
 -- General-Ω one-period FTAP, d assets (Esscher minimal-divergence EMM, full — finite-dim market)
 import MathFin.Foundations.FTAPOnePeriodVector
@@ -340,10 +344,9 @@ import MathFin.BlackScholes.DividendsGreeks
 import MathFin.BlackScholes.Forward
 import MathFin.BlackScholes.HigherGreeks
 import MathFin.BlackScholes.StrikeGreeks
--- The forward smile: Dupire's ratio on a tilted smile surface (eq 10.8)
+-- Local-vol skew of a tilted smile surface via Dupire's ratio; the rule of two
 import MathFin.BlackScholes.ForwardSmile
 import MathFin.BlackScholes.PutStrikeConvexity
-import MathFin.BlackScholes.StaticBounds
 import MathFin.BlackScholes.AsianInequality
 -- Geometric-average Asian: two-date log-driver is Gaussian with the covariance-sum variance
 import MathFin.BlackScholes.AsianGeometric
@@ -452,19 +455,15 @@ import MathFin.BlackScholes.SpotConvexity
 import MathFin.BlackScholes.PriceBounds
 import MathFin.BlackScholes.CallPriceFunction
 -- Phase 13 additions:
-import MathFin.BlackScholes.Quanto
 -- Quanto correction derived from a joint-Gaussian FX model (Girsanov-grounded)
 import MathFin.BlackScholes.QuantoGrounding
 import MathFin.BlackScholes.NewtonConvergence
-import MathFin.BlackScholes.NewtonRaphsonIV
-import MathFin.BlackScholes.LognormalCOV
 
 -- Futures
 import MathFin.Futures.Black76
 import MathFin.Futures.Black76Greeks
 import MathFin.Futures.SchwartzOneFactor
 -- Phase 13 additions:
-import MathFin.Futures.Swaption
 
 -- Binomial
 import MathFin.Binomial.Model
@@ -473,7 +472,6 @@ import MathFin.Binomial.CRRConvergence
 import MathFin.Binomial.DriftLimit
 import MathFin.Binomial.Bermudan
 import MathFin.Binomial.MartingaleRepresentation
-import MathFin.Binomial.AmericanCallNoDividend
 -- Phase 13 additions:
 import MathFin.Binomial.Girsanov
 import MathFin.Binomial.SecondFTAP
@@ -508,7 +506,7 @@ import MathFin.BlackScholes.GarmanNormalForm
 -- Basket option pricing via moment-matching to a single lognormal (approximation)
 import MathFin.BlackScholes.BasketMomentMatching
 import MathFin.BlackScholes.ExchangeOption
--- Exact two-asset closed forms consuming the bivariate normal CDF (Foundations/BivariateNormalCDF)
+-- Two-asset closed forms (Stulz rainbow, Heynen–Kat barrier) on the bivariate normal CDF
 import MathFin.BlackScholes.StulzTwoAssetRainbow
 import MathFin.BlackScholes.HeynenKatTwoAssetBarrier
 -- Margrabe BSCallHyp grounding from a joint two-GBM gaussian model (leap-3 closure)
@@ -532,8 +530,6 @@ import MathFin.FixedIncome.ConvexityImmunization
 import MathFin.FixedIncome.YieldCurve
 import MathFin.FixedIncome.Bootstrapping
 import MathFin.FixedIncome.Credit
--- Defaultable ZCB price under correlated Gaussian short rate and hazard rate
-import MathFin.FixedIncome.CorrelatedGaussianDefaultableBond
 -- First-to-default: basket intensity = Σ single-name intensities
 -- (bridges Foundations.ExpMin into the Credit vocabulary)
 import MathFin.FixedIncome.FirstToDefault
@@ -544,8 +540,6 @@ import MathFin.FixedIncome.TimingAdjustment
 import MathFin.FixedIncome.Vasicek
 -- Phase 13 additions:
 import MathFin.FixedIncome.KMVMerton
-import MathFin.FixedIncome.MeanReversionHalfLife
-import MathFin.FixedIncome.CDS
 -- Phase 21: first-principles duration-as-price-sensitivity
 import MathFin.FixedIncome.DurationSensitivity
 -- Phase 22: first-principles convexity-as-second-derivative
@@ -557,28 +551,40 @@ import MathFin.FixedIncome.CDSTimeVarying
 import MathFin.FixedIncome.Cox
 -- Default-time density of a deterministic hazard curve (law of τ as Lebesgue density)
 import MathFin.FixedIncome.DefaultDensity
--- CVA under exposure independent of default (Fubini reduction + Gaussian closed form)
+-- CVA under exposure independent of default (Fubini reduction; Gaussian expected exposure in
+-- closed form)
 import MathFin.FixedIncome.CVA
 -- Phase 41: Vasicek SDE closed-form (full SDE, mean + variance)
 import MathFin.FixedIncome.VasicekSDE
 -- OU generator on polynomials: the Hermite spectral layer of the OU/Vasicek family
-import MathFin.FixedIncome.OUSpectral
+import MathFin.Foundations.OUSpectral
 -- Itô→pricing bridge: Vasicek terminal law derived (Wiener integral is Gaussian)
 import MathFin.FixedIncome.VasicekSDEGaussian
 -- Vasicek zero-coupon bond price: the affine term structure (Gaussian Laplace transform)
 import MathFin.FixedIncome.VasicekBondPrice
--- Vasicek real-world vs. risk-neutral terminal law (constant market price of risk)
+-- Vasicek real-world vs. risk-neutral terminal mean; an Esscher tilt reproducing the
+-- risk-neutral terminal law
 import MathFin.FixedIncome.VasicekMarketPriceOfRisk
 -- CIR loadings: B solves the Riccati equation, A solves A' = −κθB
 import MathFin.FixedIncome.CIRRiccati
 -- The T-forward measure: the zero-coupon bond as numéraire (change-of-numéraire instance)
 import MathFin.FixedIncome.ForwardMeasure
--- Inflation is FX: the zero-coupon inflation swap and the YoY convexity (eqs 17.6, 17.7, 17.10)
+-- Inflation is FX: the zero-coupon inflation swap and the YoY convexity
 import MathFin.FixedIncome.Inflation
 -- ABCD instantaneous volatility: closed-form integrated variance over a window
 import MathFin.FixedIncome.ABCDVolatility
 -- GSR (Gaussian short rate): two-piece piecewise-constant-volatility bond price
 import MathFin.FixedIncome.GSRPiecewiseVol
+-- Clean/dirty price and accrued interest, on- and between-coupon dates
+import MathFin.FixedIncome.CleanPriceAccrued
+-- Bond forward price via cash-and-carry replication, no-arbitrage strike
+import MathFin.FixedIncome.BondForward
+-- FX forward via covered interest parity and the implied forward curve
+import MathFin.FixedIncome.FxForwardParity
+-- Bullet and equal-principal loan amortization recurrences
+import MathFin.FixedIncome.LoanAmortization
+-- Key-rate-duration partition-of-unity identity
+import MathFin.FixedIncome.KeyRateDuration
 
 -- Portfolio
 import MathFin.Portfolio.Markowitz
@@ -590,7 +596,6 @@ import MathFin.Portfolio.RiskParity
 import MathFin.Portfolio.BlackLitterman
 import MathFin.Portfolio.TangentPortfolio
 -- Phase 13 additions:
-import MathFin.Portfolio.TangentPortfolioN
 -- Phase 21: first-principles Sharpe-FOC and CAPM-equilibrium derivations
 import MathFin.Portfolio.SharpeFOCDerivation
 import MathFin.Portfolio.CAPMEquilibrium
@@ -610,7 +615,7 @@ import MathFin.Performance.DownsideMetrics
 import MathFin.Performance.Kelly
 import MathFin.Performance.KellyNumeraire
 import MathFin.Performance.FracDiffWeights
-import MathFin.Performance.AverageUniqueness
+import MathFin.Performance.LabelUniqueness
 import MathFin.Performance.BetSizeSigmoid
 import MathFin.Performance.PurgedCV
 
@@ -666,9 +671,9 @@ import MathFin.RiskMeasures.SACCRExposure
 -- Phase 1 (convex-duality unification): fundamental superhedging bound — every EMM prices a claim
 -- at most its super-replication cost (the pricing-side companion of the coherent-risk representation)
 import MathFin.Foundations.SuperhedgingDuality
--- LSV calibration: the leverage-posterior core (eq 11.1's form layer)
-import MathFin.Foundations.LSVLeverage
--- Estimation in practice: detection D-terms and realised-volatility bias (eqs 21.2-21.4)
+-- LSV calibration: the leverage-posterior core (L²·E[v | S = K] = σ_loc²)
+import MathFin.BlackScholes.LSVLeverage
+-- Estimation: Gaussian variance-ratio KL, realised-variance noise bias, square-root bias
 import MathFin.Foundations.Estimation
 
 -- Bridges (certified cross-domain unifications)
@@ -679,7 +684,6 @@ import MathFin.Bridges.SurvivalUnification
 import MathFin.Actuarial.Insurance
 import MathFin.Actuarial.Mortality
 -- Phase 13 additions:
-import MathFin.Actuarial.CompoundPoisson
 -- Compound-Poisson aggregate-loss MGF: iid-sum MGF composed with the Poisson pgf
 import MathFin.Actuarial.CompoundPoissonMGF
 -- Survival model (re-formalized from Yosuke Ito's AFP `Survival_Model`, BSD, cited)
@@ -768,30 +772,34 @@ import MathFin.BlackScholes.SVI.TailCondition
 -- Calendar-spread arbitrage (Gatheral–Jacquier Lemma 2.1) and its raw-SVI form
 import MathFin.BlackScholes.CalendarArbitrage
 
--- Counterparty-risk / XVA exposure measures: component/marginal VaR (Euler decomposition),
--- single-index covariance structure and its large-N limit, Gaussian exposure-profile
--- closed forms (EPE/ENE/PFE), collateralized exposure, and discrete DVA/FVA
+-- Component VaR (the Euler decomposition of portfolio VaR) and the single-index covariance
+-- structure with its large-N limit
 import MathFin.RiskMeasures.ComponentVaR
 import MathFin.Portfolio.SingleIndexModel
-import MathFin.RiskMeasures.GaussianExposureProfile
-import MathFin.RiskMeasures.CollateralizedExposure
-import MathFin.FixedIncome.DVA
-import MathFin.FixedIncome.FVA
 
--- Clean/dirty price and accrued interest, on- and between-coupon dates
-import MathFin.FixedIncome.CleanPriceAccrued
--- Bond forward price via cash-and-carry replication, no-arbitrage strike
-import MathFin.FixedIncome.BondForward
--- FX forward via covered interest parity and the implied forward curve
-import MathFin.FixedIncome.FxForwardParity
--- Bullet and equal-principal loan amortization recurrences
-import MathFin.FixedIncome.LoanAmortization
--- Key-rate-duration partition-of-unity identity
-import MathFin.FixedIncome.KeyRateDuration
-
--- Fisher/Sraffa own-rate-of-interest identity relating spot, forward, and own rates
+-- Fisher/Sraffa own rate: Sraffa's implied own rate from spot, forward and financing rate
 import MathFin.Commodities.FisherSraffaOwnRate
--- Theory of storage: convenience yield and the kink point in the storage-cost curve
+-- Theory of storage: convenience yield and the kink point of the storage price curve
 import MathFin.Commodities.TheoryOfStorage
 -- AR(1) <-> Ornstein-Uhlenbeck parameter inversion for commodity calibration
 import MathFin.Commodities.AR1OUCalibration
+import MathFin.Binomial.PathMeasure
+import MathFin.BlackScholes.JumpDiffusionThinning
+import MathFin.Bridges.ABCDBlack76
+import MathFin.Bridges.AmericanPutEuropeanBound
+import MathFin.Bridges.BellmanDoobDecomposition
+import MathFin.Bridges.ConstantProductLPLognormal
+import MathFin.Bridges.LiquidationAsStructuralDefault
+import MathFin.Bridges.OUHermiteVasicek
+import MathFin.Bridges.UniswapV3CoveredCallPrice
+import MathFin.Execution.GlostenMilgromCondExp
+import MathFin.FixedIncome.AffineTermStructurePDE
+import MathFin.FixedIncome.PeriodicCompounding
+import MathFin.FixedIncome.VasicekYieldNelsonSiegel
+import MathFin.Foundations.GaussianPairLinearLaw
+import MathFin.Foundations.GaussianPartialMoments
+import MathFin.Foundations.WienerIntegralExpMoment
+import MathFin.Foundations.WienerIntegralGirsanov
+import MathFin.RiskMeasures.CreditRiskPlus
+import MathFin.RiskMeasures.OneFactorCopula
+import MathFin.Bridges.LSVPosteriorConditionalExpectation

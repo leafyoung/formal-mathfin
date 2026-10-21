@@ -1,32 +1,45 @@
 /-
 Copyright (c) 2026 Yang Ye. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yang Ye
+Authors: Yang Ye, Raphael Coelho
 -/
 module
 
 public import Mathlib
+public import MathFin.Foundations.NoArbitrageDerivations
 
 /-!
 # Theory of storage: convenience yield and the canonical-storage price kink
 
-The **theory of storage** (Working 1949, Kaldor) models the commodity spot
+The **theory of storage** (Kaldor 1939, Working 1949) models the commodity spot
 price as a kinked function of "availability" `A` (current stock plus expected
-supply). Above the kink, the price tracks the inverse demand-for-storage
-curve `f⁻¹(A)` (price falls as availability rises); below it — once price
-would fall to the point storage is no longer attractive — the market sits at
-the investment-regime price floor `Sbar = E[S_{t+1}] − C`:
+supply). For availability below the kink point `A*` (scarcity) the price tracks
+the inverse demand-for-storage curve `f⁻¹(A)`, which falls as availability
+rises; at and above `A*` storage is profitable and the market sits at the
+investment-regime price floor `Sbar = E[S_{t+1}] − C`:
 
   `S(A) = max(Sbar, f⁻¹(A))`                         (canonical-storage price)
   `Y(A) = max(f⁻¹(A) − Sbar, 0)`                      (convenience yield)
 
-The convenience yield is positive exactly where scarcity bites — below the
-kink (`A` small, so `f⁻¹(A)` would exceed `Sbar`) — and zero at and above it.
-The two are two faces of the same kink: `Y(A) = S(A) − Sbar` always. The
-cost-of-carry identity ties the futures price `F` to the spot price `S(A)`
-through the finance/storage cost `C` net of the convenience-yield benefit:
+By definition the convenience yield is positive exactly where `f⁻¹(A) > Sbar`
+and zero elsewhere; for a decreasing `f⁻¹` that is where scarcity bites, below
+the kink. The definitions here take any `f⁻¹ : ℝ → ℝ`: no monotonicity of `f⁻¹`
+is assumed, and nothing is proved about `A` below or above `A*`. The two
+functions are two faces of the same kink: `Y(A) = S(A) − Sbar` always.
 
-  `F − S(A) = C − Y(A)`,  with `F = Sbar + C`
+The forward is derived, not posited, from the library's no-arbitrage forward
+(`forward_price_from_no_arbitrage`, `Foundations/NoArbitrageDerivations.lean`). In a
+finite-state market with state prices `q` and discount factor `DF = ∑ q`, suppose holding one
+unit of the stored commodity to the delivery date is priced at the spot `S₀`: it delivers
+the commodity `S_T`, the convenience yield `Y`, and costs the storage `C`, both `Y` and `C`
+deterministic and paid at delivery (`∑ q·(S_T − C + Y) = S₀`). Then the forward strike
+with zero value is `F = S₀/DF + C − Y` (`storageForward_from_no_arbitrage`). With zero rates
+(`DF = 1`), spot `S₀ = S(A)` and `Y = Y(A)`, this gives `F = Sbar + C` at every availability
+(`storageForward_at_availability`), and the cost-of-carry identity — the spot price `S(A)`
+plus the finance/storage cost `C` net of the convenience-yield benefit — is the kink
+identity rearranged:
+
+  `F − S(A) = C − Y(A)`
 
 (convenience yield *reduces* net carry cost — high-yield, near-backwardation
 markets have `Y(A)` large relative to `C`. This is the standard sign
@@ -36,10 +49,13 @@ i.e. from `C`).
 
 For an isoelastic demand-for-storage curve
 `f⁻¹(A) = p_ref · (a_ref / A) ^ ε` (flexibility `ε = −d ln p / d ln A`,
-reference availability `a_ref`, reference price `p_ref`), the kink point
-`A*` where `f⁻¹(A*) = Sbar` is
+reference availability `a_ref`, reference price `p_ref`), a kink point `A*`
+with `f⁻¹(A*) = Sbar` is
 
-  `A* = a_ref · (p_ref / Sbar) ^ {1/ε}`.
+  `A* = a_ref · (p_ref / Sbar) ^ {1/ε}`
+
+for `a_ref, p_ref, Sbar > 0` and `ε ≠ 0` (`kinkPoint_spec`); that it is the
+only crossing is not stated.
 
 ## Main results
 
@@ -47,9 +63,22 @@ reference availability `a_ref`, reference price `p_ref`), the kink point
   in the inverse demand-for-storage curve `f⁻¹ : ℝ → ℝ`.
 * `convenienceYield_eq_storageSpotPrice_sub` : `Y(A) = S(A) − Sbar`.
 * `carry_identity_at_availability` : `(Sbar + C) − S(A) = C − Y(A)`, the
-  cost-of-carry identity evaluated at the kink functions (`F := Sbar + C`).
+  cost-of-carry identity at the kink functions
+  (`convenienceYield_eq_storageSpotPrice_sub` rearranged).
+* `storageForward_from_no_arbitrage` : in a finite-state market whose stored commodity
+  is priced with storage cost `C` and convenience yield `Y` paid at delivery, the
+  zero-value forward strike is `F = S₀/DF + C − Y`.
+* `storageForward_at_availability` : with zero rates, spot `S(A)` and convenience
+  yield `Y(A)`, the zero-value forward strike is `Sbar + C` at every availability `A`.
 * `invDemandIsoelastic`, `kinkPoint`, `kinkPoint_spec` : the isoelastic
-  demand-for-storage curve and the kink point solving `f⁻¹(A*) = Sbar`.
+  demand-for-storage curve and a kink point solving `f⁻¹(A*) = Sbar`, for
+  `a_ref, p_ref, Sbar > 0` and `ε ≠ 0`.
+
+## References
+
+* N. Kaldor, "Speculation and economic stability", *Review of Economic Studies* 7 (1939), 1–27.
+* H. Working, "The theory of price of storage", *American Economic Review* 39 (1949),
+  1254–1262.
 -/
 
 @[expose] public section
@@ -65,8 +94,8 @@ noncomputable def storageSpotPrice (Sbar : ℝ) (invDemand : ℝ → ℝ) (A : �
   max Sbar (invDemand A)
 
 /-- **Convenience yield**: positive exactly where scarcity pushes the
-demand-for-storage price above the investment-regime floor, zero at and
-above it. -/
+demand-for-storage price above the investment-regime floor (`f⁻¹(A) > Sbar`),
+zero where it does not. -/
 noncomputable def convenienceYield (Sbar : ℝ) (invDemand : ℝ → ℝ) (A : ℝ) : ℝ :=
   max (invDemand A - Sbar) 0
 
@@ -79,15 +108,48 @@ theorem convenienceYield_eq_storageSpotPrice_sub (Sbar : ℝ) (invDemand : ℝ �
 
 /-! ### Cost-of-carry identity -/
 
-/-- **Carry identity at a given availability**: with the futures price set by
-cost of carry off the investment-regime floor (`F = Sbar + C`), the carry
-spread against the canonical-storage spot price is exactly `C − Y(A)` —
-convenience yield subtracts from the carry cost `C`, the standard
-theory-of-storage sign convention (convenience yield is a benefit to the
-holder of physical stock). -/
+/-- **Carry identity at a given availability**: at the forward `F = Sbar + C` (cost of
+carry off the investment-regime floor; derived from no-arbitrage in
+`storageForward_at_availability`), the carry spread against the canonical-storage spot
+price is exactly `C − Y(A)` — convenience yield subtracts from the carry cost `C`, the
+standard theory-of-storage sign convention (convenience yield is a benefit to the holder of
+physical stock). The identity is `convenienceYield_eq_storageSpotPrice_sub` rearranged. -/
 theorem carry_identity_at_availability (Sbar C : ℝ) (invDemand : ℝ → ℝ) (A : ℝ) :
     (Sbar + C) - storageSpotPrice Sbar invDemand A = C - convenienceYield Sbar invDemand A := by
   rw [convenienceYield_eq_storageSpotPrice_sub]; ring
+
+/-! ### The forward from no-arbitrage -/
+
+/-- **Cost of carry with storage cost and convenience yield, from no-arbitrage.** In a
+finite-state market with state prices `q`, discount factor `∑ q = DF ≠ 0`, terminal commodity
+prices `S`, and the stored commodity priced at the spot `S₀` as the claim on
+`S_T − C + Y` (the commodity, less the storage cost `C`, plus the convenience yield `Y`, both
+deterministic and paid at delivery), the forward with strike `F` has zero value exactly when
+`F = S₀/DF + C − Y`. The library's forward `forward_price_from_no_arbitrage` applied to the
+stored-commodity claim, shifted by the deterministic carry `Y − C`. -/
+theorem storageForward_from_no_arbitrage {ι : Type*} (s : Finset ι) (q S : ι → ℝ)
+    (DF S₀ C Y F : ℝ) (hDF : DF ≠ 0) (h_bond : ∑ i ∈ s, q i = DF)
+    (h_carry : ∑ i ∈ s, q i * (S i - C + Y) = S₀) :
+    (∑ i ∈ s, q i * (S i - F) = 0) ↔ F = S₀ / DF + C - Y := by
+  have hsum : ∑ i ∈ s, q i * (S i - F) = ∑ i ∈ s, q i * ((S i - C + Y) - (F - C + Y)) :=
+    Finset.sum_congr rfl fun i _ ↦ by ring
+  rw [hsum, forward_price_from_no_arbitrage s q (fun i ↦ S i - C + Y) DF S₀ (F - C + Y) hDF
+    h_bond h_carry]
+  constructor <;> intro h <;> linarith
+
+/-- **The forward does not see availability.** With zero rates (`∑ q = 1`), the spot at the
+canonical-storage price `S(A)` and the convenience yield `Y(A)` of the same kink, the
+zero-value forward strike is `Sbar + C` at every availability `A`: the convenience yield
+offsets exactly the scarcity premium of the spot over the floor. This derives the forward
+`F = Sbar + C` at which `carry_identity_at_availability` is stated. -/
+theorem storageForward_at_availability {ι : Type*} (s : Finset ι) (q S : ι → ℝ)
+    (Sbar C F : ℝ) (invDemand : ℝ → ℝ) (A : ℝ) (h_bond : ∑ i ∈ s, q i = 1)
+    (h_carry : ∑ i ∈ s, q i * (S i - C + convenienceYield Sbar invDemand A)
+      = storageSpotPrice Sbar invDemand A) :
+    (∑ i ∈ s, q i * (S i - F) = 0) ↔ F = Sbar + C := by
+  rw [storageForward_from_no_arbitrage s q S 1 _ C _ F one_ne_zero h_bond h_carry,
+    convenienceYield_eq_storageSpotPrice_sub, div_one]
+  constructor <;> intro h <;> linarith
 
 /-! ### Isoelastic demand for storage and its kink point -/
 
@@ -102,8 +164,9 @@ demand-for-storage curve meets the investment-regime floor `Sbar`. -/
 noncomputable def kinkPoint (a_ref p_ref Sbar ε : ℝ) : ℝ :=
   a_ref * (p_ref / Sbar) ^ (1 / ε)
 
-/-- **Kink-point equation**: `f⁻¹(A*) = Sbar`, i.e. `kinkPoint` really is where
-the isoelastic demand-for-storage curve crosses the floor. -/
+/-- **Kink-point equation**: `f⁻¹(A*) = Sbar`, i.e. the isoelastic
+demand-for-storage curve meets the floor at `kinkPoint` (uniqueness of the
+crossing is not stated). -/
 theorem kinkPoint_spec (a_ref p_ref Sbar ε : ℝ)
     (ha : 0 < a_ref) (hp : 0 < p_ref) (hS : 0 < Sbar) (hε : ε ≠ 0) :
     invDemandIsoelastic a_ref p_ref ε (kinkPoint a_ref p_ref Sbar ε) = Sbar := by

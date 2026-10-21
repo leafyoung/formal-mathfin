@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Yang Ye. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yang Ye
+Authors: Yang Ye, Raphael Coelho
 -/
 module
 
@@ -10,6 +10,7 @@ public import MathFin.Foundations.Bisection
 public import MathFin.FixedIncome.FRA
 public import MathFin.FixedIncome.InterestRateSwap
 public import MathFin.FixedIncome.ZCB
+public import MathFin.FixedIncome.YieldCurve
 
 /-!
 # Curve bootstrapping by bracketing search
@@ -33,10 +34,11 @@ The module layers:
   (`∀ x ∈ [lo, hi], f x < C ↔ x < σ`) is produced from an affine function with
   positive slope (`threshold_affine`).
 * **The affine bootstrap step** — `affineStep_err` / `affineStep_tendsto` /
-  `affineStep_value_err` / `affineStep_stepBudget`: bisection of an
-  increasing rearrangement `x ↦ b·x − a` at level `−c` converges to the root
-  `(a − c)/b`; the instrument reprices to within `b·(hi − lo)/2^{n+1}` of the
-  quote, and some `n ≤ ⌈log₂ (b·(hi−lo)/ε)⌉` steps achieve accuracy `ε`.
+  `affineStep_value_err` / `affineStep_stepBudget`: bisection, from a bracket
+  containing the root `(a − c)/b`, of an increasing rearrangement `x ↦ b·x − a`
+  at level `−c` converges to that root; the instrument reprices to within
+  `b·(hi − lo)/2^{n+1}` of the quote, and some `n ≤ ⌈log₂ (b·(hi−lo)/ε)⌉` steps
+  achieve accuracy `ε`.
 * **The FRA as an instrument** — with the earlier discount factor `p` fixed
   and the later one `x ≠ 0` bootstrapped, the FRA value is `p − (1 + δ·K)·x` —
   affine, covered when `1 + δ·K > 0`; strictly antitone, so the negated value is
@@ -47,11 +49,17 @@ The module layers:
 * **The payer swap as an instrument** — with the fixed schedule already
   bootstrapped (annuity `A` constant in the new factor `x`), the value is
   `(P0 − K·A) − x`: affine with slope `−1`, strictly antitone with **no**
-  positivity condition; at zero quote the root is exactly where the fixed
-  rate is par (`swapRoot_is_par`, consuming `payerSwapValue_eq_zero_iff`).
+  positivity condition; at zero quote the fixed rate is par at the root
+  (`swapRoot_is_par`, consuming `payerSwapValue_eq_zero_iff`).
   With one payment at the new maturity (annuity `A₀ + δ·x`), the value is
   `(P0 − K·A₀) − (1 + K·δ)·x` — covered under `1 + K·δ > 0`
   (`swapLastCouponThreshold`).
+* **The swap is a par coupon bond** — the zero-value last-coupon swap at fixed rate `K`
+  is the coupon-bond pricing equation `couponBondPricingEq` of
+  `FixedIncome/YieldCurve.lean` with coupon `K·δ` and face `1`
+  (`payerSwapValue_lastCoupon_eq_zero_iff_couponBond`), so the closed-form bootstrap
+  `bootstrap_solve` names the swap's root, and bisection on the swap recovers the
+  discount factor of the coupon bond (`swapBootstrap_recovers_couponBondFactor`).
 * **The induction** — `boot` builds the curve by structural recursion over
   the instrument index: step `i` bisects instrument `i`'s solving function on
   the prefix bootstrapped so far, so each step literally inherits the previous
@@ -67,7 +75,7 @@ The module layers:
   per-step bracket condition, under the instrument layer's standing
   conditions.
 * **Flat-curve capstone** — `fraBootstrap_flatCurve`: if the fixed rate
-  equals the flat-curve forward rate, bisection from any positive bracket
+  equals the flat-curve forward rate, bisection at zero quote from any positive bracket
   around the true later discount factor recovers it to within
   `(hi − lo)/2^{n+1}`.
 
@@ -100,7 +108,9 @@ sign, possibly zero, so no bracketing sign change is guaranteed), and joint
 solves for several new factors at once.
 
 Boundary: `MathFin/FixedIncome/YieldCurve.lean` owns the closed-form
-`bootstrap_solve*` names; this module owns the search-based bootstrap.
+`bootstrap_solve*` names; this module owns the search-based bootstrap, and the swap layer
+proves that bisection on the swap lands within `(hi − lo)/2^{n+1}` of the closed-form root, for a
+bracket containing it (`swapBootstrap_recovers_couponBondFactor`).
 
 ## Result
 
@@ -123,16 +133,19 @@ Public lemmas (all in `namespace MathFin.Bootstrapping`):
   `payerSwapValue_affine_lastCoupon`,
   `payerSwapValue_affine_lastCoupon_annuity`,
   `strictAnti_payerSwapValue_lastCoupon`, `swapLastCouponThreshold`,
-  `swapStep_lastCoupon_err` — the payer-swap layer;
+  `swapStep_lastCoupon_err`, `payerSwapValue_lastCoupon_eq_zero_iff_couponBond`,
+  `swapBootstrap_recovers_couponBondFactor` — the payer-swap layer and its agreement with
+  the closed-form coupon-bond bootstrap;
 * `boot_length`, `boot_succ_ne_nil`, `boot_step_err`, `boot_reprices_all` —
   the induction over instruments;
-* `fraChain_eq`, `fraChain_spot`, `boot_reprices_fraChain`, `swapChain_eq`,
-  `boot_reprices_swapChain` — the FRA and swap strips inside the induction;
+* `boot_reprices_fraChain`, `boot_reprices_swapChain` — the FRA and swap strips
+  inside the induction;
 * `fraBootstrap_flatCurve` — the flat-curve capstone.
 
-Supporting declarations (the threshold bridge `threshold_affine`; the
-slope-weighted residual identity `abs_affine_sub_eq`; and the unfolding
-lemma `boot_succ`) are `private`.
+Supporting declarations: the `@[simp]` unfolding equations `fraChain_cons` and
+`swapChain_cons`; and, `private`, the threshold bridge `threshold_affine`, the
+slope-weighted residual `abs_affine_sub_eq`, the coupon-sum identity
+`sum_const_mul_eq_annuity` and the unfolding lemma `boot_succ`.
 -/
 
 set_option autoImplicit false
@@ -258,7 +271,7 @@ theorem fraValue_affine_zcb (r δ K T1 T2 : ℝ) (hδ : δ ≠ 0) :
   fraValue_affine_of_newUnknown _ δ K _ hδ (zcb_pos r 0 T2).ne'
 
 /-- **FRA monotonicity** (the licensing fact for bracketing): in the new
-discount factor the FRA value is strictly antitone — affine with slope
+discount factor, on positive factors, the FRA value is strictly antitone — affine with slope
 `−(1 + δ·K)`, covered when `1 + δ·K > 0`. -/
 theorem strictAntiOn_fraValue (p δ K : ℝ) (hδ : δ ≠ 0) (hpos : 0 < 1 + δ * K) :
     StrictAntiOn (fun x : ℝ ↦ fraValue δ x (fraForwardRate p x δ) K) (Set.Ioi 0) := by
@@ -294,9 +307,9 @@ theorem fraStep_tendsto (p δ K c lo hi : ℝ) (hδ : δ ≠ 0) (hpos : 0 < 1 + 
       atTop (𝓝 ((p - c) / (1 + δ * K))) :=
   tendsto_bisectMid (fraThreshold p δ K c lo hi hδ hpos hlo) hσ
 
-/-- At the zero quote the FRA root makes the forward rate par: the bootstrapped
-factor `p/(1 + δ·K)` is exactly where the quoted fixed rate equals the simple
-forward rate. -/
+/-- At the zero quote the FRA root makes the forward rate par: at the bootstrapped
+factor `p/(1 + δ·K)` the simple forward rate equals the quoted fixed rate (one
+direction; the equivalence on the flat curve is `fraRoot_agrees_with_pin`). -/
 theorem fraRoot_parForward (p δ K : ℝ) (hδ : δ ≠ 0) (hp : p ≠ 0) :
     fraForwardRate p (p / (1 + δ * K)) δ = K := by
   unfold fraForwardRate
@@ -333,8 +346,8 @@ section Swap
 
 /-- **Swap, fixed schedule known.** With the annuity `A` already bootstrapped
 (every fixed payment sits at a maturity before the new one), the payer swap
-value in the new factor `x` is `(P0 − K·A) − x`: affine with slope `−1`,
-strictly decreasing with **no** positivity condition. -/
+value in the new factor `x` is `(P0 − K·A) − x`: affine with slope `−1`, hence
+strictly decreasing with **no** positivity condition (`strictAnti_payerSwapValue`). -/
 theorem payerSwapValue_affine_of_newUnknown (P0 K A x : ℝ) :
     payerSwapValue P0 x K A = (P0 - K * A) - 1 * x := by
   show P0 - x - K * A = (P0 - K * A) - 1 * x
@@ -372,9 +385,8 @@ theorem swapStep_tendsto (P0 K A c lo hi : ℝ) (hσ : P0 - K * A - c ∈ Set.Ic
       atTop (𝓝 (P0 - K * A - c)) :=
   tendsto_bisectMid (swapThreshold P0 K A c lo hi) hσ
 
-/-- The par-rate interpretation of the swap root: at quote zero the bootstrapped
-factor `P0 − K·A` is exactly where the fixed rate is par — consuming
-`payerSwapValue_eq_zero_iff`. -/
+/-- The par-rate interpretation of the swap root: at quote zero the fixed rate is par
+at the bootstrapped factor `P0 − K·A` — consuming `payerSwapValue_eq_zero_iff`. -/
 theorem swapRoot_is_par (P0 K A : ℝ) (hA : A ≠ 0) : parSwapRate P0 (P0 - K * A) A = K := by
   have h0 : payerSwapValue P0 (P0 - K * A) K A = 0 := by
     show P0 - (P0 - K * A) - K * A = 0
@@ -401,11 +413,9 @@ theorem payerSwapValue_affine_lastCoupon_annuity {ι : Type*} (P0 K δ x : ℝ) 
 the slope condition `1 + K·δ > 0`. -/
 theorem strictAnti_payerSwapValue_lastCoupon (P0 K A₀ δ : ℝ) (hpos : 0 < 1 + K * δ) :
     StrictAnti (fun x : ℝ ↦ payerSwapValue P0 x K (A₀ + δ * x)) := by
-  have h : ∀ z : ℝ, payerSwapValue P0 z K (A₀ + δ * z) = (P0 - K * A₀) - (1 + K * δ) * z :=
-    fun z ↦ payerSwapValue_affine_lastCoupon P0 K A₀ δ z
   intro x y hxy
   show payerSwapValue P0 y K (A₀ + δ * y) < payerSwapValue P0 x K (A₀ + δ * x)
-  rw [h y, h x]
+  rw [payerSwapValue_affine_lastCoupon, payerSwapValue_affine_lastCoupon]
   linarith [mul_lt_mul_of_pos_right hxy hpos]
 
 /-- Threshold of the last-coupon swap. -/
@@ -421,6 +431,44 @@ theorem swapStep_lastCoupon_err (P0 K A₀ δ c lo hi : ℝ) (hpos : 0 < 1 + K *
     |bisectMid (fun x : ℝ ↦ -(payerSwapValue P0 x K (A₀ + δ * x))) (-c) lo hi n
       - (P0 - K * A₀ - c) / (1 + K * δ)| ≤ (hi - lo) / 2 ^ (n + 1) :=
   abs_bisectMid_sub_le (swapLastCouponThreshold P0 K A₀ δ c lo hi hpos) hσ n
+
+/-- The coupons `K·δ` paid on the schedule `s`, discounted by `P`, are `K` times the annuity. -/
+private theorem sum_const_mul_eq_annuity {ι : Type*} (s : Finset ι) (P : ι → ℝ) (K δ : ℝ) :
+    ∑ i ∈ s, K * δ * P i = K * annuity δ P s := by
+  simp only [annuity, Finset.mul_sum, mul_assoc]
+
+/-- **A zero-value swap is a par coupon bond.** The last-coupon payer swap (floating leg
+`P0 − x`, one fixed payment of `K·δ` at each date of `s` and at the new factor `x`) has
+zero value exactly when the coupon bond paying `K·δ` at every date and face `1` at the last
+prices at `P0`: the pricing equation `couponBondPricingEq` of `FixedIncome/YieldCurve.lean`
+with coupon `K·δ` and face `1`. -/
+theorem payerSwapValue_lastCoupon_eq_zero_iff_couponBond {ι : Type*} (s : Finset ι)
+    (P : ι → ℝ) (P0 K δ x : ℝ) :
+    payerSwapValue P0 x K (annuity δ P s + δ * x) = 0 ↔
+      couponBondPricingEq s (fun _ ↦ K * δ) P P0 (K * δ) 1 x := by
+  simp only [payerSwapValue, couponBondPricingEq, sum_const_mul_eq_annuity]
+  constructor <;> intro h <;> linear_combination h
+
+/-- **Swap bootstrapping recovers the coupon-bond discount factor.** If the new factor `x`
+solves the par-coupon-bond pricing equation — coupon `K·δ` at every date of `s` and at the new
+one, face `1`, price `P0` — then bisection on the zero-quote last-coupon swap, from any bracket
+`[lo, hi]` containing `x`, lands within `(hi − lo)/2^{n+1}` of it (`1 + K·δ > 0`). The
+closed-form bootstrap `bootstrap_solve` identifies `x` with the swap's bisection root
+`(P0 − K·A₀)/(1 + K·δ)`. -/
+theorem swapBootstrap_recovers_couponBondFactor {ι : Type*} (s : Finset ι) (P : ι → ℝ)
+    (P0 K δ x lo hi : ℝ) (hpos : 0 < 1 + K * δ)
+    (hbond : couponBondPricingEq s (fun _ ↦ K * δ) P P0 (K * δ) 1 x)
+    (hx : x ∈ Set.Icc lo hi) (n : ℕ) :
+    |bisectMid (fun y : ℝ ↦ -(payerSwapValue P0 y K (annuity δ P s + δ * y))) 0 lo hi n - x|
+      ≤ (hi - lo) / 2 ^ (n + 1) := by
+  have hroot : x = (P0 - K * annuity δ P s - 0) / (1 + K * δ) := by
+    have h := bootstrap_solve s (fun _ ↦ K * δ) P P0 (K * δ) 1 x
+      (show (0 : ℝ) < K * δ + 1 by linarith).ne' hbond
+    simp only [sum_const_mul_eq_annuity] at h
+    rwa [sub_zero, add_comm 1 (K * δ)]
+  have h := swapStep_lastCoupon_err P0 K (annuity δ P s) δ 0 lo hi hpos
+    (by rw [← hroot]; exact hx) n
+  rwa [neg_zero, ← hroot] at h
 
 end Swap
 
@@ -548,15 +596,11 @@ noncomputable def fraChain (δ : ℝ) (K : ℕ → ℝ) : ℕ → List ℝ → �
 
 /-- The unfolding equation: on `x :: p` the strip instrument is the FRA value
 function of the instrument layer, the earlier factor read off the head of `p`
-(defaulting to the valuation-date factor `1` when `p` is empty) — matching
-`swapChain_eq`'s general shape on the fed-in list. -/
-theorem fraChain_eq (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (p : List ℝ) (i : ℕ) :
+(defaulting to the valuation-date factor `1` when `p` is empty, so on `[x]` it is
+the spot deposit) — matching `swapChain_cons`'s general shape on the fed-in list. -/
+@[simp]
+theorem fraChain_cons (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (p : List ℝ) (i : ℕ) :
     fraChain δ K i (x :: p) = fraValue δ x (fraForwardRate (p.head?.getD 1) x δ) (K i) := rfl
-
-/-- The anchor: on the empty prefix the strip instrument is the spot deposit,
-the FRA whose earlier discount factor is the valuation-date factor `1`. -/
-theorem fraChain_spot (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (i : ℕ) :
-    fraChain δ K i [x] = fraValue δ x (fraForwardRate 1 x δ) (K i) := rfl
 
 /-- **The FRA strip reprices inside the induction.** At every step `i`
 (step `0` is the spot deposit, anchored at the valuation-date factor `1`),
@@ -591,7 +635,8 @@ noncomputable def swapChain (δ : ℝ) (K : ℕ → ℝ) : ℕ → List ℝ → 
     | [] => 0
 
 /-- The unfolding equation of the swap strip instrument. -/
-theorem swapChain_eq (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (p : List ℝ) (i : ℕ) :
+@[simp]
+theorem swapChain_cons (δ : ℝ) (K : ℕ → ℝ) (x : ℝ) (p : List ℝ) (i : ℕ) :
     swapChain δ K i (x :: p) = payerSwapValue 1 x (K i) (δ * p.sum + δ * x) := rfl
 
 /-- **The swap strip reprices inside the induction.** At every step `i`, under
@@ -618,30 +663,26 @@ theorem boot_reprices_swapChain (δ : ℝ) (K c lo hi : ℕ → ℝ) (n i : ℕ)
 
 /-- **Flat-curve capstone.** If the fixed rate equals the flat-curve forward
 rate, the FRA's true later discount factor on the `zcb` curve *is* the root of
-the solving function (an algebraic identity), and bisection from any positive
-bracket around it recovers the factor to within `(hi − lo)/2^{n+1}`. -/
+the solving function at zero quote (an algebraic identity), and bisection at zero quote
+from any positive bracket around it recovers the factor to within `(hi − lo)/2^{n+1}`. -/
 theorem fraBootstrap_flatCurve (r δ K T1 T2 lo hi : ℝ) (hδ : δ ≠ 0)
     (hK : K = fraForwardRate (zcb r 0 T1) (zcb r 0 T2) δ)
     (hx : zcb r 0 T2 ∈ Set.Icc lo hi) (hlo : 0 < lo) (n : ℕ) :
     |bisectMid (fun x : ℝ ↦ -(fraValue δ x (fraForwardRate (zcb r 0 T1) x δ) K)) 0 lo hi n
       - zcb r 0 T2| ≤ (hi - lo) / 2 ^ (n + 1) := by
+  have h1 : δ * ((zcb r 0 T1 / zcb r 0 T2 - 1) / δ)
+      = zcb r 0 T1 / zcb r 0 T2 - 1 := by field_simp
   have hpos : 0 < 1 + δ * K := by
-    simp only [hK, fraForwardRate]
-    have h1 : δ * ((zcb r 0 T1 / zcb r 0 T2 - 1) / δ)
-        = zcb r 0 T1 / zcb r 0 T2 - 1 := by
-      field_simp
-    rw [h1]
+    simp only [hK, fraForwardRate, h1]
     linarith [div_pos (zcb_pos r 0 T1) (zcb_pos r 0 T2)]
   have hσeq : (zcb r 0 T1 - 0) / (1 + δ * K) = zcb r 0 T2 := by
     rw [hK, sub_zero]
     have hp : zcb r 0 T1 ≠ 0 := (zcb_pos r 0 T1).ne'
     have hx : zcb r 0 T2 ≠ 0 := (zcb_pos r 0 T2).ne'
-    have h1 : (1 : ℝ) + δ * ((zcb r 0 T1 / zcb r 0 T2 - 1) / δ)
-        = zcb r 0 T1 / zcb r 0 T2 := by
-      field_simp
-      ring
     unfold fraForwardRate
-    rw [h1, div_eq_iff (div_ne_zero hp hx)]
+    rw [show (1 : ℝ) + δ * ((zcb r 0 T1 / zcb r 0 T2 - 1) / δ)
+        = zcb r 0 T1 / zcb r 0 T2 from by rw [h1]; ring,
+      div_eq_iff (div_ne_zero hp hx)]
     field_simp
   have hthr : ∀ x ∈ Set.Icc lo hi,
       (fun x : ℝ ↦ -(fraValue δ x (fraForwardRate (zcb r 0 T1) x δ) K)) x < 0

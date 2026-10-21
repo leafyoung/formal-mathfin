@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Yang Ye. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yang Ye
+Authors: Yang Ye, Raphael Coelho
 -/
 module
 
@@ -15,14 +15,15 @@ public import MathFin.BlackScholes.SVI.BlackScholesBridge
 Gatheral and Jacquier, *Arbitrage-free SVI volatility surfaces* (Quantitative Finance 14(1),
 2014), §2.1, Lemma 2.1: an implied total-variance surface `w(k, t)` is free of calendar spread
 arbitrage iff `t ↦ w(k, t)` is non-decreasing for every log-moneyness `k`. The proof runs in two
-steps, both proved here.
+steps, both proved here with zero rates, for maturities `t > 0`.
 
 1. **Martingale step.** If the (forward) price `X_t` is a martingale, then for every level `L`
    the undiscounted call value `t ↦ E[(X_t − L)⁺]` is non-decreasing: by conditional Jensen,
    `(X_s − L)⁺ = (E[X_t | ℱ_s] − L)⁺ ≤ E[(X_t − L)⁺ | ℱ_s]` for `s ≤ t`.
-2. **Black–Scholes step.** With zero rates and unit spot normalisation the Black–Scholes call
-   depends on volatility and maturity only through the total variance `w = σ²T`, and it is
-   strictly increasing in `w` (positive vega, `bsV_strictMonoOn_sigma`). So call prices are
+2. **Black–Scholes step.** With zero rates the Black–Scholes call depends on volatility and
+   maturity only through the total variance `w = σ²T` (for `σ, T > 0`; `totalVarianceCall` is
+   the call at unit maturity and volatility `√w`), and for strike and spot `K, S > 0` it is
+   strictly increasing in `w > 0` (positive vega, `bsV_strictMonoOn_sigma`). So call prices are
    non-decreasing in maturity at every strike iff total variance is non-decreasing in maturity
    at every log-moneyness.
 
@@ -32,16 +33,20 @@ steps, both proved here.
 * `deriv_integral_posPart_sub_nonneg`: the maturity derivative of that call value is
   nonnegative (`∂_T C ≥ 0`, as a `deriv`).
 * `bsV_eq_totalVarianceCall`: the zero-rate Black–Scholes call is a function of `σ²T`.
-* `totalVarianceCall_strictMonoOn`: it is strictly increasing in total variance.
-* `calendar_free_iff`: call prices non-decreasing in maturity at every strike ⟺
-  `t ↦ w(k, t)` non-decreasing at every `k` (the price form of Lemma 2.1).
+* `strictMonoOn_totalVarianceCall`: it is strictly increasing in total variance.
+* `calendar_free_iff`: call prices non-decreasing in maturity on `t > 0` at every strike ⟺
+  `t ↦ w(k, t)` non-decreasing on `t > 0` at every `k` (the price form of Lemma 2.1).
 * `monotone_totalVariance_of_martingale`: a total-variance surface whose Black–Scholes prices
-  are the call values of a martingale is non-decreasing in maturity.
+  are the call values of a martingale is non-decreasing in maturity on `t > 0`.
 * `SVI.bsSmile_calendar_free_iff`: the same equivalence for a maturity-indexed family of raw
   SVI slices, on the SVI library's `bsSmile` price.
 
-The local-variance characterisation (crossed total-variance lines ⟺ negative local variance)
-is not formalised here.
+**Scope.** Rates and dividends are zero and the forward is the spot `S`. In the last three
+results the total variance is assumed positive on maturities `t > 0` and the monotonicity is on
+`t > 0` (`MonotoneOn … (Ioi 0)`); nothing is assumed at `t ≤ 0`, so surfaces with
+`w(k, t) → 0` as `t → 0⁺`, such as the flat `w = σ²t`, are covered. The local-variance
+characterisation (crossed total-variance lines ⟺ negative local variance) is not formalised
+here.
 -/
 
 @[expose] public section
@@ -94,7 +99,7 @@ parametrised by total variance `w = σ²T`. -/
 noncomputable def totalVarianceCall (K S w : ℝ) : ℝ := bsV K 0 (Real.sqrt w) S 1
 
 /-- With zero rates the Black–Scholes call depends on `σ` and `T` only through the total
-variance `σ²T`. -/
+variance `σ²T`, for `σ > 0` and `T > 0`. -/
 theorem bsV_eq_totalVarianceCall {K S σ T : ℝ} (hσ : 0 < σ) (hT : 0 < T) :
     bsV K 0 σ S T = totalVarianceCall K S (σ ^ 2 * T) := by
   have hs : Real.sqrt (σ ^ 2 * T) = σ * Real.sqrt T := by
@@ -107,58 +112,65 @@ theorem bsV_eq_totalVarianceCall {K S σ T : ℝ} (hσ : 0 < σ) (hT : 0 < T) :
   unfold totalVarianceCall bsV
   simp only [bsd2, hd1, hs, Real.sqrt_one, mul_one, zero_mul, neg_zero, Real.exp_zero]
 
-/-- The total-variance call is strictly increasing in total variance on `(0, ∞)`. -/
-theorem totalVarianceCall_strictMonoOn {K S : ℝ} (hK : 0 < K) (hS : 0 < S) :
+/-- The total-variance call is strictly increasing in total variance on `(0, ∞)`, for strike
+and spot `K, S > 0`. -/
+theorem strictMonoOn_totalVarianceCall {K S : ℝ} (hK : 0 < K) (hS : 0 < S) :
     StrictMonoOn (totalVarianceCall K S) (Ioi 0) := by
   intro a ha b hb hab
   exact bsV_strictMonoOn_sigma hK one_pos hS (Real.sqrt_pos.mpr ha) (Real.sqrt_pos.mpr hb)
     (Real.sqrt_lt_sqrt (le_of_lt ha) hab)
 
 /-- **Gatheral–Jacquier 2014, Lemma 2.1 (price form).** Let `w(k, t) > 0` be a total-variance
-surface over log-moneyness `k` and maturity `t`, priced with zero rates at forward `S > 0`:
-the call at strike `K` and maturity `t` is `totalVarianceCall K S (w (log (K / S)) t)`. Call
-prices are non-decreasing in maturity at every strike iff `t ↦ w(k, t)` is non-decreasing at
-every `k`. Maturity `t` ranges over all of `ℝ`; no `t > 0` restriction is imposed (the
-statement is honest but strictly more general than the economic setting, where only `t > 0`
-is meaningful). -/
-theorem calendar_free_iff {S : ℝ} (hS : 0 < S) (w : ℝ → ℝ → ℝ) (hw : ∀ k t, 0 < w k t) :
-    (∀ K, 0 < K → Monotone fun t ↦ totalVarianceCall K S (w (Real.log (K / S)) t)) ↔
-      ∀ k, Monotone (w k) := by
+surface over log-moneyness `k` and maturity `t > 0`, priced with zero rates at forward `S > 0`:
+the call at strike `K > 0` and maturity `t` is `totalVarianceCall K S (w (log (K / S)) t)`. Call
+prices are non-decreasing in maturity on `t > 0` at every strike iff `t ↦ w(k, t)` is
+non-decreasing on `t > 0` at every `k`. Nothing is assumed about `w` at `t ≤ 0`, so the flat
+surface `w = σ²t` is covered. -/
+theorem calendar_free_iff {S : ℝ} (hS : 0 < S) (w : ℝ → ℝ → ℝ)
+    (hw : ∀ k, ∀ t, 0 < t → 0 < w k t) :
+    (∀ K, 0 < K →
+        MonotoneOn (fun t ↦ totalVarianceCall K S (w (Real.log (K / S)) t)) (Ioi 0)) ↔
+      ∀ k, MonotoneOn (w k) (Ioi 0) := by
   constructor
-  · intro h k a b hab
+  · intro h k a ha b hb hab
     have hK : 0 < S * Real.exp k := mul_pos hS (Real.exp_pos k)
     have hk : Real.log (S * Real.exp k / S) = k := by
       rw [mul_div_cancel_left₀ _ hS.ne', Real.log_exp]
-    have := h _ hK hab
+    have := h _ hK ha hb hab
     simp only [hk] at this
-    exact ((totalVarianceCall_strictMonoOn hK hS).le_iff_le (hw k a) (hw k b)).mp this
-  · intro h K hK a b hab
-    exact ((totalVarianceCall_strictMonoOn hK hS).le_iff_le (hw _ a) (hw _ b)).mpr (h _ hab)
+    exact ((strictMonoOn_totalVarianceCall hK hS).le_iff_le (hw k a ha) (hw k b hb)).mp this
+  · intro h K hK a ha b hb hab
+    exact ((strictMonoOn_totalVarianceCall hK hS).le_iff_le (hw _ a ha) (hw _ b hb)).mpr
+      (h _ ha hb hab)
 
-/-- **Gatheral–Jacquier 2014, Lemma 2.1 (martingale direction).** If the zero-rate
-Black–Scholes prices of a positive total-variance surface `w` are the call values
-`∫ (X_t − K)⁺` of a real-indexed martingale `X`, at every strike `K > 0` and maturity `t`,
-then `t ↦ w(k, t)` is non-decreasing at every log-moneyness `k`. -/
+/-- **Gatheral–Jacquier 2014, Lemma 2.1 (martingale direction).** If, at every strike `K > 0`
+and maturity `t > 0`, the zero-rate Black–Scholes price of a total-variance surface `w`,
+positive on `t > 0`, is the call value `∫ (X_t − K)⁺` of a real-indexed martingale `X`, then
+`t ↦ w(k, t)` is non-decreasing on `t > 0` at every log-moneyness `k`. -/
 theorem monotone_totalVariance_of_martingale {Ω : Type*} {mΩ : MeasurableSpace Ω}
     {μ : Measure Ω} [IsFiniteMeasure μ] {ℱ : Filtration ℝ mΩ} {X : ℝ → Ω → ℝ}
-    (hX : Martingale X ℱ μ) {S : ℝ} (hS : 0 < S) (w : ℝ → ℝ → ℝ) (hw : ∀ k t, 0 < w k t)
-    (hprice : ∀ K, 0 < K → ∀ t,
+    (hX : Martingale X ℱ μ) {S : ℝ} (hS : 0 < S) (w : ℝ → ℝ → ℝ)
+    (hw : ∀ k, ∀ t, 0 < t → 0 < w k t)
+    (hprice : ∀ K, 0 < K → ∀ t, 0 < t →
       ∫ ω, (X t ω - K)⁺ ∂μ = totalVarianceCall K S (w (Real.log (K / S)) t)) :
-    ∀ k, Monotone (w k) :=
-  (calendar_free_iff hS w hw).mp fun K hK a b hab ↦ by
-    simpa only [hprice K hK] using integral_posPart_sub_mono_of_martingale hX K hab
+    ∀ k, MonotoneOn (w k) (Ioi 0) :=
+  (calendar_free_iff hS w hw).mp fun K hK a ha b hb hab ↦ by
+    simpa only [hprice K hK a ha, hprice K hK b hb] using
+      integral_posPart_sub_mono_of_martingale hX K hab
 
 namespace SVI
 
-/-- **No calendar arbitrage for a family of raw SVI slices.** For maturity-indexed raw SVI
-parameters `p t` with positive variance, the SVI-smiled Black–Scholes price `bsSmile` (spot,
-maturity and discount normalised to one) is non-decreasing in maturity at every strike iff the
-SVI total variance `t ↦ variance (p t) k` is non-decreasing at every log-moneyness `k`
-(Gatheral–Jacquier 2014, Lemma 2.1, specialised to the raw SVI slices of their §3.1). -/
-theorem bsSmile_calendar_free_iff (p : ℝ → Params) (hw : ∀ t k, 0 < variance (p t) k) :
-    (∀ K, 0 < K → Monotone fun t ↦ bsSmile (p t) K) ↔
-      ∀ k, Monotone fun t ↦ variance (p t) k := by
-  have := calendar_free_iff one_pos (fun k t ↦ variance (p t) k) fun k t ↦ hw t k
+/-- **No calendar arbitrage for a family of raw SVI slices.** For raw SVI parameters `p t`
+indexed by maturity `t > 0`, with positive variance, the SVI-smiled Black–Scholes price
+`bsSmile` (spot, maturity and discount normalised to one) is non-decreasing in maturity on
+`t > 0` at every strike iff the SVI total variance `t ↦ variance (p t) k` is non-decreasing on
+`t > 0` at every log-moneyness `k` (Gatheral–Jacquier 2014, Lemma 2.1, specialised to the raw
+SVI slices of their §3.1). -/
+theorem bsSmile_calendar_free_iff (p : ℝ → Params)
+    (hw : ∀ t, 0 < t → ∀ k, 0 < variance (p t) k) :
+    (∀ K, 0 < K → MonotoneOn (fun t ↦ bsSmile (p t) K) (Ioi 0)) ↔
+      ∀ k, MonotoneOn (fun t ↦ variance (p t) k) (Ioi 0) := by
+  have := calendar_free_iff one_pos (fun k t ↦ variance (p t) k) fun k t ht ↦ hw t ht k
   simpa only [div_one, totalVarianceCall, bsSmile, rootVariance] using this
 
 end SVI

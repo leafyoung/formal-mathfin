@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Yang Ye. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yang Ye
+Authors: Yang Ye, Raphael Coelho
 -/
 module
 
@@ -13,24 +13,37 @@ public import MathFin.FixedIncome.DefaultDensity
 /-!
 # CVA under independent exposure (no wrong-way risk)
 
-Hull, *Options, Futures and Other Derivatives* ch. 24, §24.2 (CVA) and Bagaria ch. 16
-(eq. 16.2): with exposure independent of the counterparty's default time,
+Hull, *Options, Futures, and Other Derivatives* (CVA, in its credit-risk chapter). With
+exposure independent of the counterparty's default time, CVA is the CDS protection-leg
+integral of Bagaria eq. 16.2 with the discount curve `P(0,·)` replaced by `D·EE`:
 
   `CVA = LGD · E[D(τ) · V_τ⁺ · 1{τ ≤ T}] = LGD · ∫₀ᵀ D(s) · EE(s) · λ(s) · Q(s) ds`,
 
 `EE(s) = E[V_s⁺]` the expected positive exposure.
 
 Independence uses the same two-factor product-space layout as `MathFin.Cox.cox_mixing_survival`
-(mathfin `FixedIncome/Cox.lean`), though not its mixing construction: the exposure lives on
+(`FixedIncome/Cox.lean`), though not its mixing construction: the exposure lives on
 `(Ω₁, ν)`, the default time on `(Ω₂, μ)`, and the pricing measure is `ν.prod μ`, so τ is
 independent of the exposure by the product measure itself, with no mixing against the first
 factor's randomness. The Fubini step reduces the claim to the kernel
 `MathFin.DefaultDensity.integral_indicator_Iic_eq` with discount curve `D · EE`.
 
 * `integral_exposure_eq` — the general reduction (joint integrability hypothesized).
-* `expectedExposure_gaussian` — `E[(m + σ√s·Z)⁺] = m·Φ(m/(σ√s)) + σ√s·φ(m/(σ√s))`,
-  from `bachelier_call_formula` with the strike shifted to `K = 1`, `S₀ = m + 1`.
-* `cva_gaussian` — headline: Gaussian exposure, bounded `D, m, σ`, CVA in closed form.
+* `expectedExposure_gaussian` — `E[(m + σ√s·Z)⁺] = m·Φ(m/(σ√s)) + σ√s·φ(m/(σ√s))` for
+  `σ, s > 0`, from `bachelier_call_formula` with the strike shifted to `K = 1`, `S₀ = m + 1`.
+* `cva_gaussian` — headline: Gaussian exposure, bounded `D, m, σ`, `σ > 0`: CVA as a
+  one-dimensional time integral whose integrand (the expected exposure) is in closed form.
+* `cva_one_eq_protectionLeg` — the CVA of a unit exposure discounted at a flat rate `r` is the CDS
+  protection leg `Cox.protectionLeg` (Bagaria eq. 16.2), for any default time whose CDF on
+  `[0, ∞)` is `1 − Q` (hypothesized, as above).
+* `protectionLeg_eq_integral_coxDefaultTime` — for the Cox default time constructed in
+  `FixedIncome/Cox.lean` (a unit-exponential clock inverted through `∫₀ᵗ h`), the protection leg is
+  the expectation `(1 − R)·E[e^{−rτ}·1{τ ≤ T}]`; here the CDF is derived, not hypothesized.
+
+## References
+
+* J. C. Hull, *Options, Futures, and Other Derivatives* (the credit-risk chapter: CVA).
+* S. Bagaria, *Notes on Fixed Income Derivative Pricing* (lecture notes), ch. 16.
 -/
 
 @[expose] public section
@@ -58,9 +71,10 @@ theorem measurable_expectedExposure [SFinite ν] {V : ℝ → Ω₁ → ℝ}
     (hV : Measurable (Function.uncurry V)) : Measurable (expectedExposure V ν) :=
   (hV.max measurable_const).stronglyMeasurable.integral_prod_right'.measurable
 
-/-- **No-WWR reduction** (Hull ch. 24; Bagaria eq. 16.2): exposure independent of a default
-time with deterministic continuous hazard `h ≥ 0` gives
-`E[1{τ ≤ T} D(τ) V_τ⁺] = ∫₀ᵀ D(s) · EE(s) · λ(s)Q(s) ds`. -/
+/-- **No-WWR reduction** (Hull's CVA; the protection-leg kernel of Bagaria eq. 16.2):
+exposure independent of a default time with deterministic continuous hazard `h ≥ 0` gives
+`E[1{τ ≤ T} D(τ) V_τ⁺] = ∫₀ᵀ D(s) · EE(s) · λ(s)Q(s) ds`, for measurable `D`, jointly
+measurable `V`, `T ≥ 0`, and the left integrand jointly integrable (hypothesis `hint`). -/
 theorem integral_exposure_eq [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
     {h : ℝ → ℝ} (hh : Continuous h) (hnn : ∀ s, 0 ≤ h s) {τ : Ω₂ → ℝ} (hτ : Measurable τ)
     (hcdf : ∀ a, 0 ≤ a → μ {ω | τ ω ≤ a} = 1 - ENNReal.ofReal (hazardSurvival h a))
@@ -90,10 +104,13 @@ theorem expectedExposure_gaussian [IsProbabilityMeasure ν] {Z : Ω₁ → ℝ}
   simpa only [add_right_comm a 1, add_sub_cancel_right] using this
 
 open ProbabilityTheory in
-/-- **CVA with Gaussian exposure, no wrong-way risk** (Hull ch. 24, §24.2;
-Bagaria eq. 16.2). Exposure `V_s = m(s) + σ(s)√s·Z`, `Z ~ N(0,1)` on the exposure factor,
+/-- **CVA with Gaussian exposure, no wrong-way risk** (Hull's CVA; the protection-leg kernel
+of Bagaria eq. 16.2). Exposure `V_s = m(s) + σ(s)√s·Z`, `Z ~ N(0,1)` on the exposure factor,
 independent (product measure) of a default time with continuous hazard `h ≥ 0`; `D`, `m`, `σ`
-measurable and bounded, `σ > 0`. Then
+measurable and bounded, `σ > 0`, `T ≥ 0`. By `integral_exposure_eq` a CVA under independence
+depends on `V` only through `EE(s)`, so only the marginal laws `V_s ~ N(m(s), σ(s)²s)` enter
+it and one driver `Z` for all `s` loses nothing for this value; no exposure dynamics are
+modelled. Then
 
   `CVA = LGD · ∫₀ᵀ D(s) · [m(s)Φ(d_s) + σ(s)√s·φ(d_s)] · λ(s)Q(s) ds`, `d_s = m(s)/(σ(s)√s)`. -/
 theorem cva_gaussian [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
@@ -156,5 +173,46 @@ theorem cva_gaussian [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
   rw [Set.uIoc_of_le hT] at hs
   simp only [expectedExposure]
   rw [expectedExposure_gaussian hZ (hσpos s) hs.1]
+
+/-- **The protection leg is the CVA of a unit exposure.** For a default time `τ` with continuous
+hazard `h ≥ 0` (CDF `1 − Q` on `[0, ∞)`, hypothesized), recovery `R`, flat rate `r` and `T ≥ 0`,
+the CVA of the constant exposure `V ≡ 1` discounted by `e^{−rs}` is
+`(1 − R)·E[e^{−rτ}·1{τ ≤ T}] = (1 − R)·∫₀ᵀ e^{−rs} h(s) Q(s) ds = Cox.protectionLeg R r h T`. -/
+theorem cva_one_eq_protectionLeg [IsProbabilityMeasure ν] [IsFiniteMeasure μ] {h : ℝ → ℝ}
+    (hh : Continuous h) (hnn : ∀ s, 0 ≤ h s) {τ : Ω₂ → ℝ} (hτ : AEMeasurable τ μ)
+    (hcdf : ∀ a, 0 ≤ a → μ {ω | τ ω ≤ a} = 1 - ENNReal.ofReal (hazardSurvival h a))
+    (R r : ℝ) {T : ℝ} (hT : 0 ≤ T) :
+    cva (1 - R) (fun s ↦ rexp (-(r * s))) (fun _ _ ↦ 1) τ T ν μ = Cox.protectionLeg R r h T := by
+  simp only [cva, max_eq_left (zero_le_one : (0 : ℝ) ≤ 1), mul_one]
+  rw [integral_fun_snd (f := fun ω ↦ (Set.Iic T).indicator (fun s ↦ rexp (-(r * s))) (τ ω)),
+    probReal_univ, one_smul,
+    integral_indicator_Iic_eq hh hnn hτ hcdf (by fun_prop) hT, Cox.protectionLeg, Cox.cdsLosses]
+  congr 1
+  refine intervalIntegral.integral_congr fun s _ ↦ ?_
+  simp only [defaultDensity]
+  ring
+
+/-- **The Cox protection leg is an expectation over the constructed default time.** For `h`
+continuous and positive with `∫₀ᵗ h → ∞`, `ξ` a unit-exponential clock and
+`τ = Cox.coxDefaultTime h ξ` (the clock inverted through `∫₀ᵗ h`), the CDS protection leg
+`(1 − R)·∫₀ᵀ e^{−rs} h(s) e^{−∫₀ˢ h} ds` (`Cox.protectionLeg`) equals
+`(1 − R)·E[e^{−rτ}·1{τ ≤ T}]` for `T ≥ 0`. The CDF of `τ` is `Cox.cox_cdf_timeVarying` and its
+measurability is `Cox.measurable_coxDefaultTime`. -/
+theorem protectionLeg_eq_integral_coxDefaultTime [IsFiniteMeasure μ] {h : ℝ → ℝ}
+    (hh : Continuous h) (hpos : ∀ s, 0 < h s)
+    (hdiv : Filter.Tendsto (cumHazard h) Filter.atTop Filter.atTop) {ξ : Ω₂ → ℝ}
+    (hξmeas : Measurable ξ) (hξlaw : μ.map ξ = ProbabilityTheory.expMeasure 1) (R r : ℝ) {T : ℝ}
+    (hT : 0 ≤ T) :
+    Cox.protectionLeg R r h T =
+      (1 - R) * ∫ ω, (Set.Iic T).indicator (fun s ↦ rexp (-(r * s)))
+        (Cox.coxDefaultTime h ξ ω) ∂μ := by
+  rw [integral_indicator_Iic_eq hh (fun s ↦ (hpos s).le)
+    (Cox.measurable_coxDefaultTime hh hpos hξmeas).aemeasurable
+    (fun _ ha ↦ Cox.cox_cdf_timeVarying hh hpos hdiv hξmeas hξlaw ha) (by fun_prop) hT,
+    Cox.protectionLeg, Cox.cdsLosses]
+  congr 1
+  refine intervalIntegral.integral_congr fun s _ ↦ ?_
+  simp only [defaultDensity]
+  ring
 
 end MathFin.CVA

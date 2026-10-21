@@ -40,4 +40,7 @@ docs/superpowers/
 
 # HF dataset build output (CI artifact, regenerated from benchmarks/)
 dist/
-.lake
+uv.lock
+
+# per-shard temp files of `ledger verify --exec`
+MathFin/.ledger-exec-check*.lean

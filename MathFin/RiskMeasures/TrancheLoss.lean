@@ -6,29 +6,33 @@ Authors: Yang Ye
 module
 
 public import Mathlib
-public import MathFin.Foundations.BivariateNormalCDF
 public import MathFin.RiskMeasures.VasicekIRB
+public import MathFin.Foundations.BivariateNormalCDF
 
 /-!
 # Tranche losses in the large homogeneous portfolio
 
 A CDO tranche with attachment `a` and detachment `d > a` absorbs the slice `[a, d]` of the
 portfolio loss fraction `L`. Its loss, as a fraction of the tranche notional, is
-`((L − a)⁺ − (L − d)⁺)/(d − a)` (`tranchePayoff`; Bagaria ch. 18, eq. 18.9; Hull ch. 25).
-So every tranche expected loss is a difference of two stop-loss expectations `E[(L − K)⁺]`.
+`((L − a)⁺ − (L − d)⁺)/(d − a)` (`tranchePayoff`; S. Bagaria, *Notes on Fixed Income
+Derivative Pricing* (lecture notes), ch. 18, eq. 18.9; Hull ch. 25).
+So every tranche expected loss is `(d − a)⁻¹` times a difference of two stop-loss expectations
+`E[(L − K)⁺]`. That decomposition is not stated for a general `L`; it is used only inside the
+proof of the LHP result `integral_tranchePayoff_oneFactorPD` below.
 
 In the **large homogeneous portfolio** (LHP) limit of the one-factor Gaussian threshold model,
 the loss fraction is the conditional default probability `p(F) = Φ((Φ⁻¹(π) − √ρ F)/√(1 − ρ))` of
 the standard normal systematic factor `F` (`tendsto_oneFactorLossFraction_ae` in
-`RiskMeasures/VasicekIRB.lean`). For it the stop-loss expectation has the closed form
+`RiskMeasures/VasicekIRB.lean`). For it, with `π, K ∈ (0, 1)` and `0 ≤ ρ < 1`, the stop-loss
+expectation has the closed form
 
   `E[(p(F) − K)⁺] = π − N₂(Φ⁻¹(π), Φ⁻¹(K); √(1 − ρ))`
 
-(`integral_posPart_oneFactorPD_sub`; Vasicek 2002, *Loan Portfolio Value*, the unnumbered
-stop-loss price — Hull's own tranche-pricing route, ch. 25 eqs. 25.9–25.11, is the discretized
-expected-tranche-principal recursion and never states this closed form), where `N₂(·, ·; r)`
-is the standard bivariate normal CDF
-with correlation `r` (`bivariateNormalCDF`). The proof writes `K = Φ(k)` and, with `ε` a
+(`integral_posPart_oneFactorPD_sub`; O. Vasicek, "Loan portfolio value", *Risk* 15(12) (2002),
+the unnumbered stop-loss price — Hull's own tranche-pricing route, ch. 25 eqs. 25.9–25.11, is the
+discretized expected-tranche-principal recursion and never states this closed form), where
+`N₂(·, ·; r)` is the standard bivariate normal CDF with correlation `r` (`bivariateNormalCDF`,
+`Foundations/BivariateNormalCDF.lean`). The proof writes `K = Φ(k)` and, with `ε` a
 standard normal independent of `F`, reads `(Φ(T) − Φ(k))⁺` as the conditional probability of
 `{k < ε ≤ T}` given `F`. Fubini on `N(0,1) ⊗ N(0,1)` turns the expectation into
 `P(√ρ F + √(1 − ρ) ε ≤ Φ⁻¹(π)) − P(√ρ F + √(1 − ρ) ε ≤ Φ⁻¹(π), ε ≤ k)`. The first term is `π`;
@@ -36,8 +40,8 @@ the second is `N₂` at correlation `√(1 − ρ)`, since `√(1 − (√(1 −
 
 ## Main results
 
-* `tranchePayoff`, `tranchePayoff_mem_Icc`, `monotone_tranchePayoff`: the tranche loss lies in
-  `[0, 1]` and is increasing in the portfolio loss.
+* `tranchePayoff`, `tranchePayoff_mem_Icc`, `monotone_tranchePayoff`: for `a < d` the tranche loss
+  lies in `[0, 1]` and is nondecreasing in the portfolio loss.
 * `integral_posPart_oneFactorPD_sub`: the LHP stop-loss closed form.
 * `integral_tranchePayoff_oneFactorPD`: the LHP tranche expected loss as a difference of two
   bivariate normal CDFs.
@@ -58,7 +62,7 @@ fraction is `L`: `((L − a)⁺ − (L − d)⁺)/(d − a)`. -/
 noncomputable def tranchePayoff (a d L : ℝ) : ℝ :=
   ((L - a)⁺ - (L - d)⁺) / (d - a)
 
-/-- The tranche loss lies in `[0, 1]`. -/
+/-- For `a < d`, the tranche loss lies in `[0, 1]`. -/
 theorem tranchePayoff_mem_Icc {a d : ℝ} (had : a < d) (L : ℝ) :
     tranchePayoff a d L ∈ Icc 0 1 := by
   have hda : 0 < d - a := sub_pos.2 had
@@ -67,7 +71,8 @@ theorem tranchePayoff_mem_Icc {a d : ℝ} (had : a < d) (L : ℝ) :
     rcases max_cases (L - a) 0 with h | h <;> rcases max_cases (L - d) 0 with h' | h' <;>
     linarith [h.1, h'.1, h.2, h'.2]
 
-/-- The tranche loss is increasing in the portfolio loss. -/
+/-- For `a < d`, the tranche loss is nondecreasing (`Monotone`) in the portfolio loss; it is
+constant outside `[a, d]`. -/
 theorem monotone_tranchePayoff {a d : ℝ} (had : a < d) : Monotone (tranchePayoff a d) := by
   intro L L' hL
   refine div_le_div_of_nonneg_right ?_ (sub_pos.2 had).le
@@ -76,26 +81,11 @@ theorem monotone_tranchePayoff {a d : ℝ} (had : a < d) : Monotone (tranchePayo
     rcases max_cases (L' - a) 0 with g | g <;> rcases max_cases (L' - d) 0 with g' | g' <;>
     linarith [h.1, h'.1, h.2, h'.2, g.1, g'.1, g.2, g'.2]
 
-/- `bivariateNormalCDF` (`N₂(a, b; r)`) is defined in `MathFin.Foundations.BivariateNormalCDF`;
-this file only consumes it. -/
-
 /-! ### The LHP stop-loss closed form -/
 
-/-- `(Φ(t) − Φ(k))⁺` is the standard normal probability of `(k, t]`. -/
-lemma posPart_Phi_sub_Phi (k t : ℝ) :
-    (Phi t - Phi k)⁺ = (gaussianReal 0 1).real (Ioc k t) := by
-  rcases le_total t k with h | h
-  · rw [Ioc_eq_empty (not_lt.2 h), measureReal_empty, posPart_eq_zero]
-    exact sub_nonpos.2 (strictMono_Phi.monotone h)
-  · rw [posPart_eq_self.2 (sub_nonneg.2 (strictMono_Phi.monotone h)), ← Iic_sdiff_Iic,
-      measureReal_sdiff (Iic_subset_Iic.2 h) measurableSet_Iic, ← cdf_eq_real, ← cdf_eq_real,
-      cdf_gaussianReal_zero_one]
-
-/-- **The LHP stop-loss closed form** (Vasicek 2002, *Loan Portfolio Value*, the unnumbered
-stop-loss price; the one-factor model itself is Hull ch. 25, and the tranche payoff is
-Bagaria ch. 18, eq. 18.9/§18.4.4 — Hull's own tranche-pricing route, eqs. 25.9–25.11, is the
-discretized expected-tranche-principal recursion and never states this `N₂` closed form): for
-a standard normal systematic factor, the large-pool loss fraction
+/-- **The LHP stop-loss closed form** (Vasicek 2002, the unnumbered stop-loss price; the
+one-factor model itself is Hull ch. 25): for a standard normal systematic factor, `π, K ∈ (0, 1)`
+and `0 ≤ ρ < 1`, the large-pool loss fraction
 `p(F) = Φ((Φ⁻¹(π) − √ρ F)/√(1 − ρ))` satisfies
 `E[(p(F) − K)⁺] = π − N₂(Φ⁻¹(π), Φ⁻¹(K); √(1 − ρ))`. -/
 theorem integral_posPart_oneFactorPD_sub {π ρ K : ℝ} (hπ : π ∈ Ioo 0 1) (hρ0 : 0 ≤ ρ)
@@ -138,7 +128,7 @@ theorem integral_posPart_oneFactorPD_sub {π ρ K : ℝ} (hπ : π ∈ Ioo 0 1) 
       hind hπ hρ0 hρ1.le
   have hN₂ : (μ.prod μ).real (A ∩ {p | p.2 ≤ k}) =
       bivariateNormalCDF (PhiInv π) k √(1 - ρ) := by
-    rw [bivariateNormalCDF, Real.sq_sqrt (sub_nonneg.2 hρ1.le), sub_sub_cancel]
+    rw [bivariateNormalCDF, stdNormalPair, Real.sq_sqrt (sub_nonneg.2 hρ1.le), sub_sub_cancel]
     congr 1
     ext p
     simp only [A, mem_inter_iff, mem_ofPred_eq]
@@ -147,7 +137,8 @@ theorem integral_posPart_oneFactorPD_sub {π ρ K : ℝ} (hπ : π ∈ Ioo 0 1) 
     measurable_const)), hdef, hN₂]
 
 /-- **The LHP tranche expected loss** for attachment `a` and detachment `d` with
-`0 < a < d < 1`: `E[tranchePayoff a d (p(F))]` is
+`0 < a < d < 1`, `π ∈ (0, 1)` and `0 ≤ ρ < 1`, and `F` standard normal:
+`E[tranchePayoff a d (p(F))]` is
 `(N₂(Φ⁻¹(π), Φ⁻¹(d); √(1 − ρ)) − N₂(Φ⁻¹(π), Φ⁻¹(a); √(1 − ρ)))/(d − a)`. -/
 theorem integral_tranchePayoff_oneFactorPD {π ρ a d : ℝ} (hπ : π ∈ Ioo 0 1) (hρ0 : 0 ≤ ρ)
     (hρ1 : ρ < 1) (ha : 0 < a) (had : a < d) (hd : d < 1) :
@@ -177,8 +168,10 @@ lemma continuous_tranchePayoff (a d : ℝ) : Continuous (tranchePayoff a d) := b
 /-- **The finite-pool tranche expected loss converges to the LHP closed form.** With `F` and the
 `εᵢ` standard normals, the `εᵢ` pairwise independent, the expected loss of the tranche `[a, d]`
 on the first `m` obligors of the one-factor Gaussian threshold model converges, as `m → ∞`, to
-`(N₂(Φ⁻¹(π), Φ⁻¹(d); √(1 − ρ)) − N₂(Φ⁻¹(π), Φ⁻¹(a); √(1 − ρ)))/(d − a)`. The proof is dominated
-convergence (the tranche loss lies in `[0, 1]`) along the almost-sure large-portfolio limit. -/
+`(N₂(Φ⁻¹(π), Φ⁻¹(d); √(1 − ρ)) − N₂(Φ⁻¹(π), Φ⁻¹(a); √(1 − ρ)))/(d − a)`, for `π ∈ (0, 1)`,
+`0 ≤ ρ < 1` and `0 < a < d < 1`. Independence of `F` from the `εᵢ` is not assumed. The proof is
+dominated convergence (the tranche loss lies in `[0, 1]`) along the almost-sure large-portfolio
+limit. -/
 theorem tendsto_integral_tranchePayoff_oneFactorLossFraction {Ω : Type*} {mΩ : MeasurableSpace Ω}
     {P : Measure Ω} [IsProbabilityMeasure P] {π ρ a d : ℝ} {F : Ω → ℝ} {ε : ℕ → Ω → ℝ}
     (hF : HasLaw F (gaussianReal 0 1) P) (hε : ∀ i, HasLaw (ε i) (gaussianReal 0 1) P)
