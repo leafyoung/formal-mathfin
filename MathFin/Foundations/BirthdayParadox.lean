@@ -19,6 +19,14 @@ This file does not use the Lean module system (`module` header): the file it cit
 `Archive/Wiedijk100Theorems/BirthdayProblem.lean`, predates the module system and cannot be
 `public import`ed from one. Its declarations below are plain top-level declarations
 (no `@[expose] public section` needed outside the module system).
+
+Consequently, no `module`-header file anywhere in this library (`Foundations/`, `Bridges/`,
+or any pricing section) can import this one: Lean rejects `import MathFin.Foundations.
+BirthdayParadox` from a `module` file with "cannot import non-`module` ... from `module`".
+This file can only be consumed by other non-module files — benchmark-corpus snippets and the
+aggregators (`AxiomAudit`, `Blueprint`, `Examples`) — never by a library bridge. Its exit from
+`tests/test_architecture.py`'s `STAGING` (see issue #3) is therefore a benchmark-corpus
+citation, not an import-graph bridge.
 -/
 
 namespace MathFin
