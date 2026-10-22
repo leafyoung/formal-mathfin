@@ -28,8 +28,8 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### Relative drawdown is scale invariant (2026-10-23)
 
-One entry added to `benchmarks/portfolio_and_performance.json` and one removed, both `full`;
-corpus stays 674 (639 `full`, 19 `library_wrapper`, 16 `reduced_core`).
+One entry added to `benchmarks/portfolio_and_performance.json` and one removed from
+`benchmarks/risk_measures.json`, both `full`; corpus stays 674 (639 `full`, 19 `library_wrapper`, 16 `reduced_core`).
 `mf-backtest-max-drawdown-bounded` and its module `RiskMeasures/BacktestStatistics.lean` are gone:
 its running maximum was Mathlib's `partialSups` under another name, and its Sharpe scale law
 restated `sharpeRatio_scale_invariant` on sample moments. Only its relative-drawdown definition
