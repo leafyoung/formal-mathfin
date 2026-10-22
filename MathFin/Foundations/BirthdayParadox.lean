@@ -24,9 +24,13 @@ Consequently, no `module`-header file anywhere in this library (`Foundations/`, 
 or any pricing section) can import this one: Lean rejects `import MathFin.Foundations.
 BirthdayParadox` from a `module` file with "cannot import non-`module` ... from `module`".
 This file can only be consumed by other non-module files — benchmark-corpus snippets and the
-aggregators (`AxiomAudit`, `Blueprint`, `Examples`) — never by a library bridge. Its exit from
-`tests/test_architecture.py`'s `STAGING` (see issue #3) is therefore a benchmark-corpus
-citation, not an import-graph bridge.
+aggregators (`AxiomAudit`, `Blueprint`, `Examples`) — never by a library bridge. A benchmark
+entry citing it (added 2026-10-22) satisfies `tests/test_architecture.py`'s
+`test_every_module_is_used`, but **not** `test_every_module_is_connected`: that test counts
+only import-graph edges, by its own design, and a corpus citation is not one. This file has no
+route to `test_every_module_is_connected` passing for real short of a change to that test
+itself, so it is expected to stay in `STAGING` (issue #3) indefinitely, unlike the library's
+other staged modules.
 -/
 
 namespace MathFin

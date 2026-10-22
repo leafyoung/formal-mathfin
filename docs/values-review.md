@@ -125,6 +125,100 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-22 — corpus 670, modules 632 — wiring the 12 staged modules into the corpus
+
+Scope: not the full eight-lens panel (a single-reviewer pass, the documented deviation from
+earlier sessions, not the three-agent protocol) — narrowly the growth since the last review: 12
+modules that `tests/test_architecture.py`'s 2026-10-21 connectivity gate had flagged as
+unreachable (no import edge, no corpus citation) after a merge of `origin/main` into
+`integration-244-family` brought them in from an earlier build session. They were admitted
+behind a `STAGING` marker (tracked at `leafyoung/formal-mathfin#3`) rather than fenced off, per
+the gate's own stated intent ("build the bridge … not a place to park a module that does not
+connect"). This session is the bridge: one benchmark-corpus entry per module, each citing the
+module's real headline theorem.
+
+### Upgrades executed
+
+- **12 corpus entries, 12 modules wired.** Grouped by theme into the three existing area files
+  that already cite modules in the same section: the SABR + three Haug barrier-option
+  transcriptions (`SABRImpliedVol`, `BinaryBarrierOption`, `PartialTimeBarrierOption`,
+  `SoftBarrierOption`) into `benchmarks/exotic_options.json`; the five no-arbitrage/amortization
+  building blocks (`BondForward`, `FxForwardParity`, `KeyRateDuration`, `LoanAmortization`,
+  `CleanPriceAccrued`) into `benchmarks/interest_rates.json`; the birthday-paradox citation and
+  the two backtest/risk-measure modules (`BirthdayParadox`, `BacktestStatistics`,
+  `StudentTValueAtRisk`) into `benchmarks/risk_measures.json`. Corpus 658 → 670.
+- **Each entry cites the module's actual proved theorem**, not a restatement: the in/out parity
+  checks for the three barrier engines, the ATM-vol-collapses-to-backbone identity for SABR, the
+  no-arbitrage forward-price characterization and the forward-forward-factor identity for the two
+  FX/bond modules, the partition-of-unity identity for key-rate duration, the equal-principal
+  closed form for amortization, the coupon-date clean-price identity, the bounded-max-drawdown
+  pair, the Student-t ES positivity result, and (thinly, matching the module's own scope) the
+  Mathlib `Theorems100` birthday-paradox citation. None of the twelve cites an `rfl`-class proof
+  directly (`test_full_entries_are_not_definitional_rfl` was checked against each by hand before
+  writing the snippet).
+- `MathFin/AxiomAuditGen.lean` and `formalization.yaml` regenerated from the new corpus; the
+  ledger seeded and re-verified for the 12 new entries. The corpus entries satisfy
+  `test_every_module_is_used` for all 12, but `test_every_module_is_connected` checks
+  import-graph edges only (by that test's own design — a corpus citation is not an edge), so
+  only the four modules that already had a real import edge to another library module
+  (`BinaryBarrierOption`, `PartialTimeBarrierOption`, `SoftBarrierOption` import a Foundations
+  module; `CleanPriceAccrued` imports `MacaulayModified`) are genuinely connected now and have
+  been removed from `STAGING`. The other eight — seven self-contained modules plus
+  `BirthdayParadox`, which structurally can never be imported by a `module`-header file (see its
+  own docstring) — stay staged pending a real Bridges/-style consumer; `BirthdayParadox`
+  specifically has no route to `test_every_module_is_connected` short of a change to that test
+  itself, and is expected to stay staged indefinitely.
+
+### The standing first pass: prose against statement
+
+Each of the 12 source files was read in full before writing its corpus entry (not just its
+docstring), and each new entry's `description` was checked word-for-word against the theorem
+statement it cites — the same discipline as the full panel's first pass, just not farmed out to
+independent reviewers this time. Two disclosures carried over deliberately rather than smoothed
+over: `BirthdayParadox`'s entry says "cited verbatim," not proved; `StudentTExpectedShortfall`'s
+docstring already disclosed it has no `HasLaw` bridge to an actual Student-t random variable, and
+the new entry's description does not claim one.
+
+### Lens gradients (abbreviated — single-reviewer pass)
+
+- **Coherence.** All 12 citations reuse existing library idiom (`Phi`, `bivariateNormalCDF_flip_snd`,
+  `Finset.sum_comm`, `Real.rpow`) rather than re-deriving anything; no thin wrappers were added
+  beyond what each module itself already was.
+- **Concept clarity.** Every entry's `formalization_scope` names what is *not* proved (the
+  barrier files: a self-consistency check, not a stochastic derivation; `BirthdayParadox`: no
+  monotonicity/minimality claim; `StudentTValueAtRisk`: no measure-theoretic VaR/ES bridge) —
+  carried straight from each module's own docstring, not invented at corpus-entry time.
+- Next (deferred to the full panel, not attempted here): re-run the three-agent eight-lens
+  protocol on the next natural panel occasion, now that the import graph is actually one graph
+  again; audit whether `BirthdayParadox`'s placement under `Foundations/` (a thin citation, no
+  finance content) should move once a cleaner home exists.
+
+### Ranked backlog
+
+1. Build a real Bridges/-style consumer (an import edge, not a corpus citation) for the seven
+   remaining self-contained staged modules (`SABRImpliedVol`, `BondForward`, `FxForwardParity`,
+   `KeyRateDuration`, `LoanAmortization`, `BacktestStatistics`, `StudentTValueAtRisk`), then remove
+   them from `STAGING` one at a time as each gets one. `BirthdayParadox` is excluded from this —
+   see below.
+2. `BirthdayParadox` cannot get an import edge (no `module`-header file can import a pre-module
+   file); either accept it stays in `STAGING` indefinitely, or revisit `test_architecture.py`
+   itself to let a corpus citation satisfy `test_every_module_is_connected` the way it already
+   satisfies `test_every_module_is_used` for a module with no possible importer — a decision for
+   whoever owns that test's design, not made unilaterally here.
+3. Run the full three-agent eight-lens panel at the next natural occasion — this session's pass
+   was intentionally narrow (the 12-module backlog only), not a substitute for it.
+4. Carried from the 2026-10-21 panel: items 1–10 of that review's backlog remain open and are not
+   restated here (see that entry below).
+
+### Evidence
+
+`lake build` green (9,375 jobs; only upstream `BrownianMotion`/`Challenge.lean` `sorry` warnings),
+`lake lint` clean. `AxiomAuditGen.lean` regenerated (784 guards) and `formalization.yaml`
+regenerated, both checked fresh. Ledger re-verified for the 12 new entries: 670 fresh, 0 stale, 0
+missing. `uv run --extra dev pytest tests/ -q` green, `test_architecture.py` passing for real:
+`STAGING` now holds 8 modules (down from 12), each for a documented structural reason, not as a
+parking spot.
+
 ## 2026-10-21 — corpus 657, modules 625 — the coherence pass: every module connected
 
 Scope: the whole library, read for coherence, mathematical and financial, after the #248–#284

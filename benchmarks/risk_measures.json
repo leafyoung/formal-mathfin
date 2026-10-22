@@ -545,6 +545,54 @@
         "formalization_status": "full",
         "formalization_scope": "Full formal proof. Re-export of MathFin.valueAtRisk_portfolio_gaussian_uncorrelated (MathFin/Bridges/ConcentrationVariance.lean): valueAtRisk_portfolio_gaussian (MathFin/Bridges/GaussianRiskMarkowitz.lean) with the variance identity portfolioVarN_diag_eq_herfindahl, the ρ = 0 case of portfolioVarN_equicorrelated_eq_herfindahl (MathFin/Bridges/EquicorrelationConcentration.lean). SCOPE: Gaussian factors, pairwise uncorrelated with a common variance; the equicorrelated case is in EquicorrelationConcentration for the variance only."
       }
+    },
+    {
+      "id": "mf-birthday-paradox-probability-exceeds-half",
+      "name": "Birthday Paradox: 23 People Make a Shared Birthday More Likely Than Not",
+      "domain": "mathematical_finance",
+      "description": "Among 23 people with birthdays drawn independently and uniformly from 365 days, the probability that all birthdays are distinct is below 1/2 — equivalently, the probability of at least one shared birthday exceeds 1/2. Cited verbatim from Mathlib's Theorems100 archive (Freek Wiedijk's 100-theorems list, Theorem 93); used in this library as the standard combinatorial-probability sanity check behind collision/coincidence arguments in risk and simulation code.",
+      "code": {
+        "lean": "import MathFin.Foundations.BirthdayParadox\n\nopen MathFin.BirthdayParadox MeasureTheory ProbabilityTheory\n\ntheorem birthday_paradox_probability_exceeds_half_thm :\n    ℙ ({f | f.Injective} : Set (Fin 23 → Fin 365)) < 1 / 2 :=\n  birthday_probability_of_match_exceeds_half\n"
+      },
+      "metadata": {
+        "chapter": 1,
+        "reference": "F. Wiedijk (ed.), Formalizing 100 Theorems, Theorem 93 (Birthday Problem); Mathlib Archive/Wiedijk100Theorems/BirthdayProblem.lean",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Thin citation of Mathlib's own Theorems100.birthday_measure; not a reproof. Lives in MathFin/Foundations/BirthdayParadox.lean, which predates the Lean module system and so is a plain (non-module) file. Axioms-clean (inherits Mathlib's Archive proof)."
+      }
+    },
+    {
+      "id": "mf-backtest-max-drawdown-bounded",
+      "name": "Max Drawdown of a Positive Equity Curve Lies in [0, 1]",
+      "domain": "mathematical_finance",
+      "description": "For a strictly positive equity curve E, the max drawdown (the largest running-maximum-relative decline 1 − Eₜ/max_{s≤t} Es over the whole curve) is nonnegative and at most 1 — the finite-sample backtest statistic always lies in the unit interval, matching its interpretation as a fraction of peak value lost.",
+      "code": {
+        "lean": "import MathFin.RiskMeasures.BacktestStatistics\n\nopen MathFin.Backtest\n\ntheorem backtest_max_drawdown_bounded_thm {n : ℕ} [NeZero n] {E : Fin n → ℝ}\n    (hE : ∀ t, 0 < E t) :\n    0 ≤ maxDrawdown E ∧ maxDrawdown E ≤ 1 :=\n  ⟨maxDrawdown_nonneg hE, maxDrawdown_le_one hE⟩\n"
+      },
+      "metadata": {
+        "chapter": 8,
+        "reference": "W. F. Bacon, Practical Portfolio Performance Measurement and Attribution, 2nd ed. (2008), Ch. 4 \"Risk\"",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (Finset.sup' bounds). Lives in MathFin/RiskMeasures/BacktestStatistics.lean. A finite-sample statistic of one realized equity-curve path, not a probabilistic drawdown law. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-student-t-expected-shortfall-pos",
+      "name": "Student-t Expected Shortfall Closed Form Is Positive",
+      "domain": "mathematical_finance",
+      "description": "For a centered, positively-scaled Student-t location-scale loss (μ = 0, σ > 0), the expected-shortfall closed form μ + σ·g_ν(x_α)/(1−α)·(ν+x_α²)/(ν−1) (McNeil-Frey-Embrechts, Example 2.15) is positive at any quantile x_α, for ν > 1 and α < 1.",
+      "code": {
+        "lean": "import MathFin.RiskMeasures.StudentTValueAtRisk\n\nopen MathFin\n\ntheorem student_t_expected_shortfall_pos_thm {ν σ xα α : ℝ}\n    (hν : 1 < ν) (hσ : 0 < σ) (hα : α < 1) :\n    0 < studentTExpectedShortfall ν 0 σ xα α :=\n  studentTExpectedShortfall_pos hν hσ hα\n"
+      },
+      "metadata": {
+        "chapter": 8,
+        "reference": "A. J. McNeil, R. Frey and P. Embrechts, Quantitative Risk Management, revised ed. (2015), Example 2.15",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (positivity + linarith). Lives in MathFin/RiskMeasures/StudentTValueAtRisk.lean. No HasLaw-level bridge to an actual Student-t-distributed random variable (Mathlib has no Student-t law at the pinned version); this is a sanity check on the stated closed form. Axioms-clean."
+      }
     }
   ]
 }

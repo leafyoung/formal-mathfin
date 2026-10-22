@@ -37,17 +37,27 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
                          "MathFin.Examples"})
 
 # module -> open issue whose work adds its consumer. Keep it short-lived.
+#
+# 2026-10-22: a benchmark-corpus entry was added for every one of the 12 modules below
+# (tracked at issue #3). That alone satisfies `test_every_module_is_used` (corpus citations
+# count there) but NOT `test_every_module_is_connected` (import-graph edges only, by design —
+# see that test's own code). Four of the twelve already had a real import edge to another
+# library module (BinaryBarrierOption/PartialTimeBarrierOption/SoftBarrierOption import a
+# Foundations module; CleanPriceAccrued imports MacaulayModified), so they are genuinely
+# connected now and have been removed from STAGING. The other eight are self-contained
+# (`public import Mathlib` only) and have no library module importing them; they stay staged
+# until a real Bridges/-style consumer exists. BirthdayParadox is a further special case: it
+# predates the Lean module system (see its own docstring), so no `module`-header file can ever
+# import it — only a non-module consumer (a corpus snippet, already added) can cite it; it has
+# no path to `test_every_module_is_connected` short of a change to that test's own design, and
+# is expected to stay staged indefinitely unless that changes.
 _ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
 STAGING: dict[str, str] = {
     "MathFin.BlackScholes.SABRImpliedVol": _ISSUE_3,
-    "MathFin.BlackScholes.BinaryBarrierOption": _ISSUE_3,
-    "MathFin.BlackScholes.PartialTimeBarrierOption": _ISSUE_3,
-    "MathFin.BlackScholes.SoftBarrierOption": _ISSUE_3,
     "MathFin.FixedIncome.BondForward": _ISSUE_3,
     "MathFin.FixedIncome.FxForwardParity": _ISSUE_3,
     "MathFin.FixedIncome.KeyRateDuration": _ISSUE_3,
     "MathFin.FixedIncome.LoanAmortization": _ISSUE_3,
-    "MathFin.FixedIncome.CleanPriceAccrued": _ISSUE_3,
     "MathFin.Foundations.BirthdayParadox": _ISSUE_3,
     "MathFin.RiskMeasures.BacktestStatistics": _ISSUE_3,
     "MathFin.RiskMeasures.StudentTValueAtRisk": _ISSUE_3,

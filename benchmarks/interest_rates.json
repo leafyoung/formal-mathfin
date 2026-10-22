@@ -842,6 +842,86 @@
         "formalization_status": "full",
         "formalization_scope": "Full formal proof. Re-export of MathFin.Inflation.Convexity.integral_exp_hwD_forwardMeasure (MathFin/FixedIncome/Inflation.lean). SCOPE: the normalisation E^{Q^S}[exp(D − b(r_S − f(0,S)))] = 1 with D = hwD b Var(r_S), under the calibrated Hull–White S-forward measure (HullWhite.forwardMeasure). The reconstitution formula for P(S,T), and the two-curve Jarrow–Yildirim dynamics behind the YoY convexity, are not derived. The short rate is its Wiener representation; the SDE solution and the time-order swap are cited, not proved."
       }
+    },
+    {
+      "id": "mf-bond-forward-no-arbitrage-strike",
+      "name": "Bond Forward Price Is the Unique No-Arbitrage Strike",
+      "domain": "mathematical_finance",
+      "description": "For a cash-and-carry-replicated forward contract on a coupon bond with discount factors Df and cashflows CF, a strike X prices the forward to zero time-0 value if and only if X equals the bond forward price (P₀ − Σ Df(t)·CF(t)) / Df(t_fe) — the no-arbitrage characterization of the forward price.",
+      "code": {
+        "lean": "import MathFin.FixedIncome.BondForward\n\nopen MathFin\n\ntheorem bond_forward_no_arbitrage_strike_thm {ι : Type*} (s : Finset ι) (Df CF : ι → ℝ)\n    (P0 Df_fe : ℝ) (hDf : Df_fe ≠ 0) (X : ℝ) :\n    forwardValue s Df CF P0 Df_fe X = 0 ↔ X = bondForwardPrice s Df CF P0 Df_fe :=\n  forwardValue_eq_zero_iff_eq_bondForwardPrice s Df CF P0 Df_fe hDf X\n"
+      },
+      "metadata": {
+        "chapter": 7,
+        "reference": "Cash-and-carry forward-price replication (standard fixed-income no-arbitrage argument)",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (field_simp/linarith). Lives in MathFin/FixedIncome/BondForward.lean. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-fx-forward-forward-factor",
+      "name": "FX Forward-Forward Factor Equals the CIP Exponential Over the Maturity Gap",
+      "domain": "mathematical_finance",
+      "description": "Under covered interest parity, the forward-forward factor F(0,T₂)/F(0,T₁) between two spot-dated CIP forwards equals exp((r_d − r_f)·(T₂ − T₁)), with the spot rate S canceling entirely — the forward curve's multiplicative self-consistency.",
+      "code": {
+        "lean": "import MathFin.FixedIncome.FxForwardParity\n\nopen MathFin\n\ntheorem fx_forward_forward_factor_thm {S : ℝ} (hS : S ≠ 0) (r_d r_f T1 T2 : ℝ) :\n    forwardForwardFactor S r_d r_f T1 T2 = Real.exp ((r_d - r_f) * (T2 - T1)) :=\n  forwardForwardFactor_eq_exp_diff hS r_d r_f T1 T2\n"
+      },
+      "metadata": {
+        "chapter": 7,
+        "reference": "Covered interest rate parity (standard FX no-arbitrage identity)",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (mul_div_mul_left + Real.exp_sub). Lives in MathFin/FixedIncome/FxForwardParity.lean. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-key-rate-duration-partition-of-unity",
+      "name": "Key-Rate Durations Sum to the Parallel Effective Duration",
+      "domain": "mathematical_finance",
+      "description": "If key-rate hat-function weights w form a partition of unity across every cashflow (the standard triangular key-rate basis), then summing the key-rate durations Σᵢ d(i)·w(n,i) over every curve node n recovers the parallel effective duration Σᵢ d(i) — a sum-interchange consequence of the partition-of-unity property.",
+      "code": {
+        "lean": "import MathFin.FixedIncome.KeyRateDuration\n\nopen MathFin\n\ntheorem key_rate_duration_partition_of_unity_thm {ι κ : Type*}\n    (s : Finset ι) (κs : Finset κ) (d : ι → ℝ) (w : κ → ι → ℝ)\n    (hpou : ∀ i ∈ s, ∑ n ∈ κs, w n i = 1) :\n    ∑ n ∈ κs, keyRateDuration s d w n = effectiveDuration s d :=\n  sum_keyRateDuration_eq_effectiveDuration s κs d w hpou\n"
+      },
+      "metadata": {
+        "chapter": 4,
+        "reference": "Key-rate duration decomposition (standard fixed-income risk-management construction)",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (Finset.sum_comm + partition-of-unity substitution). Lives in MathFin/FixedIncome/KeyRateDuration.lean. Stated abstractly over an arbitrary per-cashflow dollar-duration contribution d; does not itself derive d from bondPriceDisc. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-loan-amortization-equal-principal-closed-form",
+      "name": "Equal-Principal Loan Amortization Closed Form",
+      "domain": "mathematical_finance",
+      "description": "Under the equal-principal amortization schedule (a constant payment B₀/N every period), the outstanding balance after n periods is B₀·(1 − n/N), proved by induction on the shared balance recurrence Bₙ = Bₙ₋₁ − Pₙ.",
+      "code": {
+        "lean": "import MathFin.FixedIncome.LoanAmortization\n\nopen MathFin\n\ntheorem loan_amortization_equal_principal_closed_form_thm {B0 : ℝ} {N : ℕ}\n    (hN : N ≠ 0) (n : ℕ) :\n    balance B0 (equalPrincipalPayment B0 N) n = B0 * (1 - (n : ℝ) / N) :=\n  balance_equalPrincipal hN n\n"
+      },
+      "metadata": {
+        "chapter": 4,
+        "reference": "Standard equal-principal amortization schedule",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (induction on the balance recurrence). Lives in MathFin/FixedIncome/LoanAmortization.lean. The sibling bullet-schedule closed form (balance_bullet_lt/balance_bullet_eq) is proved in the same file but not separately cited here. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-clean-price-eq-dirty-on-coupon-date",
+      "name": "Clean Price Equals Dirty Price on a Coupon Date",
+      "domain": "mathematical_finance",
+      "description": "On a coupon date (elapsed fraction f = 0), the clean (quoted) price of a coupon bond equals the dirty (invoiced) price — equivalently, the ordinary discrete-compounding bond price bondPriceDisc — since there is no accrued interest left to subtract.",
+      "code": {
+        "lean": "import MathFin.FixedIncome.CleanPriceAccrued\n\nopen MathFin\n\ntheorem clean_price_eq_dirty_on_coupon_date_thm {ι : Type*}\n    (s : Finset ι) (t : ι → ℕ) (c : ι → ℝ) (y c1 : ℝ) :\n    cleanPrice s t c y 0 c1 = bondPriceDisc s t c y :=\n  cleanPrice_eq_dirty_on_coupon_date s t c y c1\n"
+      },
+      "metadata": {
+        "chapter": 4,
+        "reference": "Standard clean-price/dirty-price/accrued-interest convention for coupon bonds",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (rpow_zero + accrued-interest simplification). Lives in MathFin/FixedIncome/CleanPriceAccrued.lean, built on MathFin.bondPriceDisc (MacaulayModified.lean). Between-coupon-date behavior (f ≠ 0) is defined but not separately proved here. Axioms-clean."
+      }
     }
   ]
 }

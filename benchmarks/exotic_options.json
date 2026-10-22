@@ -368,6 +368,70 @@
         "formalization_status": "full",
         "formalization_scope": "Full formal proof. Re-export of MathFin.normalizedSpread_hasLaw_std (MathFin/BlackScholes/MargrabeGrounding.lean): Gaussianity of a linear image of the pair, variance 1 from margrabe_effective_variance. SCOPE: the law of the normalized spread only; Margrabe's price as the discounted expected exchange payoff is not part of this entry."
       }
+    },
+    {
+      "id": "mf-sabr-atm-vol-zero-tex",
+      "name": "SABR ATM Implied Vol at Zero Time-to-Exercise Is the Backbone",
+      "domain": "mathematical_finance",
+      "description": "Under the SABR lognormal implied-volatility asymptotic (Hagan-Kumar-Lesniewski-Woodward, eq. 2.18), the at-the-money implied vol at zero time-to-exercise collapses exactly to the backbone α/f^(1-β): the bracketed perturbation correction vanishes identically since it is multiplied by t_ex.",
+      "code": {
+        "lean": "import MathFin.BlackScholes.SABRImpliedVol\n\nopen MathFin\n\ntheorem sabr_atm_vol_zero_tex_thm (f α β ρ ν : ℝ) :\n    sabrATMVol f α β ρ ν 0 = sabrBackbone f α β :=\n  sabrATMVol_zero_tex f α β ρ ν\n"
+      },
+      "metadata": {
+        "chapter": 10,
+        "reference": "Hagan, Kumar, Lesniewski & Woodward, \"Managing Smile Risk,\" Wilmott Magazine, September 2002, eq. 2.18",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof. Lives in MathFin/BlackScholes/SABRImpliedVol.lean. Only the at-the-money (K=f) specialization is formalized, not the general eq. 2.17a-c smile; the general formula's omitted higher-order terms are not formalized at all. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-binary-barrier-down-in-add-down-out",
+      "name": "Binary Barrier Down-In Plus Down-Out Recovers the Vanilla Digital",
+      "domain": "mathematical_finance",
+      "description": "For QuantLib's AnalyticBinaryBarrierEngine down-barrier family (η = 1), the knock-in and knock-out values sum to the vanilla (barrier-free) cash-or-nothing digital value B₁, for every call/put choice and every strike-vs-barrier regime — an in-out parity cross-check on the 16-branch transcription.",
+      "code": {
+        "lean": "import MathFin.BlackScholes.BinaryBarrierOption\n\nopen MathFin\n\ntheorem binary_barrier_down_in_add_down_out_thm (S X H mu σ T : ℝ) (isCall xGeH : Bool) :\n    bboDownInAlpha S X H mu σ T isCall xGeH + bboDownOutAlpha S X H mu σ T isCall xGeH\n      = bboB1 S X mu σ T isCall :=\n  bboDownIn_add_DownOut S X H mu σ T isCall xGeH\n"
+      },
+      "metadata": {
+        "chapter": 10,
+        "reference": "E. G. Haug, The Complete Guide to Option Pricing Formulas, 2nd ed. (2007), \"Binary Barrier Options\"; QuantLib AnalyticBinaryBarrierEngine",
+        "difficulty": "introductory",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (case split + ring). Lives in MathFin/BlackScholes/BinaryBarrierOption.lean. A self-consistency check on the transcription of the 16-branch QuantLib switch, not a stochastic derivation of B1-B4 from first principles. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-partial-time-barrier-down-add-up",
+      "name": "Partial-Time Barrier: Down-Window Plus Up-Window Collapses the Bivariate CDFs",
+      "domain": "mathematical_finance",
+      "description": "For Haug's partial-time barrier option (start window, call), summing the down-window (η=1) and up-window (η=-1) closed forms collapses every bivariate normal CDF term to a single Φ, via the correlation identity N₂(a,b;ρ) + N₂(a,-b;-ρ) = Φ(a) applied to each of the four N₂ pairs.",
+      "code": {
+        "lean": "import MathFin.BlackScholes.PartialTimeBarrierOption\n\nopen MathFin\n\ntheorem partial_time_barrier_down_add_up_thm (S X H b r σ t1 T : ℝ)\n    (ht1 : 0 ≤ t1) (hT : t1 ≤ T) :\n    ptCA 1 S X H b r σ t1 T + ptCA (-1) S X H b r σ t1 T\n      = S * Real.exp ((b - r) * T) *\n          (Phi (ptD1 S X b σ T) - ptHSmu1 S H b σ * Phi (ptF1 S X H b σ T))\n        - X * Real.exp (-r * T) *\n            (Phi (ptD2 S X b σ T) - ptHSmu S H b σ * Phi (ptF2 S X H b σ T)) :=\n  ptCA_down_add_up S X H b r σ t1 T ht1 hT\n"
+      },
+      "metadata": {
+        "chapter": 10,
+        "reference": "E. G. Haug, The Complete Guide to Option Pricing Formulas, 2nd ed. (2007), \"Partial-Time Barrier Options\"; QuantLib AnalyticPartialTimeBarrierOptionEngine",
+        "difficulty": "intermediate",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (linear_combination from the bivariate-CDF correlation identity). Lives in MathFin/BlackScholes/PartialTimeBarrierOption.lean. A self-consistency check on the transcription's bivariate-CDF structure, not a stochastic re-derivation. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-soft-barrier-call-sub-put",
+      "name": "Soft Barrier Knock-In: Call Minus Put Cancels Every Normal CDF",
+      "domain": "mathematical_finance",
+      "description": "For Haug's soft-barrier option knock-in value w(η) = (term₁(η) − term₂(η))/(U−L), the call-minus-put combination w(1) − w(−1) collapses to a closed form with every Φ term gone, via the η-symmetry identity Φ(η·x) rewritten through Phi_neg — a cross-check that η is threaded consistently through the outer sign and all eight Φ arguments.",
+      "code": {
+        "lean": "import MathFin.BlackScholes.SoftBarrierOption\n\nopen MathFin\n\ntheorem soft_barrier_call_sub_put_thm (S X U L b r σ T : ℝ) :\n    softBarrierKnockIn 1 S X U L b r σ T - softBarrierKnockIn (-1) S X U L b r σ T\n      = (sbTerm1Coef S X b r σ T * (sbA1 S X U b σ - sbA2 S X L b σ)\n          - sbTerm2Coef S X b r σ T * (sbBB1 S X U b σ - sbBB2 S X L b σ)) / (U - L) :=\n  softBarrier_call_sub_put S X U L b r σ T\n"
+      },
+      "metadata": {
+        "chapter": 10,
+        "reference": "E. G. Haug, The Complete Guide to Option Pricing Formulas, 2nd ed. (2007), \"Soft Barrier Options\"; QuantLib AnalyticSoftBarrierEngine",
+        "difficulty": "intermediate",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof (algebraic helper lemma + linear_combination). Lives in MathFin/BlackScholes/SoftBarrierOption.lean. A self-consistency check on the eta-threading of the transcription, not a stochastic re-derivation. Axioms-clean."
+      }
     }
   ]
 }
