@@ -236,9 +236,9 @@ alignment:
       status: full 4 · wrapper 0 · reduced 1 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: "Several works: each entry's `reference` names its source (textbooks, papers and regulatory texts in mathematical finance)"
-      lean: 53 statements
+      lean: 54 statements
       module: benchmarks/portfolio_and_performance.json
-      status: full 53 · wrapper 0 · reduced 0 · placeholder 0
+      status: full 54 · wrapper 0 · reduced 0 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: McNeil, Frey and Embrechts, Quantitative Risk Management (2015), with each entry's `reference`
       lean: 72 statements
@@ -246,9 +246,9 @@ alignment:
       status: full 72 · wrapper 0 · reduced 0 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: "Several works: each entry's `reference` names its source (textbooks, papers and regulatory texts in mathematical finance)"
-      lean: 36 statements
+      lean: 35 statements
       module: benchmarks/risk_measures.json
-      status: full 35 · wrapper 1 · reduced 0 · placeholder 0
+      status: full 34 · wrapper 1 · reduced 0 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: stochastic_calculus (Saporito, Stochastic Processes)
       lean: 51 statements

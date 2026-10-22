@@ -724,13 +724,6 @@
       "input_hash": "9fa5426cf4b6ef4928fa4efbee4490cb7e802c12d2cd7d5130d5cc3f9575e444",
       "verified_at_commit": "f946d01"
     },
-    "mf-backtest-max-drawdown-bounded": {
-      "benchmark_file": "risk_measures.json",
-      "date": "2026-10-22",
-      "elapsed_s": 3.8,
-      "input_hash": "48fb424c85e5ff9af27482f1861a5de046cc6669c9faab6f612428274923b6b9",
-      "verified_at_commit": "59304ec"
-    },
     "mf-barrier-inout-parity": {
       "benchmark_file": "exotic_options.json",
       "date": "2026-10-22",
@@ -3285,6 +3278,13 @@
       "elapsed_s": 3.2,
       "input_hash": "d48ab9cfa4cc8678376e16f207eb6dc27f42b963cf1017bbfdbac7face6dcab4",
       "verified_at_commit": "f946d01"
+    },
+    "mf-relative-drawdown-scale-invariant": {
+      "benchmark_file": "portfolio_and_performance.json",
+      "date": "2026-10-23",
+      "elapsed_s": 3.5,
+      "input_hash": "0a91f4c02386cfd4ad7aef5fe29bf377d482f5c05f93ea1b75548da54a9c5c44",
+      "verified_at_commit": "c711d6c"
     },
     "mf-replication-martingale-price": {
       "benchmark_file": "no_arbitrage.json",

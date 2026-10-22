@@ -8,7 +8,7 @@
 
   The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
   narrative); THIS file is its machine-written closure over the benchmark
-  corpus (759 MathFin constants, 30 upstream). Citations
+  corpus (760 MathFin constants, 30 upstream). Citations
   are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
   unqualified under `open`, by dot notation on a hypothesis, or declared
   outside the MathFin namespace is pinned like any other. Statement-position
@@ -52,12 +52,6 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.AdaptedRiemannStieltjes.tendsto_itoIntegralAgainst_stepσ' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.AdaptedRiemannStieltjes.tendsto_itoIntegralAgainst_stepσ
-
-/-- info: 'MathFin.Backtest.maxDrawdown_le_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.Backtest.maxDrawdown_le_one
-
-/-- info: 'MathFin.Backtest.maxDrawdown_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.Backtest.maxDrawdown_nonneg
 
 /-- info: 'MathFin.BivariateGaussianHyp.conditional_expectation_formula' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.BivariateGaussianHyp.conditional_expectation_formula
@@ -1748,6 +1742,12 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.martingale_representation' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.martingale_representation
 
+/-- info: 'MathFin.maxRelativeDrawdown_const_mul' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.maxRelativeDrawdown_const_mul
+
+/-- info: 'MathFin.maximumDrawdown_scale' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.maximumDrawdown_scale
+
 /-- info: 'MathFin.measureReal_iInter_default_eq_integral_pow' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.measureReal_iInter_default_eq_integral_pow
 
@@ -1981,6 +1981,9 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.reflection_principle_card' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.reflection_principle_card
+
+/-- info: 'MathFin.relativeDrawdown_const_mul' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.relativeDrawdown_const_mul
 
 /-- info: 'MathFin.replicating_payoff_down' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.replicating_payoff_down
