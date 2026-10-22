@@ -58,11 +58,11 @@ in section 3 as the ATM-vol curve traced as the forward varies.
   for `α, f > 0`.
 * `sabrATMVol_bsV_gt_backbone_bsV` — a SABR-specific consequence of `BlackScholes/
   ImpliedVolatility.lean`'s `bsV_strictMonoOn_sigma`: whenever eq. 2.18's
-  bracketed perturbation correction is positive, the full ATM vol
-  `sabrATMVol` prices the ATM Black call *strictly above* the bare backbone
-  `sabrBackbone` — the stochastic-vol correction the paper adds to the
-  leading-order term genuinely raises the option's value, not merely some
-  other positive vol would.
+  bracketed perturbation correction, scaled by `t_ex`, is positive, the full
+  ATM vol `sabrATMVol` prices the ATM Black call *strictly above* the bare
+  backbone `sabrBackbone` — the stochastic-vol correction the paper adds to
+  the leading-order term genuinely raises the option's value, not merely
+  some other positive vol would.
 -/
 
 @[expose] public section

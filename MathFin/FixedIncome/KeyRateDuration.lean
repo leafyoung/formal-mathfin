@@ -37,12 +37,11 @@ duration:
   `Σ_n KRD_n = Σ_i d i · (Σ_n w n i) = Σ_i d i · 1 = Σ_i d i`.
 
 This module states the identity abstractly, parametrized by an arbitrary
-per-cashflow dollar-duration contribution `d : ι → ℝ` (a caller could instantiate
-`d` with the per-cashflow term of `modifiedNumerator`/`bondPriceDisc` from
-`DurationSensitivity`, or with any other per-cashflow duration contribution,
-without this module depending on that substrate), under exactly the
+per-cashflow dollar-duration contribution `d : ι → ℝ`, under exactly the
 partition-of-unity hypothesis above — making explicit that the identity is a
-genuine consequence of partition of unity, not a restatement of it.
+genuine consequence of partition of unity, not a restatement of it. It is
+then instantiated below with `MacaulayModified`'s own per-cashflow modified-
+duration term (`sum_keyRateDuration_modifiedNumerator_eq_modifiedNumerator`).
 
 ## Result
 
@@ -86,10 +85,9 @@ theorem sum_keyRateDuration_eq_effectiveDuration (s : Finset ι) (κs : Finset �
 
 /-- **The concrete instance**: specializing `d` to `MacaulayModified`'s own
 per-cashflow modified-duration term `(t i : ℝ) · c i / (1 + y)^(t i + 1)`
-makes `effectiveDuration` definitionally `modifiedNumerator` (both are the
-same sum, `Finset.sum_congr rfl`), so the abstract partition-of-unity
-identity directly decomposes the real modified-duration numerator across
-key-rate nodes. -/
+makes `effectiveDuration` definitionally (`rfl`) `modifiedNumerator` — both
+are the same sum — so the abstract partition-of-unity identity directly
+decomposes the real modified-duration numerator across key-rate nodes. -/
 theorem sum_keyRateDuration_modifiedNumerator_eq_modifiedNumerator
     (s : Finset ι) (κs : Finset κ) (t : ι → ℕ) (c : ι → ℝ) (w : κ → ι → ℝ) (y : ℝ)
     (hpou : ∀ i ∈ s, ∑ n ∈ κs, w n i = 1) :

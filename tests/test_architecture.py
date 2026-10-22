@@ -46,8 +46,8 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # CleanPriceAccrued imports MacaulayModified) and were removed from STAGING in the first
 # fast-follow. A second fast-follow built a genuine bridge for seven more of the remaining
 # eight: SABRImpliedVol now imports ImpliedVolatility (the bracketed stochastic-vol correction
-# term, when positive, strictly raises the ATM Black price above the bare backbone's, via
-# `bsV_strictMonoOn_sigma`); BondForward is imported by FxForwardParity (CIP is a
+# term, scaled by time-to-exercise, when positive, strictly raises the ATM Black price above the
+# bare backbone's, via `bsV_strictMonoOn_sigma`); BondForward is imported by FxForwardParity (CIP is a
 # zero-coupon instance of bond-forward replication); KeyRateDuration imports MacaulayModified
 # (the partition-of-unity identity specialized to the real modified-duration numerator);
 # LoanAmortization imports MacaulayModified too (both amortization schedules price to par via a
@@ -58,10 +58,11 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # staged: it predates the Lean module system (see its own docstring), so no `module`-header file
 # can import it — but it CAN import one itself (the restriction is one-directional). Investigated
 # 2026-10-22: no Foundations module shares genuine combinatorial/probabilistic structure with the
-# discrete birthday-collision computation without inventing a real new result (a Poisson/normal
-# approximation limit theorem connecting it to the continuous Gaussian machinery in
-# `StandardNormal` would be genuine, but is a substantial new formalization, not a bridge); it
-# stays staged pending that real work, not as a place to park a cosmetic import.
+# discrete birthday-collision computation without inventing a real new result (a Poisson
+# approximation of the no-match probability — tying the discrete count to `Real.exp` and the
+# Poisson zero-count law in `PoissonPgf`/`PoissonCounting`, not to `StandardNormal` — would be
+# genuine, but is new formalization, not a bridge); it stays staged pending that real work, not
+# as a place to park a cosmetic import.
 _ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
 STAGING: dict[str, str] = {
     "MathFin.Foundations.BirthdayParadox": _ISSUE_3,

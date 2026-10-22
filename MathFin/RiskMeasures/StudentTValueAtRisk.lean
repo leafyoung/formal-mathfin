@@ -134,12 +134,13 @@ theorem studentTExpectedShortfall_affine (ν μ σ xα α a b : ℝ) (ha : 0 ≤
   unfold studentTExpectedShortfall
   rw [abs_of_nonneg ha]; ring
 
-/-- **VaR affine invariance**: `VaR_α(a·L + b) = a·VaR_α(L) + b` for `a ≥ 0`, matching
-`gaussianVaR_affine` (volatility scales by `|a|·σ`, so `0 ≤ a` is load-bearing). -/
+/-- **VaR affine invariance**: `VaR_α(a·L + b) = a·VaR_α(L) + b` for `a ≥ 0`. Since
+`studentTValueAtRisk_eq_gaussianVaR` identifies this closed form with `gaussianVaR` pointwise,
+the Gaussian file's own affine-invariance proof (`gaussianVaR_affine`) transfers directly —
+this is the import earning its keep, not just the `rfl` identification above. -/
 theorem studentTValueAtRisk_affine (μ σ xα a b : ℝ) (ha : 0 ≤ a) :
-    studentTValueAtRisk (a * μ + b) (|a| * σ) xα = a * studentTValueAtRisk μ σ xα + b := by
-  unfold studentTValueAtRisk
-  rw [abs_of_nonneg ha]; ring
+    studentTValueAtRisk (a * μ + b) (|a| * σ) xα = a * studentTValueAtRisk μ σ xα + b :=
+  gaussianVaR_affine μ σ xα a b ha
 
 /-- **The ES closed form is positive** for a centered, positively-scaled loss (`μ = 0`, `σ > 0`)
 at any quantile `x_α`, with `ν > 1` and `α < 1`: a sanity check standing in for a

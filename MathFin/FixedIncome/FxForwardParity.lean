@@ -58,7 +58,10 @@ currency at `T`, buy `exp(-r_f·T)` units of it today (worth
 rate, i.e. discount by `Df(T) = exp(-r_d·T)`. Feeding `P₀ = S·exp(-r_f·T)`
 and `Df_fe = exp(-r_d·T)` into `bondForwardPrice` with an empty coupon finset
 (`s = ∅`, so `Σ Df(t)·CF(t) = 0`) gives exactly `S·exp((r_d - r_f)·T)`,
-i.e. `fxForward`: `fxForward_eq_bondForwardPrice` makes this literal.
+i.e. `fxForward`: `fxForward_eq_bondForwardPrice` makes this literal. (Its
+`Df CF : ι → ℝ` arguments are irrelevant on an empty finset — any index type,
+any cashflow map — so the statement quantifies over them rather than fixing
+a particular choice.)
 -/
 
 @[expose] public section

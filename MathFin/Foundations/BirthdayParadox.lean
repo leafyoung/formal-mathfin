@@ -33,11 +33,17 @@ has to be built *in this file*, not in a separate `Bridges/` module: import a Fo
 here and prove a genuine tie to it. That has not been done yet, and was investigated and found
 not currently possible without busywork (2026-10-22, the rest of issue #3's batch): no
 Foundations module shares genuine combinatorial or probabilistic structure with this discrete
-collision computation. The honest candidate is a Poisson/normal approximation limit theorem —
-`P(no match)` for `k` people and `n` days tends to `exp(-k(k-1)/(2n))` as the ratio `k²/n` is
-held fixed, tying the discrete count here to `StandardNormal`/`Real.exp` — but that is a real new
-piece of analysis (a limit argument on falling factorials), not a bridge, and has not been
-attempted. This file stays staged until that work (or some other genuine tie) is actually done. -/
+collision computation (checked `PoissonPgf`, `PoissonCounting` and the other Poisson modules,
+the nearest candidates, and `Fintype.card`/`Function.Embedding` usage elsewhere — nothing
+matches). The honest candidate is a **Poisson approximation** of the no-match probability,
+`P(no match) = ∏_{j<k} (1 - j/n) ≤ exp(-k(k-1)/(2n))` (the number of colliding pairs is
+approximately `Poisson(k(k-1)/(2n))`), which would tie the discrete count here to `Real.exp`
+and, for the approximation's own justification, to the Poisson zero-count law in `PoissonPgf`/
+`PoissonCounting` — not to `StandardNormal`, which is the continuous Gaussian machinery and does
+not enter this estimate. Even the cheap direction (the one-sided bound above, via
+`Real.add_one_le_exp`) has not been attempted; it would still need to actually import a
+Foundations module to count as a bridge. This file stays staged until that work (or some other
+genuine tie) is actually done. -/
 
 namespace MathFin
 namespace BirthdayParadox
