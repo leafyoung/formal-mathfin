@@ -37,7 +37,21 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
                          "MathFin.Examples"})
 
 # module -> open issue whose work adds its consumer. Keep it short-lived.
-STAGING: dict[str, str] = {}
+_ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
+STAGING: dict[str, str] = {
+    "MathFin.BlackScholes.SABRImpliedVol": _ISSUE_3,
+    "MathFin.BlackScholes.BinaryBarrierOption": _ISSUE_3,
+    "MathFin.BlackScholes.PartialTimeBarrierOption": _ISSUE_3,
+    "MathFin.BlackScholes.SoftBarrierOption": _ISSUE_3,
+    "MathFin.FixedIncome.BondForward": _ISSUE_3,
+    "MathFin.FixedIncome.FxForwardParity": _ISSUE_3,
+    "MathFin.FixedIncome.KeyRateDuration": _ISSUE_3,
+    "MathFin.FixedIncome.LoanAmortization": _ISSUE_3,
+    "MathFin.FixedIncome.CleanPriceAccrued": _ISSUE_3,
+    "MathFin.Foundations.BirthdayParadox": _ISSUE_3,
+    "MathFin.RiskMeasures.BacktestStatistics": _ISSUE_3,
+    "MathFin.RiskMeasures.StudentTValueAtRisk": _ISSUE_3,
+}
 
 
 def _module_name(path: Path) -> str:
