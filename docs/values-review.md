@@ -147,8 +147,10 @@ module's real headline theorem.
   `CleanPriceAccrued`) into `benchmarks/interest_rates.json`; the birthday-paradox citation and
   the two backtest/risk-measure modules (`BirthdayParadox`, `BacktestStatistics`,
   `StudentTValueAtRisk`) into `benchmarks/risk_measures.json`. Corpus 658 → 670.
-- **Each entry cites the module's actual proved theorem**, not a restatement: the in/out parity
-  checks for the three barrier engines, the ATM-vol-collapses-to-backbone identity for SABR, the
+- **Each entry cites the module's actual proved theorem**, not a restatement: the sign/parity
+  cross-checks for the three barrier engines (in/out parity for binary, call-minus-put for soft,
+  down-window-plus-up-window for partial-time), the ATM-vol-collapses-to-backbone identity for
+  SABR, the
   no-arbitrage forward-price characterization and the forward-forward-factor identity for the two
   FX/bond modules, the partition-of-unity identity for key-rate duration, the equal-principal
   closed form for amortization, the coupon-date clean-price identity, the bounded-max-drawdown
