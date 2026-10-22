@@ -31,13 +31,14 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 One entry added to `benchmarks/portfolio_and_performance.json` and one removed, both `full`;
 corpus stays 674 (639 `full`, 19 `library_wrapper`, 16 `reduced_core`).
 `mf-backtest-max-drawdown-bounded` and its module `RiskMeasures/BacktestStatistics.lean` are gone:
-the module re-derived existing definitions (its running maximum is Mathlib's `partialSups`, and
-its Sharpe scale law duplicates `sharpeRatio_scale_invariant`), and its remaining sample
-statistics (sample moments, annualized volatility, CAGR) and its `[0, 1]` bound on the
-drawdown of a positive curve (`maxDrawdown_nonneg`, `maxDrawdown_le_one`) were dropped with it.
-`Performance/RelativeDrawdown.lean`
-takes the running peak from Mathlib's `partialSups`, and imports `Performance/DownsideMetrics.lean`
-to bound the peak-rescaled relative drawdown by the absolute `maximumDrawdown`
+its running maximum was Mathlib's `partialSups` under another name, and its Sharpe scale law
+restated `sharpeRatio_scale_invariant` on sample moments. Only its relative-drawdown definition
+carries over. Everything else in it was dropped, not moved: the empirical Sharpe ratio and its
+plug-in and annualization identities against `Performance/Ratios.lean`, sample moments,
+annualized volatility, CAGR, and the `[0, 1]` bounds on the drawdown of a positive curve
+(`maxDrawdown_nonneg`, `maxDrawdown_le_one`). `Performance/RelativeDrawdown.lean` takes the
+running peak from Mathlib's `partialSups`, and imports `Performance/DownsideMetrics.lean` to bound
+the peak-rescaled relative drawdown by the absolute `maximumDrawdown`
 (`partialSups_mul_relativeDrawdown_le_maximumDrawdown`, not itself a benchmark entry).
 
 | Benchmark ID | Mathematical conclusion | Lean module and declaration | Faithfulness |

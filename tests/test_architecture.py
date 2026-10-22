@@ -52,8 +52,8 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # (the partition-of-unity identity specialized to the real modified-duration numerator);
 # LoanAmortization imports MacaulayModified too (both amortization schedules price to par via a
 # general telescoping identity, proved as a `bondPriceDisc` corollary); BacktestStatistics
-# imported Performance.Ratios (the module was later deleted; its drawdown part now lives in
-# Performance.RelativeDrawdown); StudentTValueAtRisk (whose first bridge, to RiskMeasures.Gaussian, was
+# imported Performance.Ratios (the module was later deleted; its relative-drawdown definition,
+# not its [0, 1] bounds, now lives in Performance.RelativeDrawdown); StudentTValueAtRisk (whose first bridge, to RiskMeasures.Gaussian, was
 # superseded when the module was rebuilt on a real Student-t law) imports Foundations.StudentT and
 # RiskMeasures.ExpectedShortfall (VaR and ES of the law, through the library's own
 # `valueAtRisk`/`expectedShortfall`). Only BirthdayParadox remains
