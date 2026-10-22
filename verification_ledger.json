@@ -794,13 +794,6 @@
       "input_hash": "3cd0b98951723428bb186297601ac7bdc1ca1d8e52bcf842d6afa66c776d4e02",
       "verified_at_commit": "025a67bd"
     },
-    "mf-binary-barrier-down-in-add-down-out": {
-      "benchmark_file": "exotic_options.json",
-      "date": "2026-10-22",
-      "elapsed_s": 3.0,
-      "input_hash": "2c35004c89670e58dbe91e1c07c92e4bd4b23139d5d9c3255a1209a48c482024",
-      "verified_at_commit": "809b03f"
-    },
     "mf-binary-barrier-inout-parity": {
       "benchmark_file": "exotic_options.json",
       "date": "2026-10-22",
