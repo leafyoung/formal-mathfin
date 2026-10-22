@@ -6,6 +6,7 @@ Authors: Yang Ye
 module
 
 public import Mathlib
+public import MathFin.FixedIncome.MacaulayModified
 
 /-!
 # Key-rate duration: the partition-of-unity identity
@@ -49,6 +50,9 @@ genuine consequence of partition of unity, not a restatement of it.
 * `effectiveDuration`: the parallel (total) dollar duration, `Σ_i d i`.
 * `sum_keyRateDuration_eq_effectiveDuration`: the partition-of-unity identity
   `Σ_n KRD_n = effectiveDuration`, given `∀ i ∈ s, Σ_n w n i = 1`.
+* `sum_keyRateDuration_modifiedNumerator_eq_modifiedNumerator`: the concrete
+  instance promised above — `d` specialized to `MacaulayModified`'s own
+  per-cashflow modified-duration term, `Σ_n KRD_n = modifiedNumerator`.
 -/
 
 @[expose] public section
@@ -79,5 +83,19 @@ theorem sum_keyRateDuration_eq_effectiveDuration (s : Finset ι) (κs : Finset �
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun i hi ↦ ?_
   rw [← Finset.mul_sum, hpou i hi, mul_one]
+
+/-- **The concrete instance**: specializing `d` to `MacaulayModified`'s own
+per-cashflow modified-duration term `(t i : ℝ) · c i / (1 + y)^(t i + 1)`
+makes `effectiveDuration` definitionally `modifiedNumerator` (both are the
+same sum, `Finset.sum_congr rfl`), so the abstract partition-of-unity
+identity directly decomposes the real modified-duration numerator across
+key-rate nodes. -/
+theorem sum_keyRateDuration_modifiedNumerator_eq_modifiedNumerator
+    (s : Finset ι) (κs : Finset κ) (t : ι → ℕ) (c : ι → ℝ) (w : κ → ι → ℝ) (y : ℝ)
+    (hpou : ∀ i ∈ s, ∑ n ∈ κs, w n i = 1) :
+    ∑ n ∈ κs, keyRateDuration s (fun i ↦ (t i : ℝ) * c i / (1 + y) ^ (t i + 1)) w n
+      = modifiedNumerator s t c y := by
+  rw [sum_keyRateDuration_eq_effectiveDuration s κs _ w hpou]
+  rfl
 
 end MathFin

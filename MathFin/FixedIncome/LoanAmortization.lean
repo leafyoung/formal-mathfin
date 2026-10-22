@@ -6,6 +6,7 @@ Authors: Yang Ye
 module
 
 public import Mathlib
+public import MathFin.FixedIncome.MacaulayModified
 
 /-!
 # Loan amortization schedules: bullet and equal-principal recurrences
@@ -40,6 +41,22 @@ matching the standard amortization-table identities.
 * `balance_bullet_lt`, `balance_bullet_eq` — the bullet closed form.
 * `balance_equalPrincipal` — the equal-principal closed form
   `B_n = B_0 · (1 - n / N)`.
+
+## Pricing the schedule: a par-value identity
+
+Discounting the loan's own total cashflow (interest `I_n` plus principal
+`P_n`) at its own rate `i`, via `MacaulayModified.bondPriceDisc`, telescopes
+against the balance recurrence to `B_0 - B_N / (1 + i)^N` for *any* principal
+schedule — the loan is priced exactly like a bond whose "coupon" is the
+period's total cash outflow. Both schedules here fully amortize
+(`B_N = 0`: `balance_bullet_eq`, `balance_equalPrincipal` at `n = N`), so
+both price to exactly `B_0` — the familiar fact that a loan discounted at its
+own coupon rate prices at par.
+
+* `bondPriceDisc_loan_eq_initial_sub_discounted_final` — the general
+  telescoping identity.
+* `bulletLoan_prices_at_par`, `equalPrincipalLoan_prices_at_par` — the two
+  par-value corollaries.
 -/
 
 @[expose] public section
@@ -107,5 +124,56 @@ theorem balance_equalPrincipal {B0 : ℝ} {N : ℕ} (hN : N ≠ 0) (n : ℕ) :
     push_cast
     field_simp
     ring
+
+/-! ## Pricing the schedule -/
+
+/-- **The telescoping par-value identity**, for *any* principal schedule `P`:
+discounting the total period cashflow `I_n + P_n` at the loan's own rate `i`
+(via `MacaulayModified.bondPriceDisc`, with cashflow times `id` and the
+cashflow map `n ↦ I_n + P_n`) telescopes to `B_0 - B_N / (1 + i)^N`. Proved
+by induction on `N`: each step cancels the prior balance's discounted value
+against the new period's interest-plus-principal term, via the shared
+recurrences `interestAccrued_succ` and `balance`. -/
+theorem bondPriceDisc_loan_eq_initial_sub_discounted_final
+    (B0 i : ℝ) (P : ℕ → ℝ) (N : ℕ) (hi : (1 : ℝ) + i ≠ 0) :
+    bondPriceDisc (Finset.Icc 1 N) id (fun n ↦ interestAccrued B0 P i n + P n) i
+      = B0 - balance B0 P N / (1 + i) ^ N := by
+  unfold bondPriceDisc
+  induction N with
+  | zero => simp [balance]
+  | succ N ih =>
+    rw [Finset.sum_Icc_succ_top (by omega), ih]
+    simp only [id, interestAccrued_succ, balance]
+    have hpow : (1 + i) ^ (N + 1) ≠ 0 := pow_ne_zero _ hi
+    have hpowN : (1 + i) ^ N ≠ 0 := pow_ne_zero _ hi
+    field_simp
+    ring
+
+/-- **The bullet loan prices at par**: discounted at its own coupon rate, the
+total cashflow of a bullet loan (interest every period, full principal at
+maturity) has present value exactly `B_0`. Corollary of
+`bondPriceDisc_loan_eq_initial_sub_discounted_final` and `balance_bullet_eq`
+(`B_N = 0`). -/
+theorem bulletLoan_prices_at_par {B0 i : ℝ} {N : ℕ} (hN : 0 < N) (hi : (1 : ℝ) + i ≠ 0) :
+    bondPriceDisc (Finset.Icc 1 N) id
+        (fun n ↦ interestAccrued B0 (bulletPrincipal B0 N) i n + bulletPrincipal B0 N n) i
+      = B0 := by
+  rw [bondPriceDisc_loan_eq_initial_sub_discounted_final B0 i (bulletPrincipal B0 N) N hi,
+    balance_bullet_eq hN]
+  ring
+
+/-- **The equal-principal loan also prices at par**: same conclusion for the
+constant-principal schedule, via `balance_equalPrincipal` at `n = N`
+(`B_N = B_0 · (1 - N/N) = 0`). -/
+theorem equalPrincipalLoan_prices_at_par {B0 i : ℝ} {N : ℕ} (hN : N ≠ 0) (hi : (1 : ℝ) + i ≠ 0) :
+    bondPriceDisc (Finset.Icc 1 N) id
+        (fun n ↦ interestAccrued B0 (equalPrincipalPayment B0 N) i n
+          + equalPrincipalPayment B0 N n) i
+      = B0 := by
+  have hN' : (N : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hN
+  rw [bondPriceDisc_loan_eq_initial_sub_discounted_final B0 i (equalPrincipalPayment B0 N) N hi,
+    balance_equalPrincipal hN]
+  field_simp
+  ring
 
 end MathFin

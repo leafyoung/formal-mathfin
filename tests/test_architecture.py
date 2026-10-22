@@ -38,28 +38,32 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 
 # module -> open issue whose work adds its consumer. Keep it short-lived.
 #
-# 2026-10-22: a benchmark-corpus entry was added for every one of the 12 modules below
-# (tracked at issue #3). That alone satisfies `test_every_module_is_used` (corpus citations
-# count there) but NOT `test_every_module_is_connected` (import-graph edges only, by design —
-# see that test's own code). Four of the twelve already had a real import edge to another
-# library module (BinaryBarrierOption/PartialTimeBarrierOption/SoftBarrierOption import a
-# Foundations module; CleanPriceAccrued imports MacaulayModified), so they are genuinely
-# connected now and have been removed from STAGING. The other eight have no library module
-# importing them: seven are self-contained (`public import Mathlib` only) and stay staged until
-# a real Bridges/-style consumer exists. BirthdayParadox is a further special case: it predates
-# the Lean module system (see its own docstring), so no `module`-header file can import it — but
-# it CAN import one itself (the restriction is one-directional); its bridge has to be an import
-# added inside BirthdayParadox.lean, not a separate Bridges/ module, and has not been built yet.
+# 2026-10-22: a benchmark-corpus entry was added for every one of the 12 modules originally
+# staged here (tracked at issue #3). That alone satisfies `test_every_module_is_used` (corpus
+# citations count there) but NOT `test_every_module_is_connected` (import-graph edges only, by
+# design — see that test's own code). Four already had a real import edge
+# (BinaryBarrierOption/PartialTimeBarrierOption/SoftBarrierOption import a Foundations module;
+# CleanPriceAccrued imports MacaulayModified) and were removed from STAGING in the first
+# fast-follow. A second fast-follow built a genuine bridge for seven more of the remaining
+# eight: SABRImpliedVol now imports ImpliedVolatility (the backbone is implied-vol-identifiable
+# via `implied_volatility_unique`); BondForward is imported by FxForwardParity (CIP is a
+# zero-coupon instance of bond-forward replication); KeyRateDuration imports MacaulayModified
+# (the partition-of-unity identity specialized to the real modified-duration numerator);
+# LoanAmortization imports MacaulayModified too (both amortization schedules price to par via a
+# general telescoping identity, proved as a `bondPriceDisc` corollary); BacktestStatistics
+# imports Performance.Ratios (the empirical Sharpe ratio is the parametric one with sample
+# moments plugged in); StudentTValueAtRisk imports RiskMeasures.Gaussian (its VaR closed form
+# is literally `gaussianVaR` evaluated at the Student-t quantile). Only BirthdayParadox remains
+# staged: it predates the Lean module system (see its own docstring), so no `module`-header file
+# can import it — but it CAN import one itself (the restriction is one-directional). Investigated
+# 2026-10-22: no Foundations module shares genuine combinatorial/probabilistic structure with the
+# discrete birthday-collision computation without inventing a real new result (a Poisson/normal
+# approximation limit theorem connecting it to the continuous Gaussian machinery in
+# `StandardNormal` would be genuine, but is a substantial new formalization, not a bridge); it
+# stays staged pending that real work, not as a place to park a cosmetic import.
 _ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
 STAGING: dict[str, str] = {
-    "MathFin.BlackScholes.SABRImpliedVol": _ISSUE_3,
-    "MathFin.FixedIncome.BondForward": _ISSUE_3,
-    "MathFin.FixedIncome.FxForwardParity": _ISSUE_3,
-    "MathFin.FixedIncome.KeyRateDuration": _ISSUE_3,
-    "MathFin.FixedIncome.LoanAmortization": _ISSUE_3,
     "MathFin.Foundations.BirthdayParadox": _ISSUE_3,
-    "MathFin.RiskMeasures.BacktestStatistics": _ISSUE_3,
-    "MathFin.RiskMeasures.StudentTValueAtRisk": _ISSUE_3,
 }
 
 

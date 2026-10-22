@@ -6,6 +6,7 @@ Authors: Yang Ye
 module
 
 public import Mathlib
+public import MathFin.BlackScholes.ImpliedVolatility
 
 /-!
 # The SABR lognormal implied-volatility asymptotic approximation
@@ -55,6 +56,12 @@ in section 3 as the ATM-vol curve traced as the forward varies.
   backbone `sabrBackbone`.
 * `sabrATMVol_pos_zero_tex` — corollary: `sabrATMVol` is positive at `t_ex = 0`
   for `α, f > 0`.
+* `sabrBackbone_eq_of_bsV_eq` — the backbone is the *unique* volatility that
+  reprices to the Black call price it itself produces (`BlackScholes/
+  ImpliedVolatility.lean`'s `implied_volatility_unique` applied to the
+  backbone): feeding `sabrBackbone` into Black's formula as the vol input and
+  then reading an implied vol back off the resulting price recovers exactly
+  the backbone, with no other candidate volatility giving the same price.
 -/
 
 @[expose] public section
@@ -103,5 +110,18 @@ theorem sabrATMVol_pos_zero_tex {f α : ℝ} (β ρ ν : ℝ) (hf : 0 < f) (hα 
     0 < sabrATMVol f α β ρ ν 0 := by
   rw [sabrATMVol_zero_tex]
   exact sabrBackbone_pos β hf hα
+
+/-- **The backbone is implied-vol-identifiable**: feeding the SABR backbone
+into the Black ATM call price (`bsV f 0 σ f T`, forward = strike = `f`) as
+the volatility input, any *other* positive volatility `σ` reproducing the
+same price must equal the backbone. This is `implied_volatility_unique`
+(`BlackScholes/ImpliedVolatility.lean`) applied to the backbone as one of the
+two volatilities — the uniqueness-of-implied-vol machinery built for
+calibration applies to this closed form exactly as it would to any other
+vol input, with `sabrBackbone_pos` supplying the positivity side condition. -/
+theorem sabrBackbone_eq_of_bsV_eq {f α β σ T : ℝ} (hf : 0 < f) (hα : 0 < α) (hT : 0 < T)
+    (hσ : 0 < σ) (heq : bsV f 0 σ f T = bsV f 0 (sabrBackbone f α β) f T) :
+    σ = sabrBackbone f α β :=
+  implied_volatility_unique hf hT hf hσ (sabrBackbone_pos β hf hα) heq
 
 end MathFin

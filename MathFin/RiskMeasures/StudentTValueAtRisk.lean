@@ -6,6 +6,7 @@ Authors: Yang Ye
 module
 
 public import Mathlib
+public import MathFin.RiskMeasures.Gaussian
 
 /-!
 # Student-t VaR and expected shortfall closed forms
@@ -59,7 +60,10 @@ file does not undertake) — both left as disclosed gaps.
 
 * `studentTPdf`: the standard (unit-scale) Student-t density `g_ν`, built from `Real.Gamma`.
 * `studentTPdf_pos`: `g_ν(x) > 0` for `ν > 0`.
-* `studentTValueAtRisk`: the (trivial) VaR closed form `μ + σ x_α`.
+* `studentTValueAtRisk`: the (trivial) VaR closed form `μ + σ x_α`, and
+  `studentTValueAtRisk_eq_gaussianVaR` — it is literally `RiskMeasures.Gaussian.gaussianVaR`
+  evaluated at the Student-t quantile `x_α` in place of the normal quantile `z`: the
+  location-scale VaR quantile formula is the same closed form for any quantile function.
 * `studentTExpectedShortfall`: the pdf-based ES closed form, meaningful only for `ν > 1`, `α < 1`
   (outside that range the Lean term is a junk value: e.g. `ν = 1` or `α = 1` collapses it to `μ`
   via `x/0 = 0`, whereas the real ES diverges there).
@@ -104,6 +108,14 @@ theorem studentTPdf_pos {ν : ℝ} (hν : 0 < ν) (x : ℝ) : 0 < studentTPdf ν
 (`RiskMeasures/Gaussian.lean`), with `x_α` in place of `z = Φ⁻¹(α)`. This is the actual VaR
 closed form (McNeil-Frey-Embrechts, Example 2.15); it carries no pdf term. -/
 noncomputable def studentTValueAtRisk (μ σ xα : ℝ) : ℝ := μ + σ * xα
+
+/-- **The Student-t VaR closed form is the Gaussian one**, at the Student-t quantile:
+the location-scale VaR formula `μ + σ·q` does not depend on which distribution the
+quantile `q` comes from, only on it being *a* quantile of the standardized loss. This
+makes literal the parallel the definition's docstring draws with `gaussianVaR`
+(`RiskMeasures/Gaussian.lean`). -/
+theorem studentTValueAtRisk_eq_gaussianVaR (μ σ xα : ℝ) :
+    studentTValueAtRisk μ σ xα = gaussianVaR μ σ xα := rfl
 
 /-- **Student-t expected shortfall** at quantile `x_α` and level `α` for a location-scale loss
 `L = μ + σ T`, `T ~ t_ν`: `ES_α(L) = μ + σ · g_ν(x_α)/(1-α) · (ν + x_α²)/(ν-1)`

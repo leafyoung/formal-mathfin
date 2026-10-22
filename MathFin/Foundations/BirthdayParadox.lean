@@ -30,8 +30,14 @@ import. A benchmark entry citing this file (added 2026-10-22) satisfies
 `test_every_module_is_connected` (import-graph edges only, by that test's own design — a corpus
 citation is not one). Unlike the other modules `STAGING` (issue #3) admits, this one's bridge
 has to be built *in this file*, not in a separate `Bridges/` module: import a Foundations module
-here and prove a genuine tie to it. That has not been done yet.
--/
+here and prove a genuine tie to it. That has not been done yet, and was investigated and found
+not currently possible without busywork (2026-10-22, the rest of issue #3's batch): no
+Foundations module shares genuine combinatorial or probabilistic structure with this discrete
+collision computation. The honest candidate is a Poisson/normal approximation limit theorem —
+`P(no match)` for `k` people and `n` days tends to `exp(-k(k-1)/(2n))` as the ratio `k²/n` is
+held fixed, tying the discrete count here to `StandardNormal`/`Real.exp` — but that is a real new
+piece of analysis (a limit argument on falling factorials), not a bridge, and has not been
+attempted. This file stays staged until that work (or some other genuine tie) is actually done. -/
 
 namespace MathFin
 namespace BirthdayParadox
