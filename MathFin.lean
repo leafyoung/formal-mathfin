@@ -577,15 +577,15 @@ import MathFin.FixedIncome.Inflation
 import MathFin.FixedIncome.ABCDVolatility
 -- GSR (Gaussian short rate): two-piece piecewise-constant-volatility bond price
 import MathFin.FixedIncome.GSRPiecewiseVol
--- Clean/dirty price and accrued interest, on- and between-coupon dates
+-- Clean/dirty price and accrued interest, on- and between-coupon dates; clean price continuous across a coupon date
 import MathFin.FixedIncome.CleanPriceAccrued
--- Bond forward price via cash-and-carry replication, no-arbitrage strike
+-- Bond forward price via cash-and-carry replication; derived from forward_price_from_no_arbitrage
 import MathFin.FixedIncome.BondForward
--- FX forward via covered interest parity and the implied forward curve
+-- Covered and uncovered interest parity, from no-arbitrage and the Garman-Kohlhagen measure
 import MathFin.FixedIncome.FxForwardParity
--- Bullet and equal-principal loan amortization recurrences
+-- Loan amortization: bullet, equal-principal, and level-payment against annuityValue
 import MathFin.FixedIncome.LoanAmortization
--- Key-rate-duration partition-of-unity identity
+-- Key-rate partials sum to the parallel-shift derivative dP/dy
 import MathFin.FixedIncome.KeyRateDuration
 
 -- Portfolio
@@ -803,13 +803,3 @@ import MathFin.Foundations.WienerIntegralGirsanov
 import MathFin.RiskMeasures.CreditRiskPlus
 import MathFin.RiskMeasures.OneFactorCopula
 import MathFin.Bridges.LSVPosteriorConditionalExpectation
--- Clean/dirty price and accrued interest; clean price continuous across a coupon date
-import MathFin.FixedIncome.CleanPriceAccrued
--- Bond forward price derived from forward_price_from_no_arbitrage
-import MathFin.FixedIncome.BondForward
--- Covered and uncovered interest parity, from no-arbitrage and the Garman-Kohlhagen measure
-import MathFin.FixedIncome.FxForwardParity
--- Loan amortization: bullet, equal-principal, and level-payment against annuityValue
-import MathFin.FixedIncome.LoanAmortization
--- Key-rate partials sum to the parallel-shift derivative dP/dy
-import MathFin.FixedIncome.KeyRateDuration

@@ -89,7 +89,12 @@ Verification:
 
 ### Fixed-income building blocks (#277; issues #69, #108)
 
-Eight `full` entries, corpus 658 → 666, each derived from library machinery:
+Eight `full` entries, each derived from library machinery. Five replace pre-existing
+`interest_rates.json` entries at the same five `MathFin/FixedIncome/*.lean` paths (an
+independently-landed earlier batch proving different theorems under the same filenames; this
+batch's content is the one kept — see those five files' module docstrings), net zero there; only
+`no_arbitrage.json` grows (21 → 24, the three covered/uncovered-parity entries). Corpus 674 → 677,
+delivery-ready (`full + library_wrapper`) 658 → 661:
 
 - **Interest-rate parity** (`no_arbitrage.json`; #108). Covered parity `F = S·e^{(r_d−r_f)T}` is
   `forward_price_from_no_arbitrage` with the foreign zero-coupon bond as the asset
