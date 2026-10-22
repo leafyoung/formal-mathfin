@@ -3283,8 +3283,8 @@
       "benchmark_file": "portfolio_and_performance.json",
       "date": "2026-10-23",
       "elapsed_s": 3.5,
-      "input_hash": "0a91f4c02386cfd4ad7aef5fe29bf377d482f5c05f93ea1b75548da54a9c5c44",
-      "verified_at_commit": "c711d6c"
+      "input_hash": "1de3a3eb9083919f3ba338f31e39f07821604989a1d12d2d3fccb098fb2619e5",
+      "verified_at_commit": "56086d4"
     },
     "mf-replication-martingale-price": {
       "benchmark_file": "no_arbitrage.json",
