@@ -45,8 +45,9 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # (BinaryBarrierOption/PartialTimeBarrierOption/SoftBarrierOption import a Foundations module;
 # CleanPriceAccrued imports MacaulayModified) and were removed from STAGING in the first
 # fast-follow. A second fast-follow built a genuine bridge for seven more of the remaining
-# eight: SABRImpliedVol now imports ImpliedVolatility (the backbone is implied-vol-identifiable
-# via `implied_volatility_unique`); BondForward is imported by FxForwardParity (CIP is a
+# eight: SABRImpliedVol now imports ImpliedVolatility (the bracketed stochastic-vol correction
+# term, when positive, strictly raises the ATM Black price above the bare backbone's, via
+# `bsV_strictMonoOn_sigma`); BondForward is imported by FxForwardParity (CIP is a
 # zero-coupon instance of bond-forward replication); KeyRateDuration imports MacaulayModified
 # (the partition-of-unity identity specialized to the real modified-duration numerator);
 # LoanAmortization imports MacaulayModified too (both amortization schedules price to par via a
