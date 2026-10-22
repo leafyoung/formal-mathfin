@@ -31,7 +31,10 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 One entry added to `benchmarks/portfolio_and_performance.json` and one removed, both `full`;
 corpus stays 674 (639 `full`, 19 `library_wrapper`, 16 `reduced_core`).
 `mf-backtest-max-drawdown-bounded` and its module `RiskMeasures/BacktestStatistics.lean` are gone:
-the module restated sample statistics already in the library. `Performance/RelativeDrawdown.lean`
+the module re-derived existing definitions (its running maximum is Mathlib's `partialSups`, and
+its Sharpe scale law duplicates `sharpeRatio_scale_invariant`), and its remaining sample
+statistics (sample moments, annualized volatility, CAGR) were dropped with it.
+`Performance/RelativeDrawdown.lean`
 takes the running peak from Mathlib's `partialSups`, and imports `Performance/DownsideMetrics.lean`
 to bound the peak-rescaled relative drawdown by the absolute `maximumDrawdown`
 (`partialSups_mul_relativeDrawdown_le_maximumDrawdown`, not itself a benchmark entry).
