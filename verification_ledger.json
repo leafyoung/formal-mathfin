@@ -3195,6 +3195,13 @@
       "input_hash": "1d6d49d80cef6de679243f9beeba40b34eab70e72d238c7253b89a99808399a2",
       "verified_at_commit": "199887f8"
     },
+    "mf-partial-time-barrier-down-add-up": {
+      "benchmark_file": "exotic_options.json",
+      "date": "2026-10-22",
+      "elapsed_s": 4.0,
+      "input_hash": "919a6cbc3bf014edd947479fe2e25cd46d3aef1b1fcf85a2903aec08de05a3f5",
+      "verified_at_commit": "fc7e1cd"
+    },
     "mf-performance-gain_to_pain": {
       "benchmark_file": "portfolio_and_performance.json",
       "date": "2026-10-22",
@@ -3425,6 +3432,13 @@
       "elapsed_s": 7.0,
       "input_hash": "199cea975934dd06eb84eb7d452b85009b68a53ab128f634e9d86a0b5aec25d0",
       "verified_at_commit": "199887f8"
+    },
+    "mf-soft-barrier-call-sub-put": {
+      "benchmark_file": "exotic_options.json",
+      "date": "2026-10-22",
+      "elapsed_s": 4.0,
+      "input_hash": "7d7f7cb84a07cc3adb2692791dc01448cbfb40b5564f75411572b68ff368b369",
+      "verified_at_commit": "fc7e1cd"
     },
     "mf-sortino-scale-invariant": {
       "benchmark_file": "portfolio_and_performance.json",
