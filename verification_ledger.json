@@ -727,9 +727,9 @@
     "mf-backtest-max-drawdown-bounded": {
       "benchmark_file": "risk_measures.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.4,
-      "input_hash": "67016b9831127602124237fb5607f18d3b8ffcec09080fb75c3e2611f89966c2",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 3.8,
+      "input_hash": "48fb424c85e5ff9af27482f1861a5de046cc6669c9faab6f612428274923b6b9",
+      "verified_at_commit": "59304ec"
     },
     "mf-barrier-inout-parity": {
       "benchmark_file": "exotic_options.json",
@@ -846,9 +846,9 @@
     "mf-birthday-paradox-probability-exceeds-half": {
       "benchmark_file": "risk_measures.json",
       "date": "2026-10-22",
-      "elapsed_s": 1.9,
-      "input_hash": "b3f791fa399cf2679299dfe809e8c7cd66ec81fa74f59df74c5e17ee22f83ea2",
-      "verified_at_commit": "b5ec5ed"
+      "elapsed_s": 2.1,
+      "input_hash": "0704cc8a5beb176b1e332fb19c9e0ef2f07e21a6a3ba66f254aa110d55cc15e6",
+      "verified_at_commit": "59304ec"
     },
     "mf-bivariate-normal-gaussian-characterization": {
       "benchmark_file": "stochastic_foundations.json",
@@ -2015,9 +2015,9 @@
     "mf-fx-forward-forward-factor": {
       "benchmark_file": "interest_rates.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.2,
-      "input_hash": "ca85b6d09e1fd4176bfce3aee9f687455155e5ce3ce665bf84de9caf1d9508c3",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 4.0,
+      "input_hash": "7515f9f4c56f0dd0d7ac129ae8e28145adb31a6beb20c3be45a8104909b60258",
+      "verified_at_commit": "59304ec"
     },
     "mf-gamma-mgf": {
       "benchmark_file": "credit.json",
@@ -2715,9 +2715,9 @@
     "mf-key-rate-duration-partition-of-unity": {
       "benchmark_file": "interest_rates.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.3,
-      "input_hash": "92cb99e4cf3a5cec9199dcfcb0a7fce809976f6b5ff98944041f47ad6e59ce1c",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 3.9,
+      "input_hash": "5ae6fec3429652dbdf9671ce602ebadbf079afa69ea9a890f18ce4f2ee513123",
+      "verified_at_commit": "59304ec"
     },
     "mf-kirk-zero-strike-margrabe": {
       "benchmark_file": "exotic_options.json",
@@ -2764,9 +2764,9 @@
     "mf-loan-amortization-equal-principal-closed-form": {
       "benchmark_file": "interest_rates.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.0,
-      "input_hash": "bb66ae43b6f3ca6c544a5666289be4af3c14939033ad97b19db09b0785ff2ee4",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 3.7,
+      "input_hash": "5dd4542698b1badb9a210b53ce4d3af676dea78f0f397d04ea7a9de579552ae4",
+      "verified_at_commit": "59304ec"
     },
     "mf-log-contract-any-law": {
       "benchmark_file": "jumps_and_variance_swaps.json",
@@ -3324,9 +3324,9 @@
     "mf-sabr-atm-vol-zero-tex": {
       "benchmark_file": "exotic_options.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.0,
-      "input_hash": "8a74670681784982e3d80ba1a00ade93e58c602e926e28f30fb82fc90e4443c8",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 4.0,
+      "input_hash": "b3a8bf1ce7878a7799c2c77b61d324468a979573a55a8f566275a0767a7de2cb",
+      "verified_at_commit": "59304ec"
     },
     "mf-saccr-ead-mono": {
       "benchmark_file": "risk_measures.json",
@@ -3499,9 +3499,9 @@
     "mf-student-t-expected-shortfall-pos": {
       "benchmark_file": "risk_measures.json",
       "date": "2026-10-22",
-      "elapsed_s": 3.1,
-      "input_hash": "2ff8ec091a5a310ff17a45b2e7e295b59cb3f2b4e8c0ab3b654c7165bbfbb78c",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 3.6,
+      "input_hash": "97ab6263a1db4bad6371d2896f4500655a726f4ff1e76138169c81cec31100aa",
+      "verified_at_commit": "59304ec"
     },
     "mf-stulz-call-max-zero-strike": {
       "benchmark_file": "exotic_options.json",
