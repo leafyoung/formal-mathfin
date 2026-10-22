@@ -33,7 +33,8 @@ corpus stays 674 (639 `full`, 19 `library_wrapper`, 16 `reduced_core`).
 `mf-backtest-max-drawdown-bounded` and its module `RiskMeasures/BacktestStatistics.lean` are gone:
 the module re-derived existing definitions (its running maximum is Mathlib's `partialSups`, and
 its Sharpe scale law duplicates `sharpeRatio_scale_invariant`), and its remaining sample
-statistics (sample moments, annualized volatility, CAGR) were dropped with it.
+statistics (sample moments, annualized volatility, CAGR) and its `[0, 1]` bound on the
+drawdown of a positive curve (`maxDrawdown_nonneg`, `maxDrawdown_le_one`) were dropped with it.
 `Performance/RelativeDrawdown.lean`
 takes the running peak from Mathlib's `partialSups`, and imports `Performance/DownsideMetrics.lean`
 to bound the peak-rescaled relative drawdown by the absolute `maximumDrawdown`
@@ -41,7 +42,7 @@ to bound the peak-rescaled relative drawdown by the absolute `maximumDrawdown`
 
 | Benchmark ID | Mathematical conclusion | Lean module and declaration | Faithfulness |
 |---|---|---|---|
-| `mf-relative-drawdown-scale-invariant` | For c > 0, the relative drawdown 1 − E_t / max_{s≤t} E_s of c·E equals that of E at every t, as does the maximum relative drawdown; the absolute maximumDrawdown of c·E is c times that of E. | `MathFin/Performance/RelativeDrawdown.lean`, `MathFin.relativeDrawdown_const_mul`, `MathFin.maxRelativeDrawdown_const_mul` | `full` |
+| `mf-relative-drawdown-scale-invariant` | For c > 0, the relative drawdown 1 − E_t / max_{s≤t} E_s of c·E equals that of E at every t, as does the maximum relative drawdown; the absolute maximumDrawdown of c·E is c times that of E. | `MathFin/Performance/RelativeDrawdown.lean`, `MathFin.relativeDrawdown_const_mul`, `MathFin.maxRelativeDrawdown_const_mul`; `MathFin/Performance/DownsideMetrics.lean`, `MathFin.maximumDrawdown_scale` | `full` |
 
 Verification: `lake build`, `lake lint` and the tests passed; the ledger reports 674 fresh, 0
 stale and 0 missing, the new entry verified with `lake env lean`.
