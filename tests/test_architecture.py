@@ -53,9 +53,10 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # LoanAmortization imports MacaulayModified too (both amortization schedules price to par via a
 # general telescoping identity, proved as a `bondPriceDisc` corollary); BacktestStatistics
 # imported Performance.Ratios (the module was later deleted; its relative-drawdown definition,
-# not its [0, 1] bounds, now lives in Performance.RelativeDrawdown); StudentTValueAtRisk (whose first bridge, to RiskMeasures.Gaussian, was
-# superseded when the module was rebuilt on a real Student-t law) imports Foundations.StudentT and
-# RiskMeasures.ExpectedShortfall (VaR and ES of the law, through the library's own
+# not its [0, 1] bounds, now lives in Performance.RelativeDrawdown); StudentTValueAtRisk (whose
+# first bridge, to RiskMeasures.Gaussian, was superseded when the module was rebuilt on a real
+# Student-t law) imports Foundations.StudentT and RiskMeasures.ExpectedShortfall (VaR and ES of
+# the law, through the library's own
 # `valueAtRisk`/`expectedShortfall`). Only BirthdayParadox remains
 # staged: it predates the Lean module system (see its own docstring), so no `module`-header file
 # can import it — but it CAN import one itself (the restriction is one-directional). Investigated
