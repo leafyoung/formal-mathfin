@@ -104,6 +104,7 @@ UPSTREAM_CITATIONS: dict[str, tuple[str, ...]] = {
         "MeasureTheory.Submartingale.mul_integral_upcrossingsBefore_le_integral_pos_part",),
     "mart-thm-2.4.3": ("MeasureTheory.maximal_ineq",),
     "mart-thm-2.5.3": ("MeasureTheory.Submartingale.ae_tendsto_limitProcess",),
+    "mf-birthday-paradox-probability-exceeds-half": ("Theorems100.birthday_measure",),
     "mf-carr-madan-log": ("Eq.symm", "LT.lt.ne'", "Real.log_div"),
 }
 

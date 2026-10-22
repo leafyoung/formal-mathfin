@@ -846,9 +846,9 @@
     "mf-birthday-paradox-probability-exceeds-half": {
       "benchmark_file": "risk_measures.json",
       "date": "2026-10-22",
-      "elapsed_s": 1.8,
-      "input_hash": "e53b234369db46db51ef9974795be7c8d4132da20116c9ba559ae65cd224fc3f",
-      "verified_at_commit": "809b03f"
+      "elapsed_s": 1.9,
+      "input_hash": "b3f791fa399cf2679299dfe809e8c7cd66ec81fa74f59df74c5e17ee22f83ea2",
+      "verified_at_commit": "b5ec5ed"
     },
     "mf-bivariate-normal-gaussian-characterization": {
       "benchmark_file": "stochastic_foundations.json",

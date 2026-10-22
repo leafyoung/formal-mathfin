@@ -164,10 +164,14 @@ module's real headline theorem.
   (`BinaryBarrierOption`, `PartialTimeBarrierOption`, `SoftBarrierOption` import a Foundations
   module; `CleanPriceAccrued` imports `MacaulayModified`) are genuinely connected now and have
   been removed from `STAGING`. The other eight — seven self-contained modules plus
-  `BirthdayParadox`, which structurally can never be imported by a `module`-header file (see its
-  own docstring) — stay staged pending a real Bridges/-style consumer; `BirthdayParadox`
-  specifically has no route to `test_every_module_is_connected` short of a change to that test
-  itself, and is expected to stay staged indefinitely.
+  `BirthdayParadox` — have no library module importing them and stay staged pending a real
+  import edge. `BirthdayParadox` is not a special case the way an earlier draft of this entry
+  claimed: no `module`-header file can import it, but the restriction is one-directional, so it
+  CAN import a module file itself; its bridge has to be built inside `BirthdayParadox.lean`
+  (import a Foundations module there and prove a genuine tie), not via a separate `Bridges/`
+  module — not yet done. (A same-model pr-roll missed this; the Fable-gate pass caught it and
+  the false "no route" claim was corrected in `BirthdayParadox.lean`, `test_architecture.py`'s
+  STAGING comment, and this entry.)
 
 ### The standing first pass: prose against statement
 
@@ -175,9 +179,16 @@ Each of the 12 source files was read in full before writing its corpus entry (no
 docstring), and each new entry's `description` was checked word-for-word against the theorem
 statement it cites — the same discipline as the full panel's first pass, just not farmed out to
 independent reviewers this time. Two disclosures carried over deliberately rather than smoothed
-over: `BirthdayParadox`'s entry says "cited verbatim," not proved; `StudentTExpectedShortfall`'s
-docstring already disclosed it has no `HasLaw` bridge to an actual Student-t random variable, and
-the new entry's description does not claim one.
+over: `BirthdayParadox`'s entry cites `Theorems100.birthday_measure` directly and is labeled
+`library_wrapper` (not `full` — the Fable-gate pass caught an initial `full` mislabel: routing a
+verbatim Mathlib theorem through a one-line MathFin alias is exactly what `library_wrapper`
+exists to distinguish from genuine work); `StudentTExpectedShortfall`'s docstring already
+disclosed it has no `HasLaw` bridge to an actual Student-t random variable, and the new entry's
+description does not claim one. The Fable pass also caught an unverifiable claim in the
+`BirthdayParadox` entry's description ("used in this library as the standard
+combinatorial-probability sanity check behind collision/coincidence arguments in risk and
+simulation code") — nothing in the library actually imports or cites it outside this corpus
+entry and the top-level umbrella; the clause was deleted.
 
 ### Lens gradients (abbreviated — single-reviewer pass)
 
@@ -195,16 +206,14 @@ the new entry's description does not claim one.
 
 ### Ranked backlog
 
-1. Build a real Bridges/-style consumer (an import edge, not a corpus citation) for the seven
-   remaining self-contained staged modules (`SABRImpliedVol`, `BondForward`, `FxForwardParity`,
-   `KeyRateDuration`, `LoanAmortization`, `BacktestStatistics`, `StudentTValueAtRisk`), then remove
-   them from `STAGING` one at a time as each gets one. `BirthdayParadox` is excluded from this —
-   see below.
-2. `BirthdayParadox` cannot get an import edge (no `module`-header file can import a pre-module
-   file); either accept it stays in `STAGING` indefinitely, or revisit `test_architecture.py`
-   itself to let a corpus citation satisfy `test_every_module_is_connected` the way it already
-   satisfies `test_every_module_is_used` for a module with no possible importer — a decision for
-   whoever owns that test's design, not made unilaterally here.
+1. Build a real import edge for the seven self-contained staged modules (`SABRImpliedVol`,
+   `BondForward`, `FxForwardParity`, `KeyRateDuration`, `LoanAmortization`, `BacktestStatistics`,
+   `StudentTValueAtRisk`) via a `Bridges/`-style consumer, then remove them from `STAGING` one at
+   a time as each gets one.
+2. Build `BirthdayParadox`'s edge the other way: add an import *inside* `BirthdayParadox.lean`
+   itself (a `module`-header file can't import it, but it can import one) and prove a genuine tie
+   to whatever it imports, then remove it from `STAGING` like the rest. Not a structural
+   impossibility, just not done yet.
 3. Run the full three-agent eight-lens panel at the next natural occasion — this session's pass
    was intentionally narrow (the 12-module backlog only), not a substitute for it.
 4. Carried from the 2026-10-21 panel: items 1–10 of that review's backlog remain open and are not

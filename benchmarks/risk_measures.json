@@ -550,16 +550,16 @@
       "id": "mf-birthday-paradox-probability-exceeds-half",
       "name": "Birthday Paradox: 23 People Make a Shared Birthday More Likely Than Not",
       "domain": "mathematical_finance",
-      "description": "Among 23 people with birthdays drawn independently and uniformly from 365 days, the probability that all birthdays are distinct is below 1/2 — equivalently, the probability of at least one shared birthday exceeds 1/2. Cited verbatim from Mathlib's Theorems100 archive (Freek Wiedijk's 100-theorems list, Theorem 93); used in this library as the standard combinatorial-probability sanity check behind collision/coincidence arguments in risk and simulation code.",
+      "description": "Among 23 people with birthdays drawn independently and uniformly from 365 days, the probability that all birthdays are distinct is below 1/2 — equivalently, the probability of at least one shared birthday exceeds 1/2. Direct invocation of Mathlib's own Theorems100.birthday_measure (Freek Wiedijk's 100-theorems list, Theorem 93); not a reproof.",
       "code": {
-        "lean": "import MathFin.Foundations.BirthdayParadox\n\nopen MathFin.BirthdayParadox MeasureTheory ProbabilityTheory\n\ntheorem birthday_paradox_probability_exceeds_half_thm :\n    ℙ ({f | f.Injective} : Set (Fin 23 → Fin 365)) < 1 / 2 :=\n  birthday_probability_of_match_exceeds_half\n"
+        "lean": "import MathFin.Foundations.BirthdayParadox\n\nopen MeasureTheory ProbabilityTheory\n\ntheorem birthday_paradox_probability_exceeds_half_thm :\n    ℙ ({f | f.Injective} : Set (Fin 23 → Fin 365)) < 1 / 2 :=\n  Theorems100.birthday_measure\n"
       },
       "metadata": {
         "chapter": 1,
         "reference": "F. Wiedijk (ed.), Formalizing 100 Theorems, Theorem 93 (Birthday Problem); Mathlib Archive/Wiedijk100Theorems/BirthdayProblem.lean",
         "difficulty": "introductory",
-        "formalization_status": "full",
-        "formalization_scope": "Thin citation of Mathlib's own Theorems100.birthday_measure; not a reproof. Lives in MathFin/Foundations/BirthdayParadox.lean, which predates the Lean module system and so is a plain (non-module) file. Axioms-clean (inherits Mathlib's Archive proof)."
+        "formalization_status": "library_wrapper",
+        "formalization_scope": "Direct invocation of Mathlib's Theorems100.birthday_measure (statement-identical). Lives in MathFin/Foundations/BirthdayParadox.lean, which predates the Lean module system and so is a plain (non-module) file. Axioms-clean (inherits Mathlib's Archive proof)."
       }
     },
     {

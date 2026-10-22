@@ -22,15 +22,15 @@ This file does not use the Lean module system (`module` header): the file it cit
 
 Consequently, no `module`-header file anywhere in this library (`Foundations/`, `Bridges/`,
 or any pricing section) can import this one: Lean rejects `import MathFin.Foundations.
-BirthdayParadox` from a `module` file with "cannot import non-`module` ... from `module`".
-This file can only be consumed by other non-module files — benchmark-corpus snippets and the
-aggregators (`AxiomAudit`, `Blueprint`, `Examples`) — never by a library bridge. A benchmark
-entry citing it (added 2026-10-22) satisfies `tests/test_architecture.py`'s
-`test_every_module_is_used`, but **not** `test_every_module_is_connected`: that test counts
-only import-graph edges, by its own design, and a corpus citation is not one. This file has no
-route to `test_every_module_is_connected` passing for real short of a change to that test
-itself, so it is expected to stay in `STAGING` (issue #3) indefinitely, unlike the library's
-other staged modules.
+BirthdayParadox` from a `module` file with "cannot import non-`module` ... from `module`". The
+restriction is one-directional, though: a non-module file (this one) *can* import a module file
+— `import MathFin.Foundations.StandardNormal` here would compile fine alongside the Archive
+import. A benchmark entry citing this file (added 2026-10-22) satisfies
+`tests/test_architecture.py`'s `test_every_module_is_used`, but **not**
+`test_every_module_is_connected` (import-graph edges only, by that test's own design — a corpus
+citation is not one). Unlike the other modules `STAGING` (issue #3) admits, this one's bridge
+has to be built *in this file*, not in a separate `Bridges/` module: import a Foundations module
+here and prove a genuine tie to it. That has not been done yet.
 -/
 
 namespace MathFin

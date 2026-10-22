@@ -44,13 +44,12 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # see that test's own code). Four of the twelve already had a real import edge to another
 # library module (BinaryBarrierOption/PartialTimeBarrierOption/SoftBarrierOption import a
 # Foundations module; CleanPriceAccrued imports MacaulayModified), so they are genuinely
-# connected now and have been removed from STAGING. The other eight are self-contained
-# (`public import Mathlib` only) and have no library module importing them; they stay staged
-# until a real Bridges/-style consumer exists. BirthdayParadox is a further special case: it
-# predates the Lean module system (see its own docstring), so no `module`-header file can ever
-# import it — only a non-module consumer (a corpus snippet, already added) can cite it; it has
-# no path to `test_every_module_is_connected` short of a change to that test's own design, and
-# is expected to stay staged indefinitely unless that changes.
+# connected now and have been removed from STAGING. The other eight have no library module
+# importing them: seven are self-contained (`public import Mathlib` only) and stay staged until
+# a real Bridges/-style consumer exists. BirthdayParadox is a further special case: it predates
+# the Lean module system (see its own docstring), so no `module`-header file can import it — but
+# it CAN import one itself (the restriction is one-directional); its bridge has to be an import
+# added inside BirthdayParadox.lean, not a separate Bridges/ module, and has not been built yet.
 _ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
 STAGING: dict[str, str] = {
     "MathFin.BlackScholes.SABRImpliedVol": _ISSUE_3,
