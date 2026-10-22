@@ -6,12 +6,12 @@ Authors: Yang Ye
 module
 
 public import Mathlib
-public import MathFin.FixedIncome.MacaulayModified
+public import MathFin.FixedIncome.CouponBonds
 
 /-!
-# Loan amortization schedules: bullet and equal-principal recurrences
+# Loan amortization schedules: bullet, equal-principal and level-payment
 
-Both schedules share the same per-period interest accrual on the outstanding
+All three schedules share the same per-period interest accrual on the outstanding
 balance `B_{n-1}`,
 
   `I_n = B_{n-1} · i`,
@@ -27,8 +27,17 @@ They differ only in how `P_n` is chosen:
   `B_n = B_0` for `n < N`, `B_N = 0`.
 * **Equal-principal**: `P_n = B_0 / N` every period — a constant principal
   payment. Closed form: `B_n = B_0 · (1 - n / N)`.
+* **Level payment** (mortgage-style): the same payment `A` every period, its
+  principal part `P_n = A - I_n` being what is left after interest, so
+  `B_n = B_{n-1}·(1 + i) - A`. Priced against `annuityValue`
+  (`MathFin/FixedIncome/CouponBonds.lean`), the present value of `N` payments
+  `A` discounted continuously at rate `r` over periods of length `Δt`: if the
+  loan's principal is that annuity's value and the period rate is
+  `i = e^{rΔt} - 1`, then after `n ≤ N` payments the outstanding balance is
+  the value of the `N - n` payments still to come, and the loan is paid off
+  at `N`.
 
-Both closed forms are proved here by induction on the balance recurrence,
+All three closed forms are proved here by induction on the balance recurrence,
 matching the standard amortization-table identities.
 
 ## Result
@@ -36,27 +45,16 @@ matching the standard amortization-table identities.
 * `bulletPrincipal`, `equalPrincipalPayment` — the two principal-payment
   schedules.
 * `balance` — the shared balance recurrence `B_n = B_{n-1} - P_n` (as a fold).
-* `interestAccrued`, `interestAccrued_succ` — `I_n = B_{n-1} · i`,
-  independent of the schedule (proved on actual periods `n + 1`).
 * `balance_bullet_lt`, `balance_bullet_eq` — the bullet closed form.
 * `balance_equalPrincipal` — the equal-principal closed form
   `B_n = B_0 · (1 - n / N)`.
-
-## Pricing the schedule: a par-value identity
-
-Discounting the loan's own total cashflow (interest `I_n` plus principal
-`P_n`) at its own rate `i`, via `MacaulayModified.bondPriceDisc`, telescopes
-against the balance recurrence to `B_0 - B_N / (1 + i)^N` for *any* principal
-schedule — the loan is priced exactly like a bond whose "coupon" is the
-period's total cash outflow. Both schedules here fully amortize
-(`B_N = 0`: `balance_bullet_eq`, `balance_equalPrincipal` at `n = N`), so
-both price to exactly `B_0` — the familiar fact that a loan discounted at its
-own coupon rate prices at par.
-
-* `bondPriceDisc_loan_eq_initial_sub_discounted_final` — the general
-  telescoping identity.
-* `bulletLoan_prices_at_par`, `equalPrincipalLoan_prices_at_par` — the two
-  par-value corollaries.
+* `levelPaymentBalance`, `balance_levelPayment` — the level-payment balance,
+  and that it is `balance` with principal `A - I_n`.
+* `annuityValue_succ_mul_exp_sub` — one period of an annuity's value:
+  `A_{m+1}·e^{rΔt} - A = A_m`.
+* `levelPaymentBalance_eq_annuityValue`, `levelPaymentBalance_eq_zero` — the
+  balance after `n` level payments is `annuityValue (N - n) A r Δt`, and zero
+  at `N`.
 -/
 
 @[expose] public section
@@ -70,21 +68,6 @@ def balance (B0 : ℝ) (P : ℕ → ℝ) : ℕ → ℝ
   | 0 => B0
   | n + 1 => balance B0 P n - P (n + 1)
 
-/-- Interest accrued in period `n ≥ 1` is the prior balance times the period
-rate: `I_n = B_{n-1} · i`. Shared by every amortization schedule. Periods are
-`n = 1, …, N`; `n - 1` is ℕ-truncated subtraction, so at `n = 0` this
-evaluates to `B₀ · i` (the same value as period 1) rather than being
-undefined — `n = 0` is not a meaningful period, and callers should use
-`interestAccrued_succ` for the proved recurrence on actual periods. -/
-def interestAccrued (B0 : ℝ) (P : ℕ → ℝ) (i : ℝ) (n : ℕ) : ℝ :=
-  balance B0 P (n - 1) * i
-
-/-- The defining recurrence of `interestAccrued`, stated on `n + 1` (an
-actual period `n + 1 ≥ 1`) to avoid the ℕ-truncated-subtraction pitfall at
-`n = 0`: `I_{n+1} = B_n · i`. -/
-@[simp] theorem interestAccrued_succ (B0 : ℝ) (P : ℕ → ℝ) (i : ℝ) (n : ℕ) :
-    interestAccrued B0 P i (n + 1) = balance B0 P n * i := rfl
-
 /-- The bullet schedule: no principal is repaid before maturity `N`, and the
 entire balance is repaid in period `N`. -/
 def bulletPrincipal (B0 : ℝ) (N : ℕ) : ℕ → ℝ :=
@@ -95,19 +78,14 @@ theorem balance_bullet_lt {B0 : ℝ} {N n : ℕ} (hn : n < N) :
     balance B0 (bulletPrincipal B0 N) n = B0 := by
   induction n with
   | zero => rfl
-  | succ k ih =>
-    have hk : k < N := Nat.lt_of_succ_lt hn
-    simp only [balance, bulletPrincipal, ih hk, if_neg hn.ne, sub_zero]
+  | succ k ih => simp [balance, bulletPrincipal, ih (Nat.lt_of_succ_lt hn), hn.ne]
 
-/-- Under the bullet schedule, the balance is exactly zero at maturity
-(assuming it was unpaid up to `N - 1`, i.e. `N ≥ 1`). -/
+/-- Under the bullet schedule, the balance is exactly zero at maturity `N ≥ 1`
+(at `N = 0` maturity is not a payment period, and the balance stays `B₀`). -/
 theorem balance_bullet_eq {B0 : ℝ} {N : ℕ} (hN : 0 < N) :
     balance B0 (bulletPrincipal B0 N) N = 0 := by
   obtain ⟨M, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hN.ne'
-  have hprev : balance B0 (bulletPrincipal B0 (M + 1)) M = B0 :=
-    balance_bullet_lt (Nat.lt_succ_self M)
-  simp only [balance, bulletPrincipal, hprev]
-  norm_num
+  simp [balance, bulletPrincipal, balance_bullet_lt (Nat.lt_succ_self M)]
 
 /-- The equal-principal schedule: a constant payment `B₀ / N` every period. -/
 noncomputable def equalPrincipalPayment (B0 : ℝ) (N : ℕ) : ℕ → ℝ := fun _ ↦ B0 / N
@@ -125,55 +103,60 @@ theorem balance_equalPrincipal {B0 : ℝ} {N : ℕ} (hN : N ≠ 0) (n : ℕ) :
     field_simp
     ring
 
-/-! ## Pricing the schedule -/
+/-- The level-payment balance: interest at period rate `i` accrues on the
+outstanding balance, then the payment `A` is made, `B_{n+1} = B_n·(1 + i) - A`. -/
+def levelPaymentBalance (B0 A i : ℝ) : ℕ → ℝ
+  | 0 => B0
+  | n + 1 => levelPaymentBalance B0 A i n * (1 + i) - A
 
-/-- **The telescoping par-value identity**, for *any* principal schedule `P`:
-discounting the total period cashflow `I_n + P_n` at the loan's own rate `i`
-(via `MacaulayModified.bondPriceDisc`, with cashflow times `id` and the
-cashflow map `n ↦ I_n + P_n`) telescopes to `B_0 - B_N / (1 + i)^N`. Proved
-by induction on `N`: each step cancels the prior balance's discounted value
-against the new period's interest-plus-principal term, via the shared
-recurrences `interestAccrued_succ` and `balance`. -/
-theorem bondPriceDisc_loan_eq_initial_sub_discounted_final
-    (B0 i : ℝ) (P : ℕ → ℝ) (N : ℕ) (hi : (1 : ℝ) + i ≠ 0) :
-    bondPriceDisc (Finset.Icc 1 N) id (fun n ↦ interestAccrued B0 P i n + P n) i
-      = B0 - balance B0 P N / (1 + i) ^ N := by
-  unfold bondPriceDisc
-  induction N with
-  | zero => simp [balance]
-  | succ N ih =>
-    rw [Finset.sum_Icc_succ_top (by omega), ih]
-    simp only [id, interestAccrued_succ, balance]
-    have hpow : (1 + i) ^ (N + 1) ≠ 0 := pow_ne_zero _ hi
-    have hpowN : (1 + i) ^ N ≠ 0 := pow_ne_zero _ hi
-    field_simp
+/-- The level-payment schedule is the shared recurrence `balance` with the
+principal part of period `n + 1`'s payment being `A` less the interest
+`B_n · i` on the outstanding balance. -/
+theorem balance_levelPayment (B0 A i : ℝ) (n : ℕ) :
+    balance B0 (fun m ↦ A - levelPaymentBalance B0 A i (m - 1) * i) n =
+      levelPaymentBalance B0 A i n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    simp only [balance, levelPaymentBalance, ih, Nat.add_sub_cancel]
     ring
 
-/-- **The bullet loan prices at par**: discounted at its own coupon rate, the
-total cashflow of a bullet loan (interest every period, full principal at
-maturity) has present value exactly `B_0`. Corollary of
-`bondPriceDisc_loan_eq_initial_sub_discounted_final` and `balance_bullet_eq`
-(`B_N = 0`). -/
-theorem bulletLoan_prices_at_par {B0 i : ℝ} {N : ℕ} (hN : 0 < N) (hi : (1 : ℝ) + i ≠ 0) :
-    bondPriceDisc (Finset.Icc 1 N) id
-        (fun n ↦ interestAccrued B0 (bulletPrincipal B0 N) i n + bulletPrincipal B0 N n) i
-      = B0 := by
-  rw [bondPriceDisc_loan_eq_initial_sub_discounted_final B0 i (bulletPrincipal B0 N) N hi,
-    balance_bullet_eq hN]
+/-- One period of an annuity: carrying the value of `m + 1` payments forward one
+period and paying the first leaves the value of the other `m`,
+`A_{m+1}·e^{rΔt} - A = A_m`. -/
+theorem annuityValue_succ_mul_exp_sub (m : ℕ) (A r Δt : ℝ) :
+    annuityValue (m + 1) A r Δt * Real.exp (r * Δt) - A = annuityValue m A r Δt := by
+  rw [annuityValue, annuityValue, Finset.sum_range_succ', add_mul, Finset.sum_mul,
+    mul_assoc A, ← Real.exp_add]
+  simp only [Nat.cast_zero, zero_add, one_mul, neg_add_cancel, Real.exp_zero, mul_one,
+    add_sub_cancel_right]
+  refine Finset.sum_congr rfl fun i _ ↦ ?_
+  rw [mul_assoc, ← Real.exp_add]
+  congr 2
+  push_cast
   ring
 
-/-- **The equal-principal loan also prices at par**: same conclusion for the
-constant-principal schedule, via `balance_equalPrincipal` at `n = N`
-(`B_N = B_0 · (1 - N/N) = 0`). -/
-theorem equalPrincipalLoan_prices_at_par {B0 i : ℝ} {N : ℕ} (hN : N ≠ 0) (hi : (1 : ℝ) + i ≠ 0) :
-    bondPriceDisc (Finset.Icc 1 N) id
-        (fun n ↦ interestAccrued B0 (equalPrincipalPayment B0 N) i n
-          + equalPrincipalPayment B0 N n) i
-      = B0 := by
-  have hN' : (N : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hN
-  rw [bondPriceDisc_loan_eq_initial_sub_discounted_final B0 i (equalPrincipalPayment B0 N) N hi,
-    balance_equalPrincipal hN]
-  field_simp
-  ring
+/-- **Level-payment schedule against `annuityValue`.** A loan whose principal
+`B₀` is the value `annuityValue N A r Δt` of `N` level payments `A`, at period
+rate `i = e^{rΔt} - 1`, has outstanding balance after `n ≤ N` payments equal to
+the value of the `N - n` payments still to come. -/
+theorem levelPaymentBalance_eq_annuityValue {B0 A r Δt : ℝ} {N : ℕ}
+    (hB0 : annuityValue N A r Δt = B0) {n : ℕ} (hn : n ≤ N) :
+    levelPaymentBalance B0 A (Real.exp (r * Δt) - 1) n = annuityValue (N - n) A r Δt := by
+  induction n with
+  | zero => exact hB0.symm
+  | succ k ih =>
+    obtain ⟨m, hm⟩ := Nat.exists_eq_add_of_lt hn
+    rw [levelPaymentBalance, ih (Nat.le_of_succ_le hn), add_sub_cancel,
+      show N - k = m + 1 by omega, show N - (k + 1) = m by omega,
+      annuityValue_succ_mul_exp_sub]
+
+/-- **A level-payment loan is paid off at maturity**: with `B₀` the value of the
+`N` payments, the balance after the `N`-th is zero. -/
+theorem levelPaymentBalance_eq_zero {B0 A r Δt : ℝ} {N : ℕ}
+    (hB0 : annuityValue N A r Δt = B0) :
+    levelPaymentBalance B0 A (Real.exp (r * Δt) - 1) N = 0 := by
+  rw [levelPaymentBalance_eq_annuityValue hB0 le_rfl, Nat.sub_self, annuityValue,
+    Finset.sum_range_zero]
 
 end MathFin

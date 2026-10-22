@@ -8,7 +8,7 @@
 
   The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
   narrative); THIS file is its machine-written closure over the benchmark
-  corpus (760 MathFin constants, 30 upstream). Citations
+  corpus (763 MathFin constants, 30 upstream). Citations
   are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
   unqualified under `open`, by dot notation on a hypothesis, or declared
   outside the MathFin namespace is pinned like any other. Statement-position
@@ -584,9 +584,6 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.bachelier_call_formula' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.bachelier_call_formula
 
-/-- info: 'MathFin.balance_equalPrincipal' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.balance_equalPrincipal
-
 /-- info: 'MathFin.basketMomentMatchPrice_single_eq_integral' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.basketMomentMatchPrice_single_eq_integral
 
@@ -655,6 +652,9 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.black_futures_formula' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.black_futures_formula
+
+/-- info: 'MathFin.bondForwardPrice_from_no_arbitrage' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.bondForwardPrice_from_no_arbitrage
 
 /-- info: 'MathFin.bondPortfolio_immunization_first_order' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.bondPortfolio_immunization_first_order
@@ -806,9 +806,6 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.cirBondPrice_solves_pde' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.cirBondPrice_solves_pde
 
-/-- info: 'MathFin.cleanPrice_eq_dirty_on_coupon_date' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.cleanPrice_eq_dirty_on_coupon_date
-
 /-- info: 'MathFin.cml_equation' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.cml_equation
 
@@ -880,6 +877,12 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.covariance_rollPriceChange' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.covariance_rollPriceChange
+
+/-- info: 'MathFin.covered_eq_uncovered_interest_parity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.covered_eq_uncovered_interest_parity
+
+/-- info: 'MathFin.covered_interest_parity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.covered_interest_parity
 
 /-- info: 'MathFin.creditSpread_eq_hazard' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.creditSpread_eq_hazard
@@ -1043,14 +1046,8 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.firstToDefault_spread_eq_sum_hazards' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.firstToDefault_spread_eq_sum_hazards
 
-/-- info: 'MathFin.forwardForwardFactor_eq_exp_diff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.forwardForwardFactor_eq_exp_diff
-
 /-- info: 'MathFin.forwardMeasure_bs_expected_terminal' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.forwardMeasure_bs_expected_terminal
-
-/-- info: 'MathFin.forwardValue_eq_zero_iff_eq_bondForwardPrice' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.forwardValue_eq_zero_iff_eq_bondForwardPrice
 
 /-- info: 'MathFin.forward_price_eq_spot_div_discount' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.forward_price_eq_spot_div_discount
@@ -1682,6 +1679,9 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.knockIn_add_knockOut_eq_vanilla' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.knockIn_add_knockOut_eq_vanilla
 
+/-- info: 'MathFin.levelPaymentBalance_eq_annuityValue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.levelPaymentBalance_eq_annuityValue
+
 /-- info: 'MathFin.lifeAnnuityDue_const' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.lifeAnnuityDue_const
 
@@ -2102,8 +2102,8 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.sum_componentVaR_eq_valueAtRisk_sub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.sum_componentVaR_eq_valueAtRisk_sub
 
-/-- info: 'MathFin.sum_keyRateDuration_eq_effectiveDuration' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in #print axioms MathFin.sum_keyRateDuration_eq_effectiveDuration
+/-- info: 'MathFin.sum_deriv_keyRate_eq_deriv_bondPriceDisc' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.sum_deriv_keyRate_eq_deriv_bondPriceDisc
 
 /-- info: 'MathFin.survival_at_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.survival_at_zero
@@ -2137,6 +2137,12 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.tendsto_claytonCopulaFun_diag_div' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.tendsto_claytonCopulaFun_diag_div
+
+/-- info: 'MathFin.tendsto_cleanPrice_coupon_date' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.tendsto_cleanPrice_coupon_date
+
+/-- info: 'MathFin.tendsto_dirtyPrice_coupon_date' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.tendsto_dirtyPrice_coupon_date
 
 /-- info: 'MathFin.tendsto_expectedShortfall_div_valueAtRisk_expMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.tendsto_expectedShortfall_div_valueAtRisk_expMeasure
@@ -2191,6 +2197,9 @@ namespace MathFin.AxiomAuditGen
 
 /-- info: 'MathFin.triangleNoArb_solve_third' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.triangleNoArb_solve_third
+
+/-- info: 'MathFin.uncovered_interest_parity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.uncovered_interest_parity
 
 /-- info: 'MathFin.upCapture_smul' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in #print axioms MathFin.upCapture_smul
