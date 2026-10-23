@@ -451,7 +451,8 @@ import MathFin.BlackScholes.Lookback
 import MathFin.BlackScholes.BarrierParity
 import MathFin.BlackScholes.BinaryBarrierOption
 import MathFin.BlackScholes.SoftBarrierOption
--- Also consumes the bivariate normal CDF (Foundations/BivariateNormalCDF), like Stulz/Heynen-Kat below
+-- Also consumes the bivariate normal CDF (Foundations/BivariateNormalCDF), like
+-- Stulz/Heynen-Kat below
 import MathFin.BlackScholes.PartialTimeBarrierOption
 import MathFin.BlackScholes.PowerOption
 import MathFin.BlackScholes.BreedenLitzenberger
@@ -584,7 +585,8 @@ import MathFin.FixedIncome.Inflation
 import MathFin.FixedIncome.ABCDVolatility
 -- GSR (Gaussian short rate): two-piece piecewise-constant-volatility bond price
 import MathFin.FixedIncome.GSRPiecewiseVol
--- Clean/dirty price and accrued interest, on- and between-coupon dates; clean price continuous across a coupon date
+-- Clean/dirty price and accrued interest, on- and between-coupon dates; clean
+-- price continuous across a coupon date
 import MathFin.FixedIncome.CleanPriceAccrued
 -- Bond forward price via cash-and-carry replication; derived from forward_price_from_no_arbitrage
 import MathFin.FixedIncome.BondForward

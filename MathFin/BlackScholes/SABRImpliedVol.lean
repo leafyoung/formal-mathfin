@@ -20,7 +20,8 @@ perturbation gives the price of European options via Black's formula with an
 `σ_B(K, f)` as a function of today's forward `f` and strike `K` (eqs. 2.17a-c):
 
 `σ_B(K,f) = α / [(fK)^((1-β)/2) · (1 + (1-β)²/24 · log²(f/K) + (1-β)⁴/1920 · log⁴(f/K) + ⋯)]
-  · (z / x(z)) · (1 + [(1-β)²/24 · α²/(fK)^(1-β) + ρβνα/4/(fK)^((1-β)/2) + (2-3ρ²)/24 · ν²] t_ex + ⋯)`
+  · (z / x(z)) · (1 + [(1-β)²/24 · α²/(fK)^(1-β)
+    + ρβνα/4/(fK)^((1-β)/2) + (2-3ρ²)/24 · ν²] t_ex + ⋯)`
 
 where `z = (ν/α)(fK)^((1-β)/2) log(f/K)` and
 `x(z) = log((√(1-2ρz+z²) + z - ρ)/(1-ρ))` (eqs. 2.17b-c).
