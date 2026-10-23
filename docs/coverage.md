@@ -28,27 +28,34 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### Fixed-income building blocks (2026-10-23; #277; issues #69, #108)
 
-Eight `full` entries, each derived from library machinery. Five replace pre-existing
+Seven `full` entries, each derived from library machinery. Five replace pre-existing
 `interest_rates.json` entries at the same five `MathFin/FixedIncome/*.lean` paths (an
 independently-landed earlier batch proving different theorems under the same filenames; this
 batch's content is the one kept — see those five files' module docstrings), net zero there; only
-`no_arbitrage.json` grows (21 → 24, the three covered/uncovered-parity entries). Corpus 674 → 677,
-delivery-ready (`full + library_wrapper`) 658 → 661:
+`no_arbitrage.json` grows (21 → 23, two covered/uncovered-parity entries: the risk-neutral
+uncovered-parity half is recorded inside `mf-covered-eq-uncovered-interest-parity` rather than as
+its own entry). Corpus 674 → 676, delivery-ready (`full + library_wrapper`) 658 → 660 — this
+section's own standalone delta; Student-t's own count (674, below) already sits inside this
+section's 674 baseline. In this tree, which also carries the SABR batch below (three entries
+added, `mf-sabr-atm-vol-zero-tex` replaced, net +2), the count is 678 (643 `full`, 19
+`library_wrapper`, 16 `reduced_core`), 662 delivery-ready:
 
 - **Interest-rate parity** (`no_arbitrage.json`; #108). Covered parity `F = S·e^{(r_d−r_f)T}` is
   `forward_price_from_no_arbitrage` with the foreign zero-coupon bond as the asset
   (`mf-covered-interest-parity`; the one-period discrete form is
   `covered_interest_parity_discrete`). Uncovered parity in its risk-neutral form,
   `E_Q[S_T] = S·e^{(r_d−r_f)T}`, is `expected_terminal_eq_forward` under the Garman–Kohlhagen
-  hypothesis (`mf-uncovered-interest-parity-risk-neutral`; the physical-measure UIP is not
-  claimed — and it is the same `expected_terminal_eq_forward` as `mf-forward-price`
-  (`benchmarks/black_scholes.json`), at drift `r_d − r_f` instead of a generic `r`, not a second
-  derivation), and the two agree (`mf-covered-eq-uncovered-interest-parity`).
+  hypothesis (the physical-measure UIP is not claimed — and it is the same
+  `expected_terminal_eq_forward` as `mf-forward-price` (`benchmarks/black_scholes.json`), at drift
+  `r_d − r_f` instead of a generic `r`, not a second derivation). The agreement — `F = E_Q[S_T]`,
+  not a restatement of either closed form on its own — is `mf-covered-eq-uncovered-interest-parity`;
+  the risk-neutral half above is `uncovered_interest_parity` inside that entry's cited proof, not a
+  claim of the entry's own type.
 - **Bond forward** (`interest_rates.json`). `forward_price_from_no_arbitrage` with the
   coupon-stripped bond as the spot (`mf-bond-forward-from-no-arbitrage`).
-- **Key-rate duration** (`interest_rates.json`; #69). With one spot rate per cashflow (all
-  `1 + kᵢ ≠ 0`), the partials `∂P/∂kⱼ` sum to the parallel-shift derivative, and on a flat curve
-  to `dP/dy` through
+- **Key-rate duration** (`interest_rates.json`; #69). With one spot rate per cashflow, the
+  partials `∂P/∂kⱼ` sum to the parallel-shift derivative on any curve, and on a flat curve with
+  `1 + y ≠ 0` to `dP/dy` through
   `hasDerivAt_bondPriceDisc` (`mf-key-rate-partials-sum-to-yield-derivative`). Interpolated
   key-rate nodes are not modelled, and the durations `−(1/P)·∂P/∂kⱼ` are not defined.
 - **Clean and dirty price** (`interest_rates.json`). For `1 + y ≠ 0`, with next coupon `c_j`
@@ -63,8 +70,8 @@ delivery-ready (`full + library_wrapper`) 658 → 661:
 
 Verification: `lake build` and `lake lint` passed; the full pytest suite passed (62 passed, 1
 pre-existing skip for the optional `lean_interact` extra); `axiom_audit_gen --check` reports
-fresh; the ledger reports 677 fresh, 0 stale and 0 missing, the eight entries verified with
-`lake env lean`.
+fresh; the ledger reports 678 fresh, 0 stale and 0 missing in this tree, the seven entries
+verified with `lake env lean`.
 
 ### Relative drawdown is scale invariant (2026-10-23)
 
