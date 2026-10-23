@@ -31,7 +31,7 @@ computes.
 
 ## Results
 
-* `bondPriceKeyRate_update_eq`: moving node `j`'s rate to `x` leaves every other cashflow's
+* `bondPriceKeyRate_update_eq`: moving node `j ∈ s`'s rate to `x` leaves every other cashflow's
   term unchanged (used to prove both results below).
 * `hasDerivAt_bondPriceKeyRate_update`: `∂P/∂kⱼ = -tⱼ·cⱼ / (1 + kⱼ)^{tⱼ+1}`, as a `HasDerivAt`.
 * `hasDerivAt_bondPriceKeyRate_parallel`: on any curve, the parallel-shift derivative is
@@ -56,7 +56,7 @@ noncomputable def bondPriceKeyRate (s : Finset ι) (t : ι → ℕ) (c k : ι �
 theorem bondPriceKeyRate_const (s : Finset ι) (t : ι → ℕ) (c : ι → ℝ) (y : ℝ) :
     bondPriceKeyRate s t c (fun _ ↦ y) = bondPriceDisc s t c y := rfl
 
-/-- Moving node `j`'s spot rate to `x` changes only cashflow `j`'s discount term; the rest of
+/-- Moving node `j ∈ s`'s spot rate to `x` changes only cashflow `j`'s discount term; the rest of
 the curve's contribution is unchanged. -/
 theorem bondPriceKeyRate_update_eq [DecidableEq ι] (s : Finset ι) (t : ι → ℕ) (c k : ι → ℝ)
     {j : ι} (hj : j ∈ s) (x : ℝ) :
@@ -67,8 +67,8 @@ theorem bondPriceKeyRate_update_eq [DecidableEq ι] (s : Finset ι) (t : ι → 
   exact Finset.sum_congr rfl fun i hi ↦ by rw [Function.update_of_ne (Finset.ne_of_mem_erase hi)]
 
 /-- **Key-rate partial derivative.** Moving the spot rate of node `j ∈ s` alone moves only
-cashflow `j`'s discount term, so `∂P/∂kⱼ = -tⱼ·cⱼ / (1 + kⱼ)^{tⱼ+1}`: the per-cashflow
-derivative `hasDerivAt_coupon_term` that `hasDerivAt_bondPriceDisc` sums. -/
+cashflow `j`'s discount term, so, for `1 + kⱼ ≠ 0`, `∂P/∂kⱼ = -tⱼ·cⱼ / (1 + kⱼ)^{tⱼ+1}`: the
+per-cashflow derivative `hasDerivAt_coupon_term` that `hasDerivAt_bondPriceDisc` sums. -/
 theorem hasDerivAt_bondPriceKeyRate_update [DecidableEq ι] (s : Finset ι) (t : ι → ℕ)
     (c k : ι → ℝ) {j : ι} (hj : j ∈ s) (hk : 1 + k j ≠ 0) :
     HasDerivAt (fun x ↦ bondPriceKeyRate s t c (Function.update k j x))
@@ -79,8 +79,9 @@ theorem hasDerivAt_bondPriceKeyRate_update [DecidableEq ι] (s : Finset ι) (t :
 /-- **Key-rate partials sum to the parallel-shift derivative.** On any curve `k`, if `D j` is
 the partial derivative `∂P/∂kⱼ` for every node `j ∈ s`, then the price along the parallel shift
 `ε ↦ P(k + ε·1)` has derivative `Σⱼ D j` at `ε = 0`. The partials are taken as hypotheses, so
-the statement holds for whatever `∂P/∂kⱼ` is; they are identified with
-`hasDerivAt_bondPriceKeyRate_update` by uniqueness of derivatives. -/
+the statement holds for whatever `∂P/∂kⱼ` is — `hasDerivAt_bondPriceKeyRate_update` computes one
+such witness in closed form; `sum_deriv_keyRate_eq_deriv_bondPriceDisc` below uses it only for
+existence (`differentiableAt.hasDerivAt`) and feeds the `deriv`s themselves. -/
 theorem hasDerivAt_bondPriceKeyRate_parallel [DecidableEq ι] (s : Finset ι) (t : ι → ℕ)
     (c k : ι → ℝ) {D : ι → ℝ}
     (hD : ∀ j ∈ s,
