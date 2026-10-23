@@ -41,7 +41,7 @@ false finance claim. The library has met this repeatedly:
   2026-08-07).
 - An Itô-process drift `A` that is not assumed measurable makes every drift integral `0`, and the
   theorem then says nothing about it (disclosed in `ItoFormulaAdapted.lean`).
-- `cirBondA κ θ 0` is junk, while the true limit as `σ → 0` is the deterministic Vasicek-type
+- `cirBondA κ θ 0 T` is junk, while the true limit as `σ → 0` is the deterministic Vasicek-type
   loading.
 - In Glosten–Milgrom, a prior at `θ = 1, p = 1` makes a trade event null. The quote is then the
   integral against the zero measure, `0`, and the closed-form spread returns the whole `V_H − V_L`
@@ -57,7 +57,7 @@ The rule:
   `q · (u − d) = e^r − d` needs no `u ≠ d`; a weighted identity `w = f · φ` needs no non-zero
   density, while the quotient `φ = w / f` does.
 - **Where a junk value is reachable at the edge of the parameters, say so, and prove it when that
-  is cheap.** `GlostenMilgrom.spread_junk_at_corner` is the model: it evaluates the closed form at
+  is cheap.** `spread_junk_at_corner` is the model: it evaluates the closed form at
   the excluded corner and shows the answer is wrong. That explains why the hypothesis is there
   better than any comment would.
 - **The prose follows.** A docstring or corpus `description` never calls the term a price outside
