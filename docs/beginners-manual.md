@@ -180,9 +180,9 @@ discusses this further.
   [Hugging Face dataset](https://huggingface.co/datasets/formal-applied-math/formal-mathfin-theorems).
 - **By dependency.** [`blueprint.md`](blueprint.md) draws the chain from Brownian motion to the
   Black–Scholes formula, each node linked to its proof.
-- **Inside Lean.** In any file that imports the library, `#check binomialNoArb_crr` prints a
-  theorem's statement in the infoview, and the tactic `exact?` searches Mathlib and the library for
-  a lemma that closes the current goal. Mathlib's [documentation](https://leanprover-community.github.io/mathlib4_docs/)
+- **Inside Lean.** In any file that imports the library, `#check MathFin.binomialNoArb_crr` prints
+  a theorem's statement in the infoview, and the tactic `exact?` searches Mathlib and the library
+  for a lemma that closes the current goal. Mathlib's [documentation](https://leanprover-community.github.io/mathlib4_docs/)
   and the search engine [Loogle](https://loogle.lean-lang.org) cover Mathlib.
 
 ## 6. Exercises

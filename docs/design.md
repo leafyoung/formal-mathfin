@@ -36,11 +36,11 @@ looks exactly like a meaningful quantity, so a statement about it can be a true 
 false finance claim. The library has met this repeatedly:
 
 - `crrUpProb u d r = (e^r − d)/(u − d)` is `0` when `u = d`, not a probability of anything.
-- The Lévy-model exponent `κ(θ)` read as `𝔼[e^{θY}] = e^{κ(θ)τ}` without `∫ e^{θx} dν < ∞`: where
+- The Laplace exponent `κ(θ)` read as `𝔼[e^{θY}] = e^{κ(θ)τ}` without `∫ e^{θx} dν < ∞`: where
   the integral is infinite the Bochner integral is `0` and `κ(θ)` is junk (values review,
-  2026-08-07).
+  2026-10-08).
 - An Itô-process drift `A` that is not assumed measurable makes every drift integral `0`, and the
-  theorem then says nothing about it (disclosed in `ItoFormulaAdapted.lean`).
+  theorem then says nothing about it (disclosed in `AdaptedQuadraticVariation.lean`).
 - `cirBondA κ θ 0 T` is junk, while the true limit as `σ → 0` is the deterministic Vasicek-type
   loading.
 - In Glosten–Milgrom, a prior at `θ = 1, p = 1` makes a trade event null. The quote is then the
@@ -115,5 +115,7 @@ says what the docstring claims. Where the definition has a boundary (the endpoin
 Glosten–Milgrom's prior, `u = d` in the binomial tree), a small counterexample at the boundary
 shows the hypothesis is load-bearing.
 
-These applications live in `MathFinExamples/`, built with the library, so they break when the
-theorem changes. Not every README main result has one yet.
+Such applications belong in `MathFinExamples/` or `MathFinTest/`, built with the library, so they
+break when the theorem changes. Today `binomialNoArb_crr` is applied this way in
+`MathFinTest/Readme.lean`'s second example; `MathFinExamples/Tour.lean` re-exports five results
+without constructing a case. Not every README main result has one yet.
