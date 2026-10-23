@@ -158,7 +158,7 @@ def _guard_block(name: str) -> str:
     )
     return (
         f"/-- {info} -/\n"
-        f"#guard_msgs (whitespace := lax) in #print axioms {name}\n"
+        f"#guard_msgs (whitespace := lax) in\n#print axioms {name}\n"
     )
 
 
@@ -189,6 +189,9 @@ def generate() -> str:
   (Excluded from CI kernel replay like AxiomAudit: whole-library closure.)
 -/
 {imports}
+-- The `#guard_msgs` docstrings below are Lean's own output, matched as printed.
+set_option linter.style.longLine false
+
 namespace {GEN_NAMESPACE}
 
 """

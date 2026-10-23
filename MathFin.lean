@@ -212,9 +212,11 @@ import MathFin.Foundations.UnifIntegrableL2
 import MathFin.Foundations.SDEExistence
 -- Pathwise SDE uniqueness via the L²-energy Grönwall argument (#19)
 import MathFin.Foundations.SDEUniqueness
--- The assembled drift's pathwise realization: convergence + coeFn = driftContinuousMod (SDE-existence bridge)
+-- The assembled drift's pathwise realization: convergence + coeFn = driftContinuousMod
+-- (SDE-existence bridge)
 import MathFin.Foundations.DriftProcessModification
--- The strong solution as a pathwise process: slicing the Picard fixed point (pathwise SDE existence)
+-- The strong solution as a pathwise process: slicing the Picard fixed point (pathwise SDE
+-- existence)
 import MathFin.Foundations.SDEPathwise
 -- The general-integrand Itô process as a continuous local martingale (null-augmented filtration)
 import MathFin.Foundations.ItoIntegralProcessLocalMartingaleGeneral
@@ -247,15 +249,18 @@ import MathFin.Foundations.AdaptedStochasticIntegralFreezing
 import MathFin.Foundations.AdaptedQuadraticVariation
 -- First-order term of the adapted Itô formula (martingale part): ∑ w(tₖ)ΔMₖ → ∫ w dM in L²
 import MathFin.Foundations.AdaptedRiemannStieltjes
--- The drift of the adapted Itô formula: A = ∫b ds is Lipschitz, predictable, and ∑ g(tₖ)ΔAₖ → ∫ g·b ds
+-- The drift of the adapted Itô formula: A = ∫b ds is Lipschitz, predictable, and ∑ g(tₖ)ΔAₖ → ∫ g·b
+-- ds
 import MathFin.Foundations.AdaptedDrift
 import MathFin.Foundations.ItoFormulaAdapted
 -- Deterministic drift Riemann-convergence (α4 brick b-tail): ∑θ(tₖ)²·Δτ → ∫₀ᵀθ²ds
 import MathFin.Foundations.DriftRiemannConvergence
--- Continuous adapted-θ Girsanov assembly (α4 (c)): convergence core toward Btheta_isQBrownianMotion_adapted
+-- Continuous adapted-θ Girsanov assembly (α4 (c)): convergence core toward
+-- Btheta_isQBrownianMotion_adapted
 import MathFin.Foundations.GirsanovAdaptedTheta
 -- Rung 1 (bounded predictable θ Girsanov, Route B): marshal a SimpleProcess into single-partition
--- (s,c) form; generic simple-Doléans moment bounds; the predictable distributional Girsanov theorem.
+-- (s,c) form; generic simple-Doléans moment bounds; the predictable distributional Girsanov
+-- theorem.
 import MathFin.Foundations.SimpleProcessPartition
 import MathFin.Foundations.GirsanovSimpleDoleansMoments
 import MathFin.Foundations.GirsanovPredictableTheta
@@ -556,6 +561,8 @@ import MathFin.FixedIncome.DefaultDensity
 -- CVA under exposure independent of default (Fubini reduction; Gaussian expected exposure in
 -- closed form)
 import MathFin.FixedIncome.CVA
+-- DVA as a genuine corollary of CVA: negate the exposure, swap in the bank's own default time
+import MathFin.FixedIncome.DVA
 -- Phase 41: Vasicek SDE closed-form (full SDE, mean + variance)
 import MathFin.FixedIncome.VasicekSDE
 -- OU generator on polynomials: the Hermite spectral layer of the OU/Vasicek family
@@ -646,6 +653,11 @@ import MathFin.RiskMeasures.WorstCaseRisk
 -- Gaussian closed forms identified as the VaR of the law at z = Φ⁻¹(α)
 import MathFin.RiskMeasures.ValueAtRisk
 import MathFin.RiskMeasures.GaussianValueAtRisk
+-- Expected negative exposure, exposure VaR (PFE) and netting subadditivity, built on the real
+-- CVA expected-exposure substrate; collateralized exposure under an actual Brownian-driven
+-- process (lagged collateral is a real earlier value of the process, not an opaque scalar)
+import MathFin.RiskMeasures.ExposureMeasures
+import MathFin.RiskMeasures.CollateralizedExposureBrownian
 -- Expected shortfall: Rockafellar–Uryasev for every law, coherence, dual representation; the
 -- Gaussian ES closed form; VaR by bisection; VaR superadditivity; discrete-distribution VaR/ES
 -- (the subadditivity-failure counterexample); closed forms and tail ratios; VaR and ES of the
@@ -669,7 +681,8 @@ import MathFin.RiskMeasures.VasicekIRB
 import MathFin.RiskMeasures.TrancheLoss
 import MathFin.RiskMeasures.SACCRExposure
 -- Phase 1 (convex-duality unification): fundamental superhedging bound — every EMM prices a claim
--- at most its super-replication cost (the pricing-side companion of the coherent-risk representation)
+-- at most its super-replication cost (the pricing-side companion of the coherent-risk
+-- representation)
 import MathFin.Foundations.SuperhedgingDuality
 -- LSV calibration: the leverage-posterior core (L²·E[v | S = K] = σ_loc²)
 import MathFin.BlackScholes.LSVLeverage
