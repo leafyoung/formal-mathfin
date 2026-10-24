@@ -8,7 +8,7 @@
 
   The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
   narrative); THIS file is its machine-written closure over the benchmark
-  corpus (769 MathFin constants, 30 upstream). Citations
+  corpus (769 MathFin constants, 29 upstream). Citations
   are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
   unqualified under `open`, by dot notation on a hypothesis, or declared
   outside the MathFin namespace is pinned like any other. Statement-position
@@ -3224,10 +3224,6 @@ so these are pinned here rather than left to upstream. -/
 /-- info: 'Real.log_div' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Real.log_div
-
-/-- info: 'Theorems100.birthday_measure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms Theorems100.birthday_measure
 
 /-- info: 'inferInstance' does not depend on any axioms -/
 #guard_msgs (whitespace := lax) in
