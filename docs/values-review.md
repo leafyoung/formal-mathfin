@@ -130,7 +130,7 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
-## 2026-10-24 — corpus 683, modules 637 — the exposure/XVA rebuild enters the corpus
+## 2026-10-24 — corpus 682, modules 639 — the exposure/XVA rebuild enters the corpus
 
 Scope: a single-reviewer pass (the documented deviation, as on 2026-10-22) — narrowly the five
 entries PR #342 (`exposure-xva-rebuild`, head `19f7b48`) adds to `benchmarks/credit.json`:
@@ -144,8 +144,10 @@ pytest, ledger fresh), a three-consecutive-clean fresh-reviewer roll plus one cl
 independent-model pass at the final head, with the naming, docstring-hypothesis-disclosure
 (ENE integrability; PFE `α ∈ (0,1)`, `σ ≥ 0`, `Z ~ N(0,1)`), and DVA closed-form-statement
 findings from the roll landed as `475ce75`, `19a122a`, `7026303` (and `198a1fa` before them).
-The ledger rows for the five re-verify via the hosted sweep at the merge commit; the corpus
-total stands at 683 (`formalization.yaml`: 683 theorems, 667 delivery-ready).
+The ledger rows for the five re-verify via the hosted sweep at the merge commit. The closed
+PR #275's BirthdayParadox module — rejected upstream as a thin wrapper (AGENTS.md rule 12) —
+was removed from this integration picture in the same cycle: corpus 682 (`formalization.yaml`:
+682 theorems, 666 delivery-ready), MathFin/ modules 639.
 
 ### Upgrades executed
 

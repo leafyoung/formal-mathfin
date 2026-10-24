@@ -55,18 +55,11 @@ AGGREGATORS = frozenset({"MathFin.AxiomAudit", "MathFin.AxiomAuditGen", "MathFin
 # not its [0, 1] bounds, now lives in Performance.RelativeDrawdown); StudentTValueAtRisk (whose
 # first bridge, to RiskMeasures.Gaussian, was superseded when the module was rebuilt on a real
 # Student-t law) imports Foundations.StudentT and RiskMeasures.ExpectedShortfall (VaR and ES of
-# the law, through the library's own `valueAtRisk`/`expectedShortfall`). Only BirthdayParadox remains
-# staged: it predates the Lean module system (see its own docstring), so no `module`-header file
-# can import it — but it CAN import one itself (the restriction is one-directional). Investigated
-# 2026-10-22: no Foundations module shares genuine combinatorial/probabilistic structure with the
-# discrete birthday-collision computation without inventing a real new result (a Poisson
-# approximation of the no-match probability — tying the discrete count to `Real.exp` and the
-# Poisson zero-count law in `PoissonPgf`/`PoissonCounting`, not to `StandardNormal` — would be
-# genuine, but is new formalization, not a bridge); it stays staged pending that real work, not
-# as a place to park a cosmetic import.
-_ISSUE_3 = "https://github.com/leafyoung/formal-mathfin/issues/3"
+# the law, through the library's own `valueAtRisk`/`expectedShortfall`). BirthdayParadox was
+# removed 2026-10-24: PR #275 was closed by the maintainer as out of scope (thin wrapper of a
+# single upstream result; Archive import leaks a global MeasureSpace instance), so the
+# integration picture no longer carries it.
 STAGING: dict[str, str] = {
-    "MathFin.Foundations.BirthdayParadox": _ISSUE_3,
 }
 
 
