@@ -285,6 +285,7 @@ import MathFin.Foundations.ItoFormulaAdaptedDriftConstructed
 -- Cross-horizon consistency of the CLM Itô integral: one pinned `M` (`hMeq`) represents
 -- the CLM integral at every horizon `τ ≤ T` (band-transfer kernel + freeze law)
 import MathFin.Foundations.ItoIntegralCrossHorizon
+import MathFin.Foundations.GyongyMimicry
 import MathFin.FixedIncome.HullWhiteCalibration
 import MathFin.BlackScholes.MonteCarloPricer
 -- Martingale representation, step 3: the Doléans exponential of a deterministic step
@@ -444,6 +445,7 @@ import MathFin.BlackScholes.Spreads
 -- order Breeden–Litzenberger, for any law with a finite mean); the call price is differentiable
 -- in the strike exactly where the law has no atom, and there its derivative is minus the digital
 import MathFin.BlackScholes.CallSpreadDigital
+import MathFin.BlackScholes.Dupire
 import MathFin.BlackScholes.Lookback
 import MathFin.BlackScholes.BarrierParity
 import MathFin.BlackScholes.BinaryBarrierOption
