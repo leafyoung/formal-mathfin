@@ -397,6 +397,17 @@ namespace MathFin.AxiomAudit
 #guard_msgs in
 #print axioms MathFin.sharpeRatio_affine_invariant
 
+/-! ### Student-t: the Cauchy anchor, the density, the ES closed form (2026-10-25)
+
+The Student-t law (`MathFin.Foundations.StudentT`) and its McNeil–Frey–Embrechts risk closed
+forms (`MathFin.RiskMeasures.StudentTValueAtRisk`). `studentTMeasure_one`: at `ν = 1` the
+Student-t law is the standard Cauchy law. `studentTPDFReal_eq`: the closed-form density of the
+law. `expectedShortfall_of_hasLaw_studentTMeasure`: expected shortfall of a loss with the
+Student-t law, in closed form. The `ν > 1` tail first moment (proved in
+`MathFin.Foundations.StudentT`) has no guard in this audit; the companion VaR closed form
+(`valueAtRisk_of_hasLaw_studentTMeasure`) and `quantile_studentTMeasure_le_expectedShortfall_closedForm`
+are pinned by the generated closure (`MathFin.AxiomAuditGen`), not here. -/
+
 /-- info: 'MathFin.studentTMeasure_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms MathFin.studentTMeasure_one
