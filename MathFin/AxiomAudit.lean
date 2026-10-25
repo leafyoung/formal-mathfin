@@ -2202,6 +2202,56 @@ maturity iff total variance does; the raw-SVI family form. -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.SVI.bsSmile_calendar_free_iff
 
+/-! ### Student-t: the closed-form density and its VaR/ES (2026-10-25)
+
+`Foundations/StudentT.lean` — the Student-t law: density in closed form, the ν = 1 Cauchy
+anchor, the tail first moment — and `RiskMeasures/StudentTValueAtRisk.lean`, the
+McNeil–Frey–Embrechts closed forms for the VaR and ES of the Student-t law. `studentTMeasure_one`
+and `studentTPDFReal_eq` pin the foundation: the closed-form density defines a probability
+measure. `valueAtRisk_of_hasLaw_studentTMeasure` and `expectedShortfall_of_hasLaw_studentTMeasure`
+pin the risk layer: any loss whose law is Student-t has VaR and ES in the closed forms; and
+`quantile_studentTMeasure_le_expectedShortfall_closedForm` pins the VaR ≤ ES inequality
+between them. -/
+
+/-- info: 'MathFin.studentTMeasure_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.studentTMeasure_one
+
+/-- info: 'MathFin.studentTPDFReal_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.studentTPDFReal_eq
+
+/-- info: 'MathFin.valueAtRisk_of_hasLaw_studentTMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.valueAtRisk_of_hasLaw_studentTMeasure
+
+/-- info: 'MathFin.expectedShortfall_of_hasLaw_studentTMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.expectedShortfall_of_hasLaw_studentTMeasure
+
+/-- info: 'MathFin.quantile_studentTMeasure_le_expectedShortfall_closedForm' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.quantile_studentTMeasure_le_expectedShortfall_closedForm
+
+/-! ### SABR: the asymptotic implied vol, the backbone law, the ATM price (2026-10-25)
+
+`BlackScholes/SABRImpliedVol.lean` — the Hagan–Kumar–Lesniewski–Woodward (2002) lognormal
+implied-vol asymptotic approximation. `tendsto_sabrImpliedVol_atm` pins the eq. 2.17 → eq. 2.18
+limit as K → f; `hasDerivAt_log_sabrBackbone` the backbone law; and `sabrATMVol_black_futures_price`
+the Black-76 futures price at the SABR ATM volatility. -/
+
+/-- info: 'MathFin.hasDerivAt_log_sabrBackbone' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.hasDerivAt_log_sabrBackbone
+
+/-- info: 'MathFin.sabrATMVol_black_futures_price' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.sabrATMVol_black_futures_price
+
+/-- info: 'MathFin.tendsto_sabrImpliedVol_atm' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.tendsto_sabrImpliedVol_atm
+
 /-! ### Dupire: the distributional headline and the pointwise Thm 9.5 (2026-10-25)
 
 Bagaria ch. 9, zero rates, on the driftless Itô process `X = c + M` with `M` a hypothesized
