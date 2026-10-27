@@ -2210,8 +2210,9 @@ McNeil–Frey–Embrechts closed forms for the VaR and ES of the Student-t law. 
 and `isProbabilityMeasure_studentTMeasure` pin the foundation: the closed-form density is the
 density of a probability measure; `studentTMeasure_one` pins the ν = 1 anchor (there the
 Student-t law is the standard Cauchy law). `valueAtRisk_of_hasLaw_studentTMeasure` and
-`expectedShortfall_of_hasLaw_studentTMeasure` pin the risk layer: any loss whose law is
-Student-t has VaR and ES in the closed forms; and
+`expectedShortfall_of_hasLaw_studentTMeasure` pin the risk layer: a loss with an affine
+Student-t law (loc-scale, scale nonnegative) has VaR in the closed form, and ES too when
+`ν > 1` (the integrability gate — below it the ES is infinite); and
 `quantile_studentTMeasure_le_expectedShortfall_closedForm` pins the VaR ≤ ES inequality
 between them. -/
 
