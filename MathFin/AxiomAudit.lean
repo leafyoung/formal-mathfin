@@ -2206,12 +2206,18 @@ maturity iff total variance does; the raw-SVI family form. -/
 
 `Foundations/StudentT.lean` — the Student-t law: density in closed form, the ν = 1 Cauchy
 anchor, the tail first moment — and `RiskMeasures/StudentTValueAtRisk.lean`, the
-McNeil–Frey–Embrechts closed forms for the VaR and ES of the Student-t law. `studentTMeasure_one`
-and `studentTPDFReal_eq` pin the foundation: the closed-form density defines a probability
-measure. `valueAtRisk_of_hasLaw_studentTMeasure` and `expectedShortfall_of_hasLaw_studentTMeasure`
-pin the risk layer: any loss whose law is Student-t has VaR and ES in the closed forms; and
+McNeil–Frey–Embrechts closed forms for the VaR and ES of the Student-t law. `studentTPDFReal_eq`
+and `isProbabilityMeasure_studentTMeasure` pin the foundation: the closed-form density is the
+density of a probability measure; `studentTMeasure_one` pins the ν = 1 anchor (there the
+Student-t law is the standard Cauchy law). `valueAtRisk_of_hasLaw_studentTMeasure` and
+`expectedShortfall_of_hasLaw_studentTMeasure` pin the risk layer: any loss whose law is
+Student-t has VaR and ES in the closed forms; and
 `quantile_studentTMeasure_le_expectedShortfall_closedForm` pins the VaR ≤ ES inequality
 between them. -/
+
+/-- info: 'MathFin.isProbabilityMeasure_studentTMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.isProbabilityMeasure_studentTMeasure
 
 /-- info: 'MathFin.studentTMeasure_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -2238,7 +2244,8 @@ between them. -/
 `BlackScholes/SABRImpliedVol.lean` — the Hagan–Kumar–Lesniewski–Woodward (2002) lognormal
 implied-vol asymptotic approximation. `tendsto_sabrImpliedVol_atm` pins the eq. 2.17 → eq. 2.18
 limit as K → f; `hasDerivAt_log_sabrBackbone` the backbone law; and `sabrATMVol_black_futures_price`
-the Black-76 futures price at the SABR ATM volatility. -/
+the Black-76 futures price at the SABR ATM volatility. The singular-perturbation derivation
+and any error bound against the SABR model are not proved. -/
 
 /-- info: 'MathFin.hasDerivAt_log_sabrBackbone' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

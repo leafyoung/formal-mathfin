@@ -26,6 +26,25 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### The Gyongy engine: Dupire's local volatility and the affine transform (2026-10-26)
+
+Three entries added, all `full`: `mf-dupire-local-vol`, `mf-heston-affine-pde`
+(`black_scholes.json`) and `mf-cir-squared-ou-mean` (`stochastic_calculus.json`). Corpus
+683 → 686 (652 `full`, 18 `library_wrapper`, 16 `reduced_core`), 670 delivery-ready.
+
+The engine is `Foundations/GyongyMimicry.lean` (no corpus entry of its own): the
+Gyongy–Pardoux type marginal-flow weak-equation machinery, with the SDE-existence slice
+stated as a gated conditional (`gyongy_mimicry_gated`). The affine bundle
+(`Foundations/ExpAffine.lean`, `Foundations/CIRSquaredOU.lean`,
+`BlackScholes/Heston.lean`) carries the exponential-affine transform computations the
+entries consume, and `BlackScholes/Dupire.lean` derives Dupire's local volatility from the
+engine (the weak-form route; `forward_eq_weak_zeroRate` pins the forward equation from the
+constructed flow). Scope notes live in each module: the Dupire derivation is under the
+constructed-marginal hypotheses, and the Heston PDE headline is the 2D affine transform
+identity with the necessary `0 < u < 1` moment strip. The batch entered through the
+promotion PRs (GyongyMimicry + Dupire together; the affine bundle separately) and is
+recorded here at its integration into this line.
+
 ### PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff (2026-10-27)
 
 One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659 — this section's own
