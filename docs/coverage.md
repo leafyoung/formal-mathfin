@@ -41,7 +41,7 @@ entries consume, and `BlackScholes/Dupire.lean` derives Dupire's local volatilit
 engine (the weak-form route; `forward_eq_weak_zeroRate` pins the forward equation from the
 constructed flow). Scope notes live in each module: the Dupire derivation is under the
 constructed-marginal hypotheses, and the Heston PDE headline is the 2D affine transform
-identity with the necessary `0 < u < 1` moment strip. The batch entered through the
+identity on the sufficient `0 < u < 1` moment strip. The batch entered through the
 promotion PRs (GyongyMimicry + Dupire together; the affine bundle separately) and is
 recorded here at its integration into this line.
 
