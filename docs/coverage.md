@@ -54,8 +54,11 @@ violates the constraint). KKT necessity is not claimed. A third public theorem,
 
 Verification on the integrated tree: full `lake build` green (9396 jobs), `lake lint`
 passing, full pytest 62 passed / 1 skipped, ledger 683 fresh / 0 stale / 0 missing after
-the hosted sweep re-verified the rows the conservative union-merge dropped (the entry
-inputs were identical on both sides; the drop is the documented conservative rule).
+the hosted sweep re-verified the rows the union-merge dropped — the two sides had
+verified them under different inputs (this section's branch was cut before the
+integration line's Black76/ABCD module edits), so the driver's different-hashes rule
+dropped them, and the sweep re-elaborated them at the merged tree rather than trusting
+either side's row.
 
 ### Fixed-income building blocks (2026-10-23; #277; issues #69, #108)
 
