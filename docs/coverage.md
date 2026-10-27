@@ -28,7 +28,10 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff (2026-10-27)
 
-One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659.
+One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659 — this section's own
+standalone delta, cut on main before the integration batches below. In this tree, which
+also carries the 2026-10-23/22 batches below, the count is 683 (649 `full`, 18
+`library_wrapper`, 16 `reduced_core`), 667 delivery-ready.
 
 `Portfolio/PosSemidefCauchySchwarz.lean` proves the Cauchy–Schwarz inequality for the
 semi-inner product `⟨u, v⟩ = u ⬝ᵥ (Sig *ᵥ v)` induced by a positive semidefinite matrix
@@ -48,6 +51,11 @@ feasibility is not assumed (complementary slackness alone forces `u k = 0` where
 violates the constraint). KKT necessity is not claimed. A third public theorem,
 `quad_expansion_add_smul`, is the bilinear split of a quadratic form at `u + k • v`
 (no symmetry needed).
+
+Verification on the integrated tree: full `lake build` green (9396 jobs), `lake lint`
+passing, full pytest 62 passed / 1 skipped, ledger 683 fresh / 0 stale / 0 missing after
+the hosted sweep re-verified the rows the conservative union-merge dropped (the entry
+inputs were identical on both sides; the drop is the documented conservative rule).
 
 ### Fixed-income building blocks (2026-10-23; #277; issues #69, #108)
 
