@@ -26,6 +26,41 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff (2026-10-27)
+
+One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659 — this section's own
+standalone delta, cut on main before the integration batches below. In this tree — which,
+besides the batches below, carries the exposure/XVA rebuild (five credit-exposure entries
+added; the closed birthday-paradox wrapper entry removed) — the count is 683 (649 `full`,
+18 `library_wrapper`, 16 `reduced_core`), 667 delivery-ready.
+
+`Portfolio/PosSemidefCauchySchwarz.lean` proves the Cauchy–Schwarz inequality for the
+semi-inner product `⟨u, v⟩ = u ⬝ᵥ (Sig *ᵥ v)` induced by a positive semidefinite matrix
+form (`posSemidef_cauchySchwarz`): `|x ⬝ᵥ (Sig *ᵥ y)| ≤ √(x ⬝ᵥ (Sig *ᵥ x)) · √(y ⬝ᵥ (Sig *ᵥ y))`.
+The form is degenerate when `Sig` is singular, but the bound is two-sided: the completed
+square on the quadratic form of `Sig` at `x − t • y` is nonnegative for every real `t`;
+the branch `y ⬝ᵥ (Sig *ᵥ y) = 0` forces `x ⬝ᵥ (Sig *ᵥ y) = 0` (either sign of the cross
+term drives the square negative once `t` passes `X/(2Q)` on its own side), the other
+evaluates at `t = Q/Y` to collapse the square to `Q² ≤ X·Y`. The application is the
+tradeoff form of the Markowitz mean-variance problem (`pricedReturn_le_of_kkt`, stated
+over the priced-return objective `pricedReturn μ t₁ Sig x1 y` — return minus the price of
+risk `t₁·√(x1 ⬝ᵥ (Sig *ᵥ x1))` charged per unit of the holder's own risk): a
+KKT point — stationarity, dual feasibility, complementary slackness — of
+`min −μ ⬝ᵥ x + (t₁/2) · x ⬝ᵥ (Sig *ᵥ x)` with `Sig` PSD and `t₁ > 0` maximizes the priced
+return over the whole feasible set. As in `ConvexQPKKT`'s sufficiency, `x1`'s own
+feasibility is not assumed (complementary slackness alone forces `u k = 0` where `x1`
+violates the constraint). KKT necessity is not claimed. A third public theorem,
+`quad_expansion_add_smul`, is the bilinear split of a quadratic form at `u + k • v`
+(no symmetry needed).
+
+Verification on the integrated tree: full `lake build` green (9396 jobs), `lake lint`
+passing, full pytest 62 passed / 1 skipped, ledger 683 fresh / 0 stale / 0 missing after
+the hosted sweep re-verified the rows the union-merge dropped — the two sides had
+verified them under different inputs (this section's branch was cut before the
+integration line's edit to `MathFin/Futures/Black76.lean`, which all eleven affected
+entries import transitively), so the driver's different-hashes rule dropped them, and
+the sweep re-elaborated them at the merged tree rather than trusting either side's row.
+
 ### Fixed-income building blocks (2026-10-23; #277; issues #69, #108)
 
 Seven `full` entries, each derived from library machinery. Five replace pre-existing

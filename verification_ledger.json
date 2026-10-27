@@ -787,13 +787,6 @@
       "input_hash": "3b6b8d1fa51f5e47534dd520c6f8478a3406c2868650a72f8f8292e636632018",
       "verified_at_commit": "a371f5d"
     },
-    "mf-binary-barrier-inout-parity": {
-      "benchmark_file": "exotic_options.json",
-      "date": "2026-10-25",
-      "elapsed_s": 4.5,
-      "input_hash": "9ba20e4b6789270530fcd2c5aee8ac5db3c455cf0e94caf5f210d15104506111",
-      "verified_at_commit": "a371f5d"
-    },
     "mf-binomial-american-call-eq-european": {
       "benchmark_file": "binomial.json",
       "date": "2026-10-25",
@@ -835,13 +828,6 @@
       "elapsed_s": 4.6,
       "input_hash": "4d5a6281052f87b32da4828966f2c59b77cb2afab32bb5d62d94cb6e0331ba20",
       "verified_at_commit": "a371f5d"
-    },
-    "mf-birthday-paradox-probability-exceeds-half": {
-      "benchmark_file": "risk_measures.json",
-      "date": "2026-10-24",
-      "elapsed_s": 3.0,
-      "input_hash": "0704cc8a5beb176b1e332fb19c9e0ef2f07e21a6a3ba66f254aa110d55cc15e6",
-      "verified_at_commit": "770625f"
     },
     "mf-bivariate-normal-gaussian-characterization": {
       "benchmark_file": "stochastic_foundations.json",
@@ -3313,6 +3299,13 @@
       "elapsed_s": 5.5,
       "input_hash": "e624d8137aa4217859d79038cc98af1097e686fff052cb4844794e6f71cbf026",
       "verified_at_commit": "a371f5d"
+    },
+    "mf-psd-cauchy-schwarz": {
+      "benchmark_file": "portfolio_and_performance.json",
+      "date": "2026-10-27",
+      "elapsed_s": 3.7,
+      "input_hash": "777e62bfda2b519d0487077cc59fc952e26a0400bc92dcaa363fcf92086d366b",
+      "verified_at_commit": "1e0a2ed"
     },
     "mf-purged-cv-no-leakage-brownian": {
       "benchmark_file": "portfolio_and_performance.json",
