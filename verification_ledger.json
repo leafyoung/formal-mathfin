@@ -1524,10 +1524,10 @@
     },
     "mf-cir-squared-ou-mean": {
       "benchmark_file": "stochastic_calculus.json",
-      "date": "2026-10-27",
-      "elapsed_s": 3.9,
-      "input_hash": "2f0b3e9cefe01f5d9dda278a496fc04c01d4bfa8d3e614b7f9519125b2625fda",
-      "verified_at_commit": "45a7c59"
+      "date": "2026-10-28",
+      "elapsed_s": 4.1,
+      "input_hash": "766dcd8750a3e3696c9765b7fcfdcaca5d97838850617879e382ff2214bc0592",
+      "verified_at_commit": "ebd7e6f"
     },
     "mf-clean-price-continuous-at-coupon-date": {
       "benchmark_file": "interest_rates.json",
@@ -1895,10 +1895,10 @@
     },
     "mf-dupire-local-vol": {
       "benchmark_file": "black_scholes.json",
-      "date": "2026-10-27",
-      "elapsed_s": 5.8,
-      "input_hash": "91511cafe315d047401a7b4f8fc6f79e8203b3c50a09cc30e6e7fd026446c565",
-      "verified_at_commit": "45a7c59"
+      "date": "2026-10-28",
+      "elapsed_s": 4.1,
+      "input_hash": "539cbecf607a8573bd1e2dbf8092b998bb60c3b3f8e6cfaf289f6da6576614d5",
+      "verified_at_commit": "ebd7e6f"
     },
     "mf-dupire-tilted-smile-local-skew": {
       "benchmark_file": "black_scholes.json",
@@ -2266,10 +2266,10 @@
     },
     "mf-heston-affine-pde": {
       "benchmark_file": "black_scholes.json",
-      "date": "2026-10-27",
-      "elapsed_s": 4.4,
-      "input_hash": "b50061daf9a028c4091c4cc2f11a850d76214f6a2c41a2b24bc13ed4e32bc812",
-      "verified_at_commit": "45a7c59"
+      "date": "2026-10-28",
+      "elapsed_s": 4.1,
+      "input_hash": "85d11523414c00c7d7be445e75a426a3e059252be3637b6d81999c6dd4b067bd",
+      "verified_at_commit": "ebd7e6f"
     },
     "mf-heynen-kat-independent-bs-factor": {
       "benchmark_file": "exotic_options.json",
