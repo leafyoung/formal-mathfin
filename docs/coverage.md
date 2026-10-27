@@ -29,9 +29,10 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 ### PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff (2026-10-27)
 
 One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659 — this section's own
-standalone delta, cut on main before the integration batches below. In this tree, which
-also carries the 2026-10-23/22 batches below, the count is 683 (649 `full`, 18
-`library_wrapper`, 16 `reduced_core`), 667 delivery-ready.
+standalone delta, cut on main before the integration batches below. In this tree — which,
+besides the batches below, carries the exposure/XVA rebuild (five credit-exposure entries
+added; the closed birthday-paradox wrapper entry removed) — the count is 683 (649 `full`,
+18 `library_wrapper`, 16 `reduced_core`), 667 delivery-ready.
 
 `Portfolio/PosSemidefCauchySchwarz.lean` proves the Cauchy–Schwarz inequality for the
 semi-inner product `⟨u, v⟩ = u ⬝ᵥ (Sig *ᵥ v)` induced by a positive semidefinite matrix
@@ -56,9 +57,9 @@ Verification on the integrated tree: full `lake build` green (9396 jobs), `lake 
 passing, full pytest 62 passed / 1 skipped, ledger 683 fresh / 0 stale / 0 missing after
 the hosted sweep re-verified the rows the union-merge dropped — the two sides had
 verified them under different inputs (this section's branch was cut before the
-integration line's Black76/ABCD module edits), so the driver's different-hashes rule
-dropped them, and the sweep re-elaborated them at the merged tree rather than trusting
-either side's row.
+integration line's edit to `MathFin/Futures/Black76.lean`, which all eleven affected
+entries import transitively), so the driver's different-hashes rule dropped them, and
+the sweep re-elaborated them at the merged tree rather than trusting either side's row.
 
 ### Fixed-income building blocks (2026-10-23; #277; issues #69, #108)
 
