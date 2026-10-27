@@ -26,7 +26,7 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
-### The Gyongy engine: Dupire's local volatility and the affine transform (2026-10-26)
+### The Gyongy engine: Dupire's local volatility and the affine transform (2026-10-28)
 
 Three entries added, all `full`: `mf-dupire-local-vol`, `mf-heston-affine-pde`
 (`black_scholes.json`) and `mf-cir-squared-ou-mean` (`stochastic_calculus.json`). Corpus
