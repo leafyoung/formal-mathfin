@@ -130,6 +130,25 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-10-29 — corpus 699, modules 652 — the integration line absorbs upstream v1.7.0 (conflict-sweep merge)
+
+Scope: a single-reviewer pass (the documented deviation, as on 2026-10-22) — narrowly the
+merge reconciliation when `origin/main` (v1.7.0, corpus 671/655) and the seven ahead
+constituent PR branches were merged into this integration line in one sweep. No new proof
+content enters here that either side had not already reviewed: upstream's binomial/contracts/
+Itô-adapted batch carries the maintainer's own values-review record above, and this line's
+constituent branches (Student-t VaR/ES, relative-drawdown, fixed-income building blocks, SABR,
+Haug barriers, exposure/XVA, the Gyongy engine, PSD Cauchy–Schwarz) were each gated through
+the fork's three-consecutive-clean fresh-reviewer roll plus an independent-model pass before
+their open PRs. What the sweep itself changed: count lines in `README.md`/`formalization.yaml`
+recomputed from the merged benchmark JSONs (699 entries: 665 `full`, 18 `library_wrapper`,
+16 `reduced_core`; 683 delivery-ready); `AxiomAuditGen` regenerated at the merged corpus
+(797 MathFin constants, 5 union-duplicated guards dropped); the dated audit sections in
+`docs/coverage.md` union-merged newest-first; this file took upstream's entries wholesale
+(this line's own dated entries below resume from this one). Ledger rows whose two sides
+verified under different inputs drop under the driver's different-hashes rule (as on
+2026-10-27) and re-verify via the hosted sweep at the merge commit.
+
 ## 2026-10-29 — corpus 671, modules 631 — the binomial value is the cost of its hedge
 
 Scope: replication in the tree, then stated for a contract. Two entries were added, `mf-binomial-european-replication` and `mf-contract-binomial-hedge` (both `full`); corpus 669 → 671. One module was added, `Binomial/EuropeanReplication.lean`.
