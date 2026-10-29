@@ -350,6 +350,7 @@ import MathFin.BlackScholes.Put
 import MathFin.BlackScholes.PDE
 import MathFin.BlackScholes.PutGreeks
 import MathFin.BlackScholes.TemperedAsianMoments
+import MathFin.BlackScholes.TemperedAsianDeterministicLimit
 import MathFin.BlackScholes.Digital
 import MathFin.BlackScholes.DigitalGreeks
 import MathFin.BlackScholes.Dividends
