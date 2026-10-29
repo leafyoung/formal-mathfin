@@ -128,6 +128,7 @@ import MathFin.Foundations.NormalQuantile
 import MathFin.Foundations.NormalTail
 -- The Student-t law: density in closed form, the ν = 1 Cauchy anchor, the tail first moment
 import MathFin.Foundations.StudentT
+import MathFin.Foundations.TemperedT
 -- QRM foundations: quantile convergence, copulas and Sklar's theorem, Hoeffding's covariance
 -- identity, Marshall–Olkin common shocks, correlation fallacies, extreme value theory (GEV, GPD,
 -- maxima of Poisson-many losses)
@@ -348,6 +349,7 @@ import MathFin.BlackScholes.Call
 import MathFin.BlackScholes.Put
 import MathFin.BlackScholes.PDE
 import MathFin.BlackScholes.PutGreeks
+import MathFin.BlackScholes.TemperedAsianMoments
 import MathFin.BlackScholes.Digital
 import MathFin.BlackScholes.DigitalGreeks
 import MathFin.BlackScholes.Dividends
