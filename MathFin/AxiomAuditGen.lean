@@ -879,6 +879,12 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.bboUpIn_add_UpOut
 
+/-- info: 'MathFin.bboDownIn_add_DownOut' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.bboDownIn_add_DownOut
+
+/-- info: 'MathFin.bboUpIn_add_UpOut' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.bboUpIn_add_UpOut
+
 /-- info: 'MathFin.betSize_sqrt_mul_zScore' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.betSize_sqrt_mul_zScore
@@ -2723,6 +2729,9 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.ptCA_down_add_up
 
+/-- info: 'MathFin.ptCA_down_add_up' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.ptCA_down_add_up
+
 /-- info: 'MathFin.putCall_parity_from_no_arbitrage' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.putCall_parity_from_no_arbitrage
@@ -2830,6 +2839,9 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.softBarrier_call_sub_put' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.softBarrier_call_sub_put
+
+/-- info: 'MathFin.softBarrier_call_sub_put' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in #print axioms MathFin.softBarrier_call_sub_put
 
 /-- info: 'MathFin.sortinoRatio_scale_invariant' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
