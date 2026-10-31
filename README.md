@@ -12,9 +12,9 @@ A library of mathematical finance in [Lean 4](https://lean-lang.org), built on
 differential equations), no-arbitrage theory, derivative pricing, fixed income, portfolio theory,
 risk measures and actuarial mathematics.
 
-The corpus records 699 results from the literature in [`benchmarks/`](benchmarks), each with a
-Lean statement and proof. Of these, 665 are proved in full, 18 restate a lemma from Mathlib or
-BrownianMotion, and 16 are reduced cores that prove less than the result they are named after.
+The corpus records 739 results from the literature in [`benchmarks/`](benchmarks), each with a
+Lean statement and proof. Of these, 706 are proved in full, 18 restate a lemma from Mathlib or
+BrownianMotion, and 15 are reduced cores that prove less than the result they are named after.
 Each entry records its status and what it leaves out. The library contains no `sorry`, and a
 build-time audit checks that every library theorem the benchmark's proofs cite depends only on the
 axioms `propext`, `Classical.choice` and `Quot.sound`.
@@ -37,18 +37,20 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
 
 ## Main results
 
-- **Itô's formula.** For every $`C^3`$ function $`f(t,x)`$, with no growth condition,
+- **Itô's formula.** For every $`C^2`$ function $`f(t,x)`$, with no growth condition,
   $`f(t,B_t) - f(0,B_0) - \int_0^t \big(\partial_t f + \tfrac12 \partial_x^2 f\big)(s,B_s)\,ds`$
   is a continuous local martingale
-  ([`ito_formula_unrestricted`](MathFin/Foundations/ItoFormulaUnrestrictedLocMart.lean)). When the
-  partial derivatives of $`f`$ are bounded, its value at time $`T`$ is the Itô integral
+  ([`ito_formula_unrestricted`](MathFin/Foundations/ItoFormulaUnrestrictedLocMart.lean)). When
+  $`\partial_t f, \partial_x f, \partial_x^2 f, \partial_t^2 f, \partial_t\partial_x f,
+  \partial_x^3 f`$ exist and are bounded and $`B`$ has continuous paths, its value at time $`T`$
+  is the Itô integral
   $`\int_0^T \partial_x f(s,B_s)\,dB_s`$
   ([`ito_formula_td_L2_bddDeriv`](MathFin/Foundations/ItoFormulaTD.lean)). For an Itô process
   $`X_t = x_0 + \int_0^t b_s\,ds + \int_0^t \sigma_s\,dB_s`$ with bounded adapted continuous
   coefficients, and $`f \in C^2`$ with $`f'`$ and $`f''`$ bounded,
   $`f(X_T) - f(x_0) = \int_0^T f'(X_s)\sigma_s\,dB_s
   + \int_0^T \big(f'(X_s) b_s + \tfrac12 f''(X_s)\sigma_s^2\big)\,ds`$ almost surely
-  ([`ito_formula_adapted`](MathFin/Foundations/ItoFormulaAdapted.lean)). For every $`f \in C^2`$,
+  ([`ito_formula_adapted`](MathFin/Foundations/ItoFormulaAdaptedTD.lean)). For every $`f \in C^2`$,
   with no bound on $`f'`$ or $`f''`$, and each fixed $`t \le T`$, the left-point Riemann sums of $`f'(X)`$
   against $`M = \int \sigma\,dB`$ converge in probability to
   $`f(X_t) - f(x_0) - \int_0^t \big(f'(X_s) b_s + \tfrac12 f''(X_s)\sigma_s^2\big)\,ds`$
@@ -62,6 +64,13 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
   ([`localItoIntegral`](MathFin/Foundations/ItoIntegralLocalised.lean)), and the formula holds
   along $`x_0 + \int b\,ds + \int \sigma\,dB`$
   ([`ito_formula_adapted_unbounded_le`](MathFin/Foundations/ItoFormulaAdaptedUnbounded.lean)).
+  Almost surely the formula holds at every $`t \le T`$ at once, as an identity of processes whose
+  stochastic term is the integral $`\int_0^t f_x(s, X_s)\sigma_s\,dB_s`$
+  ([`ito_formula_adapted_unbounded_process`](MathFin/Foundations/ItoFormulaAdaptedProcess.lean));
+  both that integral and $`\int \sigma\,dB`$ have versions that are continuous local
+  martingales for the null-augmented Brownian filtration
+  ([`exists_localMartingale_ito_formula`](MathFin/Foundations/ItoFormulaAdaptedProcess.lean),
+  [`exists_continuous_localMartingale_localItoIntegral`](MathFin/Foundations/ItoIntegralLocalisedLocalMartingale.lean)).
 
 - **Girsanov's theorem.** For bounded predictable $`\theta`$, let
   $`dQ = \exp\big(-\int_0^T \theta\,dB - \tfrac12 \int_0^T \theta^2\,dt\big)\,dP`$. On $`[0,T]`$,
@@ -89,9 +98,10 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
   one-period theorem holds on any probability space with finitely many assets
   ([`ftap_one_period_vector`](MathFin/Foundations/FTAPOnePeriodVector.lean)).
 
-- **Coherent risk measures.** On a finite state space, a coherent risk measure satisfies
-  $`\rho(X) = \sup_{q \in \mathcal{Q}_\rho} \mathbb{E}_q[-X]`$, where $`\mathcal{Q}_\rho`$ is the
-  set of probability vectors that give every acceptable position a nonnegative price
+- **Coherent risk measures.** On a finite state space, a coherent risk measure of losses
+  ([`IsCoherentRiskMeasure`](MathFin/RiskMeasures/Coherent.lean)) satisfies
+  $`\rho(L) = \sup_{q \in \mathcal{Q}_\rho} \mathbb{E}_q[L]`$, where $`\mathcal{Q}_\rho`$ is the
+  set of probability vectors that give every acceptable loss, $`\rho(Z) \le 0`$, a nonpositive price
   ([`coherentRisk_isLUB`](MathFin/RiskMeasures/AcceptanceSet.lean)). This theorem and the finite
   fundamental theorem are both derived from the cone-separation lemmas in
   [`ConvexDuality.lean`](MathFin/Foundations/ConvexDuality.lean).
@@ -138,7 +148,28 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
   tree, under no-arbitrage, a contract paying $`g(S_T)`$ is worth the cost of its hedge: on every
   path, its discounted payoff is its value plus the gains of a predictable strategy in the
   discounted spot
-  ([`pathPV_eq_value_add_gains`](MathFin/Contracts/Models/Binomial.lean)).
+  ([`pathPV_eq_value_add_gains`](MathFin/Contracts/Models/Binomial.lean)). In any model whose
+  discounted price is a martingale started at $`S_0`$ (with $`D(0) = 1`$), the forward is
+  worth $`S_0 - K D(T)`$ and a call less a put is worth the same
+  ([`value_europeanCall_sub_put_of_martingale`](MathFin/Contracts/Parity.lean)). Under a
+  stochastic discount factor $`D_t`$, integrable at the payment dates, a schedule of fixed cash
+  flows is worth its value on the zero curve $`P(0, t) = \mathbb{E}[D_t]`$
+  ([`valueDisc_fixedFlows_eq_value`](MathFin/Contracts/Models/ShortRate.lean)), so a coupon bond
+  discounted by $`e^{-\int_0^t r_s\,ds}`$ in the Vasicek, Hull–White and two-piece GSR models
+  is worth the sum of those models' bond prices. A one-period payer swap is a forward-rate
+  agreement worth `fraValue`
+  ([`value_payerSwap_one_eq_fraValue`](MathFin/Contracts/Instruments/FixedIncome.lean)), and the power
+  call, the exchange option and the geometric-average Asian call are worth their Black–Scholes
+  closed forms
+  ([`value_powerCall`](MathFin/Contracts/Models/BlackScholes.lean),
+  [`value_exchangeOption`](MathFin/Contracts/Models/BlackScholesExchange.lean),
+  [`value_geomAsianCall`](MathFin/Contracts/Models/BlackScholesAsian.lean)), and the chooser's
+  replicating portfolio of a call and a put at the chooser date is worth Rubinstein's closed form
+  ([`value_chooser`](MathFin/Contracts/Models/BlackScholesChooser.lean)). A credit default
+  swap on a payment grid, observing the default indicator, is worth the grid legs of the survival
+  curve against the Cox default time
+  ([`value_cdsBuyer_coxDefaultTime`](MathFin/Contracts/Models/DefaultTime.lean)); default is paid at
+  the end of its period, so these are the discretisations of the continuous Cox legs.
 
 ## Contents
 
@@ -156,14 +187,14 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
 | Dependence and extremes | copulas and Sklar's theorem (continuous margins), Fréchet–Hoeffding bounds, Hoeffding's covariance identity, Marshall–Olkin common shocks; GEV and GPD domains of attraction, maxima of Poisson-many losses |
 | Credit portfolios | Bernoulli mixtures, the one-factor Gaussian threshold model, and the Basel IRB formula as the limit of portfolio VaR |
 | Market microstructure | Avellaneda–Stoikov market making, the Glosten–Milgrom spread |
-| Other | a contract language that separates payoffs from pricing models, with prices in Black–Scholes and the binomial tree; survival models, mortality and annuities; compound Poisson losses; constant-product AMMs |
+| Other | a contract language that separates payoffs from pricing models, with prices in Black–Scholes, the binomial tree and the Gaussian short-rate models; survival models, mortality and annuities; compound Poisson losses; constant-product AMMs |
 
 ## Limitations
 
-- Sixteen of the 699 results are reduced cores. Twelve assume a structure whose fields include the
+- Fifteen of the 739 results are reduced cores. Eleven assume a structure whose fields include the
   textbook conclusion, so the conclusion is not derived: the reflection principle, nowhere
   differentiability and the law of the iterated logarithm for Brownian motion, Novikov's condition,
-  the general form of Girsanov's theorem, Lévy's characterization, the two-dimensional Itô formula,
+  the general form of Girsanov's theorem, the two-dimensional Itô formula,
   and five theorems on Markov chains. The other four prove special cases: the first interarrival
   time of a Poisson process is exponential; Stulz's call on the maximum is checked only in its
   zero-strike limit, and the Heynen–Kat two-asset barrier only at zero correlation, neither formula
@@ -183,9 +214,13 @@ whenever $`|r|\sqrt{T} < \sigma`$ ([`binomialNoArb_crr`](MathFin/Binomial/CRRCon
   inequalities. Butterfly-freeness is proved as a list of properties of the call price as a
   function of the strike; the risk-neutral law is not constructed from them. At $`\sigma = 0`$
   convexity of the call is not tied to Durrleman's condition.
-- Itô's formula for an Itô process is proved at a fixed time, for bounded adapted continuous
-  coefficients and $`f`$ with bounded $`f'`$ and $`f''`$. It does not yet cover
-  $`f(x) = e^x`$ or $`x^2`$, or coefficients of an SDE solution.
+- Itô's formula for an Itô process is proved on a finite horizon $`[0, T]`$, for a process built
+  from a single Brownian motion with continuous adapted coefficients and a deterministic starting
+  point. Itô's formula for a continuous semimartingale not built from $`B`$ is not proved, and
+  neither is a quadratic-variation process for a general continuous local martingale. Lévy's
+  characterization is proved with the bracket as a hypothesis: a continuous adapted local
+  martingale $`M`$ with $`M_0 = 0`$ such that $`M^2 - t`$ is a local martingale is a Brownian
+  motion.
 - The jump-diffusion results on a process assume the properties listed above
   (`JumpDiffusionProcess`). A process with them is constructed only without jumps, as Brownian
   motion with drift. A change of measure on the process that alters the jump rate or the jump law
@@ -258,11 +293,13 @@ Comparator below).
 
 - **Comparator.** [`Challenge.lean`](Challenge.lean) states the coherent-risk representation
   theorem, with a witness that its hypothesis is satisfiable, using only Mathlib;
-  [`Solution.lean`](Solution.lean) proves both from the library.
+  [`Solution.lean`](Solution.lean) proves both from the library, converting the Challenge's
+  positions convention to the library's loss convention with
+  [`isCoherentRiskMeasure_neg_iff`](MathFin/RiskMeasures/PositionsConvention.lean).
   [Comparator](https://github.com/leanprover/comparator), configured by
   [`comparator.json`](comparator.json), checks that the two files state the same theorems and that
-  the proofs use only the three standard axioms. It accepted both at commit `06f88ca` and is not
-  run in CI; see [`docs/palomar.md`](docs/palomar.md).
+  the proofs use only the three standard axioms. It accepted the earlier Solution at commit `06f88ca`; the current
+  Solution, which converts positions to losses, has not been re-run, and Comparator is not run in CI; see [`docs/palomar.md`](docs/palomar.md).
 
 - **Benchmark.** Each entry in [`benchmarks/`](benchmarks) records a result's Lean statement, its
   status and its scope. The ledger runner, `tools/verify/ledger.py`, checks each entry's snippet

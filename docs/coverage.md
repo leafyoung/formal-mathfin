@@ -26,6 +26,65 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### One route to Merton's formula; one Black–Scholes family (2026-10-30)
+
+Issue #362. Corpus 713 → 711 (`mf-merton-from-general-jump-law` and `mf-merton-model-exists` removed).
+
+- `MertonHyp` and `BlackScholes/MertonModel.lean` are gone. Merton's call, put and the discounted
+  terminal price come from the general jump-diffusion: `JumpDiffusionHyp.call_eq_mertonCallPrice`,
+  `JumpDiffusionHyp.put_eq_mertonPutPrice` (put–call parity, `integral_discounted_put_payoff`) and
+  `JumpDiffusionHyp.discounted_terminal_merton`. `mf-merton-call-formula`, `mf-merton-put-formula`
+  and `mf-merton-discounted-terminal` are restated over `JumpDiffusionHyp` with a Gaussian first
+  jump (the discounted-terminal statement now needs only `0 ≤ T`). `mf-merton-from-general-jump-law`
+  duplicated the call entry; `mf-merton-model-exists` is subsumed by
+  `mf-jump-diffusion-model-exists`.
+- `JumpDiffusionHyp.J_meas` is removed: `IdentDistrib` already carries a.e.-measurability
+  (`JumpDiffusionHyp.aemeasurable_J`). The compound-Poisson MGF lemmas lose their `hmeas`
+  hypotheses (`mf-compound-poisson-mgf`, `mf-compound-poisson-mgf-random-count`,
+  `mf-creditriskplus-sector-loss-mgf`).
+- The SVI Black terms are ForwardSmile's: `SVI.blackPlus`, `blackMinus`, `logBlackCall` and
+  `black_density_identity` are removed in favour of `ForwardSmile.dpl`, `dmi`, `blackForm` and
+  `exp_mul_pdf_dmi` at the SVI total variance `variance p k` (with `SVI.dpl_eq_rootVariance` and
+  `dmi_eq_rootVariance` for the `√variance` forms). Renames: `blackPlus_hasDerivAt` to
+  `dpl_hasDerivAt`, `blackMinus_hasDerivAt` to `dmi_hasDerivAt`, `blackMinusSlope` to `dmiSlope`,
+  `logBlackCall_hasDerivAt` to `blackForm_hasDerivAt`, `logBlackCall_hasDerivWithinAt` to
+  `blackForm_hasDerivWithinAt`, the `sigmaZero_` variants likewise, `blackPlus_eq` to `dpl_eq_div`,
+  `tendsto_blackPlus_atBot(_iff)` to `tendsto_dpl_atBot(_iff)`, `eventually_le_blackPlus` to
+  `eventually_le_dpl`, `blackCall_le_Phi_blackPlus` to `blackCall_le_Phi_dpl`
+  (`mf-svi-butterfly-free-sign-formula` restates the changed names).
+  Durrleman's function is `1 + smileDelta` for SVI (`SVI.durrleman_eq_one_add_smileDelta`).
+- `BarrierParity.discountedValue` equals `Contract.value` of the one-payment contract
+  (`discountedValue_eq_contract_value`); the barrier prices are not routed through contracts (#367).
+- `sc-bs-pde-feynman-kac` also concludes that the three Greeks are the closed-form ones: `Vτ`, `VS`
+  and `VSS` equal the heat-kernel expressions of `PDE.lean` (by `HasDerivAt.unique`).
+
+Safe wording: "Merton's call, put and discounted terminal price are corollaries of the general
+jump-diffusion mixing formula, with Gaussian log-jumps". Not covered: the price process with jumps.
+
+### Contracts in any model, bonds and swaps, and the risk of a position (2026-10-29)
+
+Nine entries added, all `full`, in `contracts.json`.
+- **Any risk-neutral model.** `Contracts/Parity.lean` prices the forward from one fact about
+  the model: the discounted underlying at `T` is integrable with mean `S₀`. When the discounted
+  price is a `Q`-martingale from `S₀` with `D(0) = 1`, the forward is worth `S₀ − K D(T)` and
+  `C − P = S₀ − K D(T)`, with no integrability hypotheses
+  (`mf-contract-forward-risk-neutral`, `mf-contract-parity-risk-neutral`).
+  `BlackScholes.value_forward` is now an instance of `value_forward_of_integral`.
+- **Bonds and swaps.** `Contracts/Instruments/FixedIncome.lean` writes a schedule of fixed cash
+  flows as a contract (`fixedFlows`), worth `∑ D(tᵢ) cᵢ` in every model. At a yield it is
+  `bondPriceDisc` (`mf-contract-coupon-bond-yield`). Level payments on the flat continuous curve
+  are `annuityValue` (`mf-contract-level-annuity-zcb`). A payer swap on a deterministic curve,
+  whose floating coupons are the curve's FRA forward rates, is worth `payerSwapValue` and is
+  worth zero exactly at the par rate (`mf-contract-payer-swap-value`,
+  `mf-contract-payer-swap-par-rate`). Scope: deterministic curves, so floating rates are known
+  in advance; yields with integer payment times.
+- **Risk of a position.** `Contracts/Risk.lean` defines the loss of a position bought at `p` as
+  `p − pathPV`, measured under any law `P` of the outcomes. A book's expected shortfall is at
+  most the sum of its contracts' (`mf-contract-book-es-subadditive`); a long call's VaR is at most
+  its premium (`mf-contract-long-call-var-le-premium`); in the binomial tree a hedged seller's loss
+  is zero on every path, so its VaR and ES are zero under every law of the flips
+  (`mf-contract-binomial-hedged-zero-risk`).
+
 ### The binomial value is the cost of its hedge (2026-10-29)
 
 Two entries added, both `full`: `mf-binomial-european-replication` and `mf-contract-binomial-hedge`;
@@ -171,7 +230,7 @@ the weight `f_x(s, X_s)` (`ito_formula_adapted_td_against`). The pathwise core n
 derivative: the two-variable Taylor remainder is at most `η Δt + η (ΔX)²` once `f_t` and `f_xx`
 oscillate by less than `η` on a cell (`abs_discreteTaylorRemainder2D_le_of_osc`), and uniform
 continuity on `[0, T] × [−R, R]` makes the sum vanish. Localisation reuses the double cutoff
-`SummitC.fTrunc` of `ItoFormulaUnrestricted`; the horizon reduction is
+`SummitC.fTrunc` of `ItoFormulaCutoff`; the horizon reduction is
 `ae_itoContinuousMod_eq_of_le`, shared with the time-independent entry.
 
 Safe wording: "Itô's formula for `f(t, X_t)`, `f` with jointly continuous `f_t`, `f_x`, `f_xx`, along
@@ -223,7 +282,7 @@ recorded here at its integration into this line.
 
 ### PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff (2026-10-27)
 
-One entry added, `mf-psd-cauchy-schwarz` (`full`). Corpus 658 → 659 — this section's own
+One entry added, `mf-mean-variance-kkt-mean-sd-tradeoff` (`full`). Corpus 658 → 659 — this section's own
 standalone delta, cut on main before the integration batches below. In this tree — which,
 besides the batches below, carries the exposure/XVA rebuild (five credit-exposure entries
 added; the closed birthday-paradox wrapper entry removed) — the count is 683 (649 `full`,
@@ -291,7 +350,7 @@ added, `mf-sabr-atm-vol-zero-tex` replaced, net +2), the count is 678 (643 `full
   `exp(−rⱼTⱼ)`, and the un-normalised partials `∂P/∂kⱼ`, not the durations
   `KRDⱼ = −(1/P)·∂P/∂kⱼ`, which this module does not define. Interpolated key-rate nodes are not
   modelled either.
-- **Clean and dirty price** (`interest_rates.json`). For `1 + y ≠ 0`, with next coupon `cⱼ`
+- **Clean and dirty price** (`interest_rates.json`). For `1 + y > 0`, with next coupon `cⱼ`
   (`j ∈ s`, `tⱼ = 1`, all `tᵢ ≥ 1`), as `f ↑ 1` the dirty price tends to the next period's dirty
   price plus `cⱼ`, and the clean price (accruing `cⱼ`) to the next period's clean price
   (`mf-dirty-price-drops-by-coupon`, `mf-clean-price-continuous-at-coupon-date`).
@@ -376,12 +435,15 @@ Three `full` entries in `BlackScholes/SABRImpliedVol.lean`, on Hagan–Kumar–L
   (eq. 2.17a-c, `⋯` dropped) tends to the ATM formula (eq. 2.18) as `K → f`, `K ≠ f`, for
   `f > 0`, `α ≠ 0`, `ν ≠ 0`, `ρ ≠ 1`. The `0/0` of `z/x(z)` at `K = f` is resolved by
   `x(0) = 0`, `x'(0) = 1` (`hasDerivAt_sabrX_zero`); `ν = 0` is excluded (`z ≡ 0` there).
-- **`mf-sabr-backbone-law`** (`hasDerivAt_log_sabrBackbone`): along `α / f^(1-β)`,
-  `d log σ / df = (β − 1)/f` for `f, α > 0`.
-- **`mf-sabr-atm-black76-price`** (`sabrATMVol_black_futures_price`, from the new
+- **`mf-sabr-backbone-law`** (`hasDerivAt_log_sabrBackbone_exp`): along `α / f^(1-β)`,
+  `d log σ / d log f = β − 1` for `α > 0`, i.e. `v ↦ log σ(e^v)` has derivative `β − 1`; it is
+  the chain rule through `exp` applied to `hasDerivAt_log_sabrBackbone`
+  (`d log σ / df = (β − 1)/f` for `f, α > 0`).
+- **`mf-sabr-atm-black76-price`** (`sabrATMVol_black_futures_price`, from
   `black_futures_formula_atm` in `Futures/Black76.lean`): under the Black-76 hypothesis at
   `σ = sabrATMVol f α β ρ ν T` (the vol's own `t_ex` fixed to the option's expiry `T`, not an
   independent variable), the discounted expected ATM call payoff is `e^{−rT} f (2Φ(σ√T/2) − 1)`.
+  The hypothesis includes `σ_ATM > 0`, which is assumed, not proved.
 
 All three are about the printed formulas. Nothing is derived from the SABR SDE, and there is no
 error bound against the model's implied volatility (issue #100's `O(T²)` statement stays open).
@@ -1190,13 +1252,12 @@ Four entries added, all `full`: `mf-jump-diffusion-brownian-no-jumps`, `mf-bs-fo
   remaining maturity (`IsFilteredPreBrownian.condExp_call_eq_bsV`,
   `IsFilteredPreBrownian.condExp_put_eq_bsPut`).
 - A `JumpDiffusionHyp` model whose first log-jump is `N(log(1 + k) − δ²/2, δ²)` is a Merton model
-  (`JumpDiffusionHyp.toMertonHyp`), and the canonical model with that jump law gives a `MertonHyp`
-  (`mertonHyp_canonical`), so the Merton entries' hypotheses can be met.
+  (the canonical model with that jump law, `jumpDiffusionHyp_canonical`, satisfies the Merton entries'
+  hypotheses).
 
 Safe wording: "Brownian motion with drift is a jump-diffusion process without jumps, so the
 jump-diffusion process results contain the Black–Scholes model at every date before maturity, and
-Merton's model exists". Not covered: a jump-diffusion process with jumps (`Λ > 0`); `MertonHyp` as
-an instance of `JumpDiffusionHyp` (its jumps are only a.e.-measurable).
+Merton's model exists". Not covered: a jump-diffusion process with jumps (`Λ > 0`).
 
 ### Gaussian smoothing; Merton's 1976 series from the general route, at every date (2026-10-08)
 
@@ -1210,10 +1271,8 @@ Three entries added, all `full`: `mf-bs-gaussian-smoothing`, `mf-merton-from-gen
   mixing formula and adds the Gaussian log-shocks.
 - Merton's series from the general route (`BlackScholes/JumpDiffusionMerton.lean`): with
   log-jumps `N(log(1 + k) − δ²/2, δ²)` and the compensator `kΛ`, the general-law formula and
-  Gaussian smoothing give `mertonCallPrice` (`JumpDiffusionHyp.call_eq_mertonCallPrice`). The two
-  Merton towers now reach the same series. `MertonHyp` is still not an instance of
-  `JumpDiffusionHyp` (its jumps are only a.e.-measurable), so `merton_call_formula` keeps its own
-  proof.
+  Gaussian smoothing give `mertonCallPrice` (`JumpDiffusionHyp.call_eq_mertonCallPrice`). The
+  former second Merton tower was removed on 2026-10-30 (see that entry).
 - Merton's 1976 formula at every date: with Gaussian jumps at the compensated drift
   `b = r − σ²/2 − Λk`, the call price function is `mertonCallPrice` at the expected jump count
   `Λτ` (`jumpDiffusionCallPrice_gaussian_eq_mertonCallPrice`), and for `t < T` the conditional
@@ -1226,8 +1285,7 @@ Safe wording: "averaging a Black–Scholes call over a lognormal spot factor is 
 at the shifted spot and the enlarged volatility; with lognormal jumps the general jump-diffusion
 formula is Merton's 1976 series, and in a log-price process with independent jump-diffusion
 increments, at the compensated drift `b = r − σ²/2 − Λk`, it is the conditional value of the call
-and the put at every date before maturity". Not covered: the existence of the process with jumps;
-`MertonHyp` as an instance of `JumpDiffusionHyp`.
+and the put at every date before maturity". Not covered: the existence of the process with jumps.
 
 ### Prices at every date; Merton's formula and the implied-volatility lift at every date (2026-10-08)
 
@@ -1283,7 +1341,7 @@ Five entries added, all `full`: `mf-jump-diffusion-model-exists`,
   under `N(0, 1) ⊗ Poisson(Λ) ⊗ ν^ℕ` satisfy `JumpDiffusionHyp`, with jumps of law `ν`.
   `JumpDiffusionHyp` can therefore be discharged for any `Λ` and `ν`; the remaining hypotheses on
   the model are `∫ eˣ dν < ∞` (`integrable_exp_canonical_jump`) and, for the implied-volatility
-  result, `Λ > 0` and `ν ≠ δ₀`. `MertonHyp` was witnessed later (`mertonHyp_canonical`).
+  result, `Λ > 0` and `ν ≠ δ₀`. The Gaussian-jump case was witnessed later (`jumpDiffusionHyp_canonical`).
 - The call depends only on `Λ` and the jump law, `JumpDiffusionHyp.call_eq_integral_infinitePi`:
   on any model with `𝔼[e^{J₀}] < ∞`, for `S₀, K, σ, T > 0`, it is
   `∫ n, ∫ x, C_BS(S₀e^{−κ + ∑_{i<n} xᵢ}) dν^ℕ dPoisson(Λ)`, with `ν` the law of `J₀`.
@@ -1343,7 +1401,7 @@ Four entries added, all `full`: `mf-jump-diffusion-mixing-formula`,
 `mf-jump-diffusion-call-dominates-bs`, `mf-jump-diffusion-compensator` and
 `mf-merton-general-jump-law`. Corpus 457 → 461.
 
-`BlackScholes/JumpDiffusionMixing.lean` drops the Gaussian jump law of `MertonModel`:
+`BlackScholes/JumpDiffusionMixing.lean` takes jumps of any law, not only Gaussian:
 
 - the mixing formula, `jumpDiffusion_call_eq_integral_bsV`: for `Z ∼ N(0, 1)` and a jump part `Y`
   independent of `Z` with `𝔼[e^Y] < ∞`,
@@ -1374,9 +1432,8 @@ Safe wording: "the mixing formula, Black–Scholes and spot bounds for a compens
 call, the compound-Poisson compensator, and Merton's Poisson-mixture formula for i.i.d. jumps of
 any law with a finite exponential moment, at maturity". Not covered: closed forms for specific
 non-Gaussian jump laws (Kou's double-exponential model needs its own integrals), the put and
-put–call parity, the price process, and Lévy processes beyond compound Poisson. `MertonModel` is
-not derived from this file: a `MertonHyp` is not a `JumpDiffusionHyp` as stated, because its jumps
-are only a.e.-measurable.
+put–call parity, the price process, and Lévy processes beyond compound Poisson. Merton's Gaussian case is derived from this file
+(`JumpDiffusionMerton.lean`).
 
 ### The Merton Greeks (2026-10-07)
 
@@ -1406,7 +1463,7 @@ weights `wₙcₙ` sum to one.
 
 Safe wording: "the Merton call's delta, gamma and vega as Poisson mixtures of Black–Scholes Greeks,
 with their signs and the shape of the price they imply". The Greeks are stated for
-`mertonCallPrice`, which `merton_call_formula` identifies with the model's expectation at each
+`mertonCallPrice`, which `JumpDiffusionHyp.call_eq_mertonCallPrice` identifies with the model's expectation at each
 spot. Not covered: the put Greeks, theta and rho, and sensitivities to the jump parameters `k`,
 `δ`, `Λ`.
 
@@ -1417,15 +1474,13 @@ Five entries added, all `full`: `mf-merton-call-formula`, `mf-merton-put-formula
 Corpus 447 → 452.
 
 `mertonCallPrice` was a definition: the Poisson mixture `∫ n, C_BS(spot_n, vol_n) ∂Poisson(Λ)`.
-`BlackScholes/MertonModel.lean` proves it is the price of the model. Under `MertonHyp`, a standard
-normal `Z`, a jump count `N ∼ Poisson(Λ)` and i.i.d. log-jumps `Jᵢ ∼ N(log(1+k) − δ²/2, δ²)`,
-mutually independent, the terminal price
+It is the price of the model: with a standard normal `Z`, a jump count `N ∼ Poisson(Λ)` and i.i.d.
+log-jumps `Jᵢ ∼ N(log(1+k) − δ²/2, δ²)`, mutually independent, the terminal price
 `S_T = S₀ exp((r − σ²/2)T − kΛ + σ√T·Z + ∑_{i<N} Jᵢ)` has
-`𝔼[e^{−rT}(S_T − K)⁺] = mertonCallPrice` (`merton_call_formula`), the put analogue
-(`merton_put_formula`) and `𝔼[e^{−rT}S_T] = S₀` (`merton_discounted_terminal`). With `n` jumps the
-total log-shock is a sum of independent Gaussians, so `S_T` is a Black–Scholes terminal price at
-`mertonSpot n` and `mertonVol n` (`mertonTerminal_eq_bsTerminal`, `MertonHyp.hasLaw_mertonStd`);
-the jump count is then integrated out by the freezing lemma.
+`𝔼[e^{−rT}(S_T − K)⁺] = mertonCallPrice` (`JumpDiffusionHyp.call_eq_mertonCallPrice`), the put
+analogue (`JumpDiffusionHyp.put_eq_mertonPutPrice`) and `𝔼[e^{−rT}S_T] = S₀`
+(`JumpDiffusionHyp.discounted_terminal_merton`). (Originally proved in `MertonModel.lean` with its
+own Poisson freezing; since 2026-10-30 these are corollaries of the general mixing formula.)
 
 The freezing lemma is `Foundations/IndepFreezing.integral_comp_prodMk_of_indepFun`:
 `𝔼[g(X, Y)] = ∫ x, 𝔼[g(x, Y)] d(law X)` for independent `X`, `Y`, from Mathlib's
@@ -1461,7 +1516,7 @@ One entry added, `mf-svi-butterfly-free-sign-formula` (`full`). Corpus 445 → 4
 
 The strike-convexity certificate left out the large-strike behaviour. For raw SVI with `b ≥ 0`
 and positive variance, `d₊(k) → −∞` as `k → ∞` exactly when the right wing slope `b(1+ρ)` is below
-`2` (`tendsto_blackPlus_atBot_iff`), and the smiled call tends to `0` at large strikes exactly
+`2` (`tendsto_dpl_atBot_iff`), and the smiled call tends to `0` at large strikes exactly
 when it is (`tendsto_bsSmile_zero_iff`). The call is also between `(1 − K)⁺` and `1`, tends to `1`
 at strike `0`, and is nonincreasing once it is convex. So the strike-convexity formula with the
 one further atom `2 − b(1+ρ) > 0` holds exactly when `σ ≥ 0`, `b ≥ 0`, `ρ² ≤ 1`, the variance is
@@ -1618,7 +1673,7 @@ What is not covered:
 | `qrm-es-tail-mean` | For an integrable loss X whose law has a continuous CDF and α ∈ (0, 1), with q = VaR_α(X): the tail {X > q} has probability exactly 1 − α, and ES_α(X) = (1−α)⁻¹ E[X·1{X > q}], the mean of X over that tail. The Acerbi–Tasche correction term vanishes. | `MathFin/RiskMeasures/ExpectedShortfall.lean`, `MathFin.expectedShortfall_eq_setIntegral_tail` | `full` |
 | `qrm-es-dual-representation` | For an integrable loss X and α ∈ (0, 1), ES_α(X) is the greatest value of E[D·X] over densities D with 0 ≤ D ≤ (1−α)⁻¹ a.s. and E[D] = 1; the maximum is attained. | `MathFin/RiskMeasures/ExpectedShortfall.lean`, `MathFin.isGreatest_integral_mul_expectedShortfall` | `full` |
 | `qrm-es-monotone-level` | For an integrable loss X and 0 < α ≤ β < 1, ES_α(X) ≤ ES_β(X). | `MathFin/RiskMeasures/ExpectedShortfall.lean`, `MathFin.expectedShortfall_mono_level` | `full` |
-| `qrm-es-adeh-representation` | On a finite probability space, X ↦ ES_α(−X) satisfies the ADEH axioms (IsCoherentRisk), so ES_α(−X) is the least upper bound of the expected losses ∑ qᵢ(−Xᵢ) over its representing probability vectors. | `MathFin/RiskMeasures/ExpectedShortfall.lean`, `MathFin.expectedShortfall_isLUB_representingSet` | `full` |
+| `qrm-es-adeh-representation` | On a finite probability space, ES_α is a coherent risk measure of losses (IsCoherentRiskMeasure), so ES_α(L) is the least upper bound of the expected losses ∑ qᵢ Lᵢ over its representing probability vectors, those q with ∑ qᵢ Zᵢ ≤ 0 on every loss Z with ES_α(Z) ≤ 0. That this representing set is the set of densities bounded by (1 − α)⁻¹ is not proved here. | `MathFin/RiskMeasures/ExpectedShortfall.lean`, `MathFin.expectedShortfall_isLUB_representingSet` | `full` |
 | `qrm-gaussian-es` | For a loss X ~ N(m, v) with v > 0 and α ∈ (0, 1): ES_α(X) = gaussianCVaR m √v (Φ⁻¹(α)) α = m + √v·ϕ(Φ⁻¹(α))/(1 − α). | `MathFin/RiskMeasures/GaussianExpectedShortfall.lean`, `MathFin.expectedShortfall_of_hasLaw_gaussianReal` | `full` |
 | `qrm-var-bisection` | For any loss X, α ∈ (0, 1) and a bracket with P(X ≤ lo) < α ≤ P(X ≤ hi), bisection on x ↦ P(X ≤ x) against α converges to VaR_α(X) (with error at most (hi − lo)/2^(n+1) after n steps, abs_bisectMid_sub_valueAtRisk_le). | `MathFin/RiskMeasures/ValueAtRiskBisection.lean`, `MathFin.tendsto_bisectMid_valueAtRisk` | `full` |
 | `qrm-var-superadditive-bernoulli` | For d independent Bernoulli(p) losses Y₁,…,Y_d (values in {0,1}, p ∈ (0,1)) and α ∈ (0, 1): ∑ VaR_α(Yᵢ) < VaR_α(∑ Yᵢ) if and only if (1 − p)^d < α ≤ 1 − p. So VaR is superadditive for such losses whenever d ≥ 2 and α lies in that range. | `MathFin/RiskMeasures/VaRSuperadditivity.lean`, `MathFin.valueAtRisk_sum_bernoulli_superadditive_iff` | `full` |
@@ -2747,7 +2802,8 @@ prior corpus audit, not a verification of this addition.
 > (the root); the FTAP kernel `exists_pos_dual_of_disjoint_stdSimplex` **re-derived in place** from it
 > (signature byte-identical → no consumer churn); `mf-coherent-risk-representation`
 > (`RiskMeasures/AcceptanceSet.coherentRisk_isLUB`, the finite-state ADEH representation stated as an
-> `IsLUB`, acceptance-set closedness *derived* from the four axioms, not assumed);
+> `IsLUB`, acceptance-set closedness *derived* from the four axioms, not assumed; since #364 stated
+> for the library's one coherence structure `IsCoherentRiskMeasure`, in the loss convention);
 > `mf-worstcase-risk-representation` (`RiskMeasures/WorstCaseRisk.worstCase_isLUB`, a concrete instance
 > — worst-case loss = sup over the whole probability simplex); and `mf-superhedging-emm-bound`
 > (`Foundations/SuperhedgingDuality.emm_le_superReplication`, every equivalent martingale measure
@@ -2858,8 +2914,8 @@ prior corpus audit, not a verification of this addition.
 > — for a scalar `L⁰` excess return on an **arbitrary** probability space, no
 > arbitrage ⟺ ∃ equivalent martingale measure `Q ~ P` with `Y` integrable and
 > `E_Q[Y] = 0` (`Foundations/FTAPOnePeriod.lean`, entry
-> `mf-ftap-one-period-general`), backward via a bounded-density reduction to `L¹`,
-> the scalar no-arbitrage dichotomy, and a two-region balancing `withDensity` —
+> `mf-ftap-one-period-general`), as the `F = ℝ` corollary of the d-asset theorem
+> `ftap_one_period_vector` (bounded-density reduction to `L¹`, logistic tilt) —
 > no Hahn–Banach, no Kreps–Yan. This is the genuine measure-theoretic step beyond
 > the finite-Ω **Harrison–Pliska** `ftap_discrete` (no arbitrage ⟺ ∃ EMM,
 > multi-period, finite Ω, scalar discounted asset; `Foundations/FTAPDiscrete.lean`,
@@ -3291,9 +3347,8 @@ Coverage as of 2026-06-22 (extended mathematical-finance pass: put greeks, highe
 > telescoping (`Foundations/FTAPDiscrete.lean`). (2) **General-Ω one-period
 > scalar FTAP** `ftap_one_period` (`mf-ftap-one-period-general`) — Föllmer–Schied
 > §1.2 for an arbitrary probability space and a single scalar `L⁰` excess return;
-> backward via a bounded-density reduction to `L¹`, the scalar no-arbitrage
-> dichotomy, and a two-region balancing `withDensity` — no Hahn–Banach, no
-> Kreps–Yan (`Foundations/FTAPOnePeriod.lean`). (3) **D-asset one-period FTAP**
+> as the `F = ℝ` corollary of the d-asset theorem (3) below, with no proof of its own
+> (`Foundations/FTAPOnePeriod.lean`). (3) **D-asset one-period FTAP**
 > `ftap_one_period_vector` (`mf-ftap-one-period-vector`) — Föllmer–Schied §1.2 for
 > any finite-dimensional inner-product space `F`; the Esscher/minimal-divergence
 > EMM minimises the convex softplus potential `θ ↦ ∫ log(1 + exp⟪θ,Y⟫)`, which

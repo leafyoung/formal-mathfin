@@ -70,22 +70,21 @@ theorem covered_interest_parity {ι : Type*} (s : Finset ι) (q S_T : ι → ℝ
     (h_dom : ∑ i ∈ s, q i = Real.exp (-(r_d * T)))
     (h_for : ∑ i ∈ s, q i * S_T i = S * Real.exp (-(r_f * T))) :
     ∑ i ∈ s, q i * (S_T i - F) = 0 ↔ F = fxForward S r_d r_f T := by
-  rw [forward_price_from_no_arbitrage s q S_T _ _ F (Real.exp_pos _).ne' h_dom h_for, fxForward,
-    mul_div_assoc, ← Real.exp_sub, neg_sub_neg, ← sub_mul]
+  refine (forward_price_from_no_arbitrage s q S_T _ _ F (Real.exp_pos _).ne' h_dom h_for).trans ?_
+  rw [fxForward, mul_div_assoc, ← Real.exp_sub, neg_sub_neg, ← sub_mul]
 
 /-- **Covered interest parity, one period, discrete compounding**: with the
 domestic bond priced at `1/(1 + r_d)` (`1 + r_d ≠ 0`) and the foreign bond, in
 domestic currency, at `S/(1 + r_f)`, the zero-value forward is
-`S·(1 + r_d)/(1 + r_f)` (at `1 + r_f = 0` this holds only via Lean's
-`x / 0 = 0` convention, under which both sides collapse to `0`; no
-`1 + r_f ≠ 0` hypothesis is needed). -/
+`S·(1 + r_d)/(1 + r_f)`. The foreign bond price `S/(1 + r_f)` is a price only for
+`1 + r_f > 0`; the identity holds for every `r_f`. -/
 theorem covered_interest_parity_discrete {ι : Type*} (s : Finset ι) (q S_T : ι → ℝ)
     (S r_d r_f F : ℝ) (hd : 1 + r_d ≠ 0)
     (h_dom : ∑ i ∈ s, q i = 1 / (1 + r_d))
     (h_for : ∑ i ∈ s, q i * S_T i = S / (1 + r_f)) :
     ∑ i ∈ s, q i * (S_T i - F) = 0 ↔ F = S * (1 + r_d) / (1 + r_f) := by
-  rw [forward_price_from_no_arbitrage s q S_T _ _ F (one_div_ne_zero hd) h_dom h_for,
-    div_div_eq_mul_div, div_one, div_mul_eq_mul_div]
+  refine (forward_price_from_no_arbitrage s q S_T _ _ F (one_div_ne_zero hd) h_dom h_for).trans ?_
+  rw [div_div_eq_mul_div, div_one, div_mul_eq_mul_div]
 
 /-- **Uncovered interest parity, risk-neutral form.** Under the Garman–Kohlhagen
 hypothesis (lognormal terminal spot with domestic risk-neutral drift

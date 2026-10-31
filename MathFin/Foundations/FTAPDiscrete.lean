@@ -8,7 +8,9 @@ module
 public import Mathlib
 public import MathFin.Foundations.ConvexSeparation
 public import MathFin.Foundations.MartingaleTransform
+public import MathFin.Foundations.FTAP
 public import MathFin.Foundations.FTAPOnePeriod
+public import MathFin.Foundations.NoArbitrageCore
 public import MathFin.Foundations.ContinuousMarket
 
 /-!
@@ -27,7 +29,8 @@ The backward direction is the geometric heart of the theorem: the attainable
 gains span a subspace of `Ω → ℝ` that, under no arbitrage, misses the standard
 simplex, so the separating-dual kernel `exists_pos_dual_of_disjoint_stdSimplex`
 (`Foundations/ConvexSeparation.lean`) produces a strictly-positive pricing
-functional — the EMM. The forward direction is martingale-transform telescoping.
+functional — the EMM. The forward direction is `MathFin.emm_implies_no_arbitrage`, shared with
+the one-period market.
 
 ## Scope
 
@@ -43,11 +46,11 @@ and the `d`-asset generalisation are out of scope here.
   (`isEMM_one_iff_onePeriod`) and so do the no-arbitrage conditions
   (`noArbitrage_one_iff_onePeriod`).
 * **Continuous time.** `ContinuousMarket.IsEMM` is a process-level notion over `ℝ≥0` on a
-  general Ω and stays separate. It restricts in one direction: sampled along any monotone
-  schedule, a continuous-time EMM is an EMM here for the sampled price and filtration
-  (`ContinuousMarket.IsEMM.sampled`, general Ω, though `ftap_discrete` itself needs finite
-  Ω), and it is a one-period EMM for every increment `S t − S s`
-  (`ContinuousMarket.IsEMM.increment`). The converses are not claimed: neither restriction
+  general Ω, with a horizon `T : ℝ≥0` like this one, and stays separate. It restricts in one
+  direction: sampled along any monotone schedule inside `[0, T]`, a continuous-time EMM is an
+  EMM here for the sampled price and filtration (`ContinuousMarket.IsEMM.sampled`, general Ω,
+  though `ftap_discrete` itself needs finite Ω), and it is a one-period EMM for every increment
+  `S t − S s` with `s, t ≤ T` (`ContinuousMarket.IsEMM.increment`). The converses are not claimed: neither restriction
   sees adaptedness of `S` at all times or the martingale property between arbitrary times.
 
 ## Main definitions / results (assembled across this file)
@@ -96,10 +99,7 @@ def NoArbitrage : Prop :=
 property is the one-step form up to `T` (the honest finite-horizon object: `S`
 need not be a `Q`-martingale past the horizon). At `T = 1` with `𝓕 0 = ⊥` this is the
 one-period notion for `S 1 − S 0` (`isEMM_one_iff_onePeriod`). -/
-structure IsEMM (Q : Measure Ω) : Prop where
-  prob : IsProbabilityMeasure Q
-  absP : Q ≪ P
-  Pabs : P ≪ Q
+structure IsEMM (Q : Measure Ω) : Prop extends IsEquivProbMeasure P Q where
   mart : ∀ t, t < T → S t =ᵐ[Q] Q[S (t + 1) | 𝓕 t]
 
 /-- `𝟙_A · (S_{t+1} − S_t)` — the discounted gain of holding one unit on the
@@ -121,14 +121,14 @@ private lemma martingaleTransform_add (φ ψ : ℕ → Ω → ℝ) (n : ℕ) :
     martingaleTransform (φ + ψ) S n
       = martingaleTransform φ S n + martingaleTransform ψ S n := by
   funext ω
-  simp only [martingaleTransform, Pi.add_apply, add_mul, Finset.sum_add_distrib]
+  simp only [martingaleTransform, Pi.add_apply, Real.inner_apply, add_mul, Finset.sum_add_distrib]
 
 omit [Fintype Ω] in
 /-- The martingale transform is homogeneous in the strategy. -/
 private lemma martingaleTransform_smul (c : ℝ) (φ : ℕ → Ω → ℝ) (n : ℕ) :
     martingaleTransform (c • φ) S n = c • martingaleTransform φ S n := by
   funext ω
-  simp only [martingaleTransform, Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp only [martingaleTransform, Pi.smul_apply, smul_eq_mul, Real.inner_apply, Finset.mul_sum]
   exact Finset.sum_congr rfl fun k _ ↦ by ring
 
 omit [MeasurableSingletonClass Ω] [Fintype Ω] in
@@ -151,7 +151,7 @@ theorem mem_gains_imp_predictable {g : Ω → ℝ} (hg : g ∈ gainsSubspace �
         exact stronglyMeasurable_const.indicator hA
       · exact stronglyMeasurable_const
     · funext ω
-      simp only [martingaleTransform]
+      simp only [martingaleTransform, Real.inner_apply]
       rw [Finset.sum_eq_single t]
       · simp [incrementIndicator]
       · intro k _ hk
@@ -228,7 +228,7 @@ theorem exists_isEMM_of_noArbitrage [Finite Ω] (hS : StronglyAdapted 𝓕 S)
     intro s hs; rw [eq_empty_of_pos_singleton hP hs]; exact measure_empty
   have hPQ : P ≪ Q := by
     intro s hs; rw [eq_empty_of_pos_singleton hQpos hs]; exact measure_empty
-  refine ⟨Q, hQprob, hQP, hPQ, fun t htT ↦ ?_⟩
+  refine ⟨Q, ⟨hQprob, hQP, hPQ⟩, fun t htT ↦ ?_⟩
   -- Martingale property via the conditional-expectation characterisation.
   refine ae_eq_condExp_of_forall_setIntegral_eq (𝓕.le t) Integrable.of_finite
     (fun s _ _ ↦ Integrable.of_finite.integrableOn) (fun s hs _ ↦ ?_)
@@ -250,45 +250,24 @@ theorem exists_isEMM_of_noArbitrage [Finite Ω] (hS : StronglyAdapted 𝓕 S)
   linarith [hkey]
 
 omit [Nonempty Ω] [IsProbabilityMeasure P] [Fintype Ω] in
-/-- **Forward direction**: an equivalent martingale measure precludes arbitrage.
-Under the EMM `Q`, the discounted gains telescope to `∫ G_T dQ = 0`; a
-non-negative integrand with zero integral is `0` a.e., and equivalence transports
-this back to `P`. -/
+/-- **Forward direction**: an equivalent martingale measure precludes arbitrage. On a finite
+space every function is integrable and a strategy is bounded on the horizon, so this is
+`MathFin.emm_implies_no_arbitrage` at the horizon `T`. -/
 theorem noArbitrage_of_isEMM [Finite Ω] (hS : StronglyAdapted 𝓕 S)
     {Q : Measure Ω} (hQ : IsEMM 𝓕 P S T Q) : NoArbitrage 𝓕 P S T := by
-  haveI := hQ.prob
+  haveI := hQ.isProb
+  haveI := Fintype.ofFinite Ω
   intro φ hφ hpos
-  -- Each one-step gain integrates to zero under `Q` (the pull-out + martingale step).
-  have hstep : ∀ k, k < T → ∫ ω, (φ (k + 1) * (S (k + 1) - S k)) ω ∂Q = 0 := by
-    intro k hk
-    have hcondS : Q[S (k + 1) - S k | 𝓕 k] =ᵐ[Q] 0 := by
-      have h1 := condExp_sub (μ := Q) (Integrable.of_finite (f := S (k + 1)))
-        (Integrable.of_finite (f := S k)) (𝓕 k)
-      have h2 : Q[S (k + 1) | 𝓕 k] =ᵐ[Q] S k := (hQ.mart k hk).symm
-      have h3 : Q[S k | 𝓕 k] = S k :=
-        condExp_of_stronglyMeasurable (𝓕.le k) (hS k) (Integrable.of_finite (μ := Q))
-      filter_upwards [h1, h2] with ω e1 e2
-      rw [Pi.zero_apply, e1, Pi.sub_apply, e2, congrFun h3 ω, sub_self]
-    have hpull0 : Q[φ (k + 1) * (S (k + 1) - S k) | 𝓕 k] =ᵐ[Q] 0 := by
-      have hpull := condExp_mul_of_stronglyMeasurable_left (μ := Q) (m := 𝓕 k)
-        (f := φ (k + 1)) (g := S (k + 1) - S k) (hφ k) Integrable.of_finite Integrable.of_finite
-      filter_upwards [hpull, hcondS] with ω ep ec
-      rw [Pi.zero_apply] at ec ⊢
-      rw [ep, Pi.mul_apply, ec, mul_zero]
-    rw [← integral_condExp (𝓕.le k), integral_congr_ae hpull0]; simp
-  -- Sum the steps: `∫ G_T dQ = 0`.
-  have hGint : ∫ ω, martingaleTransform φ S T ω ∂Q = 0 := by
-    have hsplit : ∀ ω, martingaleTransform φ S T ω
-        = ∑ k ∈ Finset.range T, φ (k + 1) ω * (S (k + 1) ω - S k ω) := fun ω ↦ by
-      rw [martingaleTransform]
-    simp_rw [hsplit]
-    rw [integral_finsetSum _ (fun k _ ↦ Integrable.of_finite)]
-    exact Finset.sum_eq_zero fun k hk ↦ hstep k (Finset.mem_range.mp hk)
-  -- `G_T ≥ 0` `Q`-a.e. (equivalence) and `∫ G_T = 0` give `G_T = 0` a.e.
-  have hposQ : 0 ≤ᵐ[Q] martingaleTransform φ S T := hQ.absP.ae_le hpos
-  have hzeroQ : martingaleTransform φ S T =ᵐ[Q] 0 :=
-    (integral_eq_zero_iff_of_nonneg_ae hposQ Integrable.of_finite).mp hGint
-  exact hQ.Pabs.ae_eq hzeroQ
+  exact ae_eq_zero_of_nonneg_of_null_pos hpos
+    (emm_implies_no_arbitrage hQ.ac hQ.ac' (fun t _ ↦ hS t) (fun t _ ↦ Integrable.of_finite)
+      hQ.mart φ (fun t _ ↦ hφ t)
+      ⟨∑ n ∈ Finset.range (T + 1), ∑ ω', |φ n ω'|, fun n hn ω ↦ by
+        rw [Real.norm_eq_abs]
+        exact (Finset.single_le_sum (f := fun ω' ↦ |φ n ω'|) (fun _ _ ↦ abs_nonneg _)
+          (Finset.mem_univ ω)).trans
+          (Finset.single_le_sum (f := fun n ↦ ∑ ω', |φ n ω'|)
+            (fun _ _ ↦ Finset.sum_nonneg fun _ _ ↦ abs_nonneg _)
+            (Finset.mem_range.mpr (Nat.lt_succ_of_le hn)))⟩ hpos)
 
 omit [IsProbabilityMeasure P] [Fintype Ω] in
 /-- **Finite-Ω Fundamental Theorem of Asset Pricing** (Harrison–Pliska; the
@@ -323,17 +302,17 @@ theorem isEMM_one_iff_onePeriod [Finite Ω] (hS : StronglyAdapted 𝓕 S) (h0 : 
   have hmean (μ : Measure Ω) [IsProbabilityMeasure μ] : ∫ ω, S 0 ω ∂μ = c := by simp [hc]
   constructor
   · intro hQ
-    haveI := hQ.prob
+    haveI := hQ.isProb
     have hm := hQ.mart 0 Nat.zero_lt_one
     rw [h0, condExp_bot, hc] at hm
     obtain ⟨_, hcQ⟩ := hm.exists
-    refine ⟨hQ.prob, hQ.absP, hQ.Pabs, Integrable.of_finite, ?_⟩
+    refine ⟨hQ.toIsEquivProbMeasure, Integrable.of_finite, ?_⟩
     change ∫ ω, (S 1 ω - S 0 ω) ∂Q = 0
     rw [integral_sub Integrable.of_finite Integrable.of_finite, hmean Q]
     exact sub_eq_zero.mpr hcQ.symm
   · intro hQ
-    haveI := hQ.prob
-    refine ⟨hQ.prob, hQ.absP, hQ.Pabs, fun t ht ↦ ?_⟩
+    haveI := hQ.isProb
+    refine ⟨hQ.toIsEquivProbMeasure, fun t ht ↦ ?_⟩
     obtain rfl : t = 0 := by omega
     rw [h0, condExp_bot, hc]
     have hfair : ∫ ω, (S 1 ω - S 0 ω) ∂Q = 0 := hQ.fair
@@ -348,7 +327,7 @@ theorem noArbitrage_one_iff_onePeriod (h0 : 𝓕 0 = ⊥) :
     NoArbitrage 𝓕 P S 1 ↔ OnePeriod.NoArbitrage P (S 1 - S 0) := by
   have hgain (φ : ℕ → Ω → ℝ) :
       martingaleTransform φ S 1 = fun ω ↦ φ 1 ω * (S 1 - S 0) ω := by
-    funext ω; simp [martingaleTransform]
+    funext ω; simp [martingaleTransform, mul_comm]
   constructor
   · intro hNA θ hθ
     have h := hNA (fun _ _ ↦ θ) (fun _ ↦ stronglyMeasurable_const) (by rw [hgain]; exact hθ)
@@ -376,32 +355,33 @@ open scoped NNReal
 variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} {𝓕 : Filtration ℝ≥0 mΩ}
 
 /-- **A continuous-time EMM, sampled, is a discrete-time EMM.** If `Q` is an equivalent
-martingale measure for the scalar discounted price `S` in continuous time, then along any
-monotone schedule `t 0 ≤ t 1 ≤ ⋯` it is an equivalent martingale measure, at every finite
-horizon `T`, for the sampled price `n ↦ S (t n)` and the sampled filtration
-`n ↦ 𝓕 (t n)`. General Ω; the sampled martingale is `martingale_comp_monotone`. -/
-theorem IsEMM.sampled {S : ℝ≥0 → Ω → ℝ} {Q : Measure Ω}
-    (h : IsEMM (P := P) (𝓕 := 𝓕) S Q) {t : ℕ → ℝ≥0} (ht : Monotone t) (T : ℕ) :
-    MathFin.IsEMM (sampledFiltration 𝓕 ht) P (fun n ↦ S (t n)) T Q :=
-  ⟨h.isProb, h.ac, h.ac', fun n _ ↦
-    ((martingale_comp_monotone h.martingale ht).condExp_ae_eq (Nat.le_add_right n 1)).symm⟩
+martingale measure up to `T` for the scalar discounted price `S` in continuous time, then along
+any monotone schedule `t 0 ≤ t 1 ≤ ⋯` whose first `T' + 1` dates lie in `[0, T]` it is an
+equivalent martingale measure, at the discrete horizon `T'`, for the sampled price `n ↦ S (t n)`
+and the sampled filtration `n ↦ 𝓕 (t n)`. General Ω; the sampled martingale is
+`martingale_comp_monotone`. -/
+theorem IsEMM.sampled {S : ℝ≥0 → Ω → ℝ} {T : ℝ≥0} {Q : Measure Ω}
+    (h : IsEMM 𝓕 P S T Q) {t : ℕ → ℝ≥0} (ht : Monotone t) (T' : ℕ)
+    (hT' : t T' ≤ T) :
+    MathFin.IsEMM (sampledFiltration 𝓕 ht) P (fun n ↦ S (t n)) T' Q :=
+  ⟨h.toIsEquivProbMeasure, fun n hn ↦
+    (h.condExp_eq (ht n.le_succ) ((ht hn).trans hT')).symm⟩
 
-/-- **A continuous-time EMM is a one-period EMM for every increment.** If `Q` is an
-equivalent martingale measure for the discounted price `S`, then for any two dates `s`, `t`
-it is an equivalent martingale measure, in the sense of
+/-- **A continuous-time EMM is a one-period EMM for every increment before the horizon.** If `Q`
+is an equivalent martingale measure up to `T` for the discounted price `S`, then for any two
+dates `s`, `t ≤ T` it is an equivalent martingale measure, in the sense of
 `Foundations/FTAPOnePeriodVector.lean`, for the one-period excess return `S t − S s` with a
 constant holding: a martingale has constant expectation. -/
 theorem IsEMM.increment {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F]
-    [FiniteDimensional ℝ F] {S : ℝ≥0 → Ω → F} {Q : Measure Ω}
-    (h : IsEMM (P := P) (𝓕 := 𝓕) S Q) (s t : ℝ≥0) :
+    [FiniteDimensional ℝ F] {S : ℝ≥0 → Ω → F} {T : ℝ≥0} {Q : Measure Ω}
+    (h : IsEMM 𝓕 P S T Q) {s t : ℝ≥0} (hs : s ≤ T) (ht : t ≤ T) :
     OnePeriodVector.IsEMM P (S t - S s) Q := by
   haveI := h.isProb
-  have hmean (u : ℝ≥0) : ∫ ω, S u ω ∂Q = ∫ ω, S 0 ω ∂Q := by
+  have hmean {u : ℝ≥0} (hu : u ≤ T) : ∫ ω, S u ω ∂Q = ∫ ω, S 0 ω ∂Q := by
     rw [← integral_condExp (𝓕.le 0)]
-    exact integral_congr_ae (h.martingale.condExp_ae_eq (zero_le : (0 : ℝ≥0) ≤ u))
-  refine ⟨h.isProb, h.ac, h.ac', (h.martingale.integrable t).sub (h.martingale.integrable s), ?_⟩
+    exact integral_congr_ae (h.condExp_eq zero_le hu)
+  refine ⟨h.toIsEquivProbMeasure, (h.integrable ht).sub (h.integrable hs), ?_⟩
   change ∫ ω, (S t ω - S s ω) ∂Q = 0
-  rw [integral_sub (h.martingale.integrable t) (h.martingale.integrable s), hmean t, hmean s,
-    sub_self]
+  rw [integral_sub (h.integrable ht) (h.integrable hs), hmean ht, hmean hs, sub_self]
 
 end MathFin.ContinuousMarket

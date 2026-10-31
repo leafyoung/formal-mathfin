@@ -93,30 +93,33 @@ import MathFin.Foundations.ContinuousMarket
 import MathFin.Foundations.ChangeOfMeasure
 import MathFin.Foundations.Girsanov
 import MathFin.Foundations.ExpMartingaleQBrownian
+import MathFin.Foundations.LevyQuadraticSums
+import MathFin.Foundations.LevyExpMartingale
+import MathFin.Foundations.ExpMartingaleBrownian
+import MathFin.Foundations.BoundedLocalMartingale
+import MathFin.Foundations.LevyCharacterization
 import MathFin.Foundations.GirsanovConstantTheta
 import MathFin.Foundations.SimpleDoleansExponential
 import MathFin.Foundations.GirsanovSimpleTheta
 import MathFin.Foundations.Numeraire
 import MathFin.Foundations.BrownianQuadraticVariation
+-- The uniform partition of [0, T] (and [s, t]): the one equipartition of the Itô stack
+import MathFin.Foundations.UnifPart
 import MathFin.Foundations.QuadraticVariationL2
 import MathFin.Foundations.ExpMin
 import MathFin.Foundations.NoArbitrageCore
 import MathFin.Foundations.FTAP
 import MathFin.Foundations.OptionalSamplingInequality
 import MathFin.Foundations.LpContinuousMartingaleConvergence
+import MathFin.Foundations.MartingaleSetIntegral
 import MathFin.Foundations.MartingaleTransform
 import MathFin.Foundations.DoobLpMaximalInequality
 import MathFin.Foundations.ExtendOfNormIsometry
 import MathFin.Foundations.WienerIntegralL2
--- The exponential-affine engine: generator invariance for OU/CIR affine diffusions and
--- the Riccati flow (the deterministic core of the affine-term-structure method)
-import MathFin.Foundations.ExpAffine
--- The CIR variance process as an explicit squared-OU construction: exact Gaussian laws
--- and the mean dynamics E[V t] = theta(1 - e^{-kt}) + v0 e^{-kt}
-import MathFin.Foundations.CIRSquaredOU
 import MathFin.Foundations.WienerIntegralGaussian
 -- Wiener integral of a step indicator is the increment (∫𝟙_{(s,t]} dB = B_t − B_s)
 import MathFin.Foundations.WienerIntegralIndicator
+import MathFin.Foundations.WienerIntegralIto
 -- Structural / principle modules:
 import MathFin.Foundations.StandardGaussianMGF
 import MathFin.Foundations.ExponentialDiscount
@@ -236,6 +239,8 @@ import MathFin.Foundations.ItoSquaringIdentity
 import MathFin.Foundations.DiscreteItoPolynomial
 -- Continuous-time L² Itô formula for `f(x) = x²`: `∑ B ΔB → ½(B_T² − B_0² − T)`
 import MathFin.Foundations.ItoFormulaSquaredL2
+-- The Riemann-Itô sum `riemannσ`: the one left-endpoint sum every bridge below is a case of
+import MathFin.Foundations.ItoRiemannSum
 -- Keystone: `∫₀ᵀ B dB = ½(B_T² − B₀² − T)` as a genuine `itoIntegralCLM_T` identity
 -- (the continuous Itô integral's first real consumer)
 import MathFin.Foundations.ItoIntegralBrownian
@@ -245,8 +250,6 @@ import MathFin.Foundations.ItoIntegralLocality
 -- Summit A: bounded-derivative continuous-time Itô formula in L² (CLM-identified)
 import MathFin.Foundations.WeightedQuadraticVariation
 import MathFin.Foundations.ItoFormulaRemainder
-import MathFin.Foundations.ItoFormulaC2
-import MathFin.Foundations.ItoIntegralRiemannBridge
 -- Riemann↔CLM bridge for a bounded adapted continuous integrand θ (α4 brick b): ∫θdB CLM
 import MathFin.Foundations.ItoIntegralRiemannBridgeAdapted
 -- Step B1 of the adapted-coefficient Itô formula: freezing the integrand on a partition
@@ -265,8 +268,16 @@ import MathFin.Foundations.LocalisationInMeasure
 import MathFin.Foundations.ItoFormulaAdaptedTD
 -- The Itô integral of an unbounded continuous adapted integrand, by localisation
 import MathFin.Foundations.ItoIntegralLocalised
+-- The Itô integral of an unbounded continuous adapted integrand is a local martingale
+import MathFin.Foundations.ItoIntegralLocalisedLocalMartingale
 -- Itô's formula along an Itô process with unbounded adapted coefficients
 import MathFin.Foundations.ItoFormulaAdaptedUnbounded
+-- Riemann sums of a bounded predictable integrand with almost surely continuous paths
+import MathFin.Foundations.ItoIntegralPredictableRiemann
+-- The Itô integral of a predictable integrand with almost surely continuous paths
+import MathFin.Foundations.ItoIntegralLocalisedPredictable
+-- Itô's formula as an identity of processes; its stochastic term is a local martingale
+import MathFin.Foundations.ItoFormulaAdaptedProcess
 -- Deterministic drift Riemann-convergence (α4 brick b-tail): ∑θ(tₖ)²·Δτ → ∫₀ᵀθ²ds
 import MathFin.Foundations.DriftRiemannConvergence
 -- Continuous adapted-θ Girsanov assembly (α4 (c)): convergence core toward
@@ -320,7 +331,7 @@ import MathFin.Foundations.PricePathDrift
 import MathFin.Foundations.PricingMeasureL2Density
 import MathFin.Foundations.ItoFormulaProcess
 import MathFin.Foundations.ExitTime
-import MathFin.Foundations.ItoFormulaUnrestricted
+import MathFin.Foundations.ItoFormulaCutoff
 import MathFin.Foundations.ItoFormulaUnrestrictedLocMart
 -- Phase 37: FTAP both directions, two-state market (adapted from Nagy 2026)
 import MathFin.Foundations.FTAPTwoState
@@ -386,7 +397,6 @@ import MathFin.BlackScholes.MertonDominance
 import MathFin.BlackScholes.MertonClassicDisplay
 -- Merton's model derived: the jump-diffusion terminal price (Gaussian diffusion,
 -- Poisson count, i.i.d. lognormal jumps) prices to the Poisson mixture
-import MathFin.BlackScholes.MertonModel
 -- Merton Greeks: delta, gamma, vega as Poisson mixtures of Black–Scholes Greeks
 import MathFin.BlackScholes.MertonGreeks
 -- Merton's strike derivatives: the digital series and the density series (Poisson mixtures of
@@ -579,7 +589,8 @@ import MathFin.FixedIncome.DefaultDensity
 -- CVA under exposure independent of default (Fubini reduction; Gaussian expected exposure in
 -- closed form)
 import MathFin.FixedIncome.CVA
--- DVA as a genuine corollary of CVA: negate the exposure, swap in the bank's own default time
+-- DVA from CVA: negate the exposure, swap in the bank's own default time; DVA as the integral
+-- of the expected negative exposure
 import MathFin.FixedIncome.DVA
 -- Phase 41: Vasicek SDE closed-form (full SDE, mean + variance)
 import MathFin.FixedIncome.VasicekSDE
@@ -587,11 +598,15 @@ import MathFin.FixedIncome.VasicekSDE
 import MathFin.Foundations.OUSpectral
 -- Itô→pricing bridge: Vasicek terminal law derived (Wiener integral is Gaussian)
 import MathFin.FixedIncome.VasicekSDEGaussian
+-- Sum of two squared OU fluctuations: mean θ(1 − e^{−kt}) + v₀e^{−kt}, the borderline CIR mean
+import MathFin.FixedIncome.CIRSquaredOU
 -- Vasicek zero-coupon bond price: the affine term structure (Gaussian Laplace transform)
 import MathFin.FixedIncome.VasicekBondPrice
 -- Vasicek real-world vs. risk-neutral terminal mean; an Esscher tilt reproducing the
 -- risk-neutral terminal law
 import MathFin.FixedIncome.VasicekMarketPriceOfRisk
+-- Vasicek bond price as κ → 0⁺: the three-term cancellation limit to the driftless model
+import MathFin.FixedIncome.VasicekZeroMeanReversionLimit
 -- CIR loadings: B solves the Riccati equation, A solves A' = −κθB
 import MathFin.FixedIncome.CIRRiccati
 -- The T-forward measure: the zero-coupon bond as numéraire (change-of-numéraire instance)
@@ -635,7 +650,7 @@ import MathFin.Portfolio.RiskParityFOC
 import MathFin.Portfolio.BlackLittermanND
 -- Convex QP KKT sufficiency/uniqueness and a feasible-ratio-test step bound
 import MathFin.Portfolio.ConvexQPKKT
--- PSD-form Cauchy–Schwarz and the constrained-Sharpe tradeoff form
+-- PSD-form Cauchy–Schwarz and the mean–standard-deviation tradeoff at a mean–variance KKT point
 import MathFin.Portfolio.PosSemidefCauchySchwarz
 
 -- Performance
@@ -664,6 +679,11 @@ import MathFin.RiskMeasures.UtilityDerivation
 -- the mixture, and the vNM axioms verified for the induced preference (the soundness half,
 -- plus invariance of the preference under positive affine rescaling of the utility)
 import MathFin.RiskMeasures.VonNeumannMorgenstern
+-- The one coherence structure: the four ADEH axioms for losses, ρ(0) = 0, convexity, and (finite
+-- state) pointwise monotonicity and continuity
+import MathFin.RiskMeasures.Coherent
+-- The positions convention of the ADEH paper is the loss convention at L ↦ ρ(−L)
+import MathFin.RiskMeasures.PositionsConvention
 -- Phase 1 (convex-duality unification): coherent-risk ADEH representation — acceptance cone
 -- separation giving the representing probability measures (risk-side Hahn–Banach)
 import MathFin.RiskMeasures.AcceptanceSet
@@ -674,9 +694,9 @@ import MathFin.RiskMeasures.WorstCaseRisk
 -- Gaussian closed forms identified as the VaR of the law at z = Φ⁻¹(α)
 import MathFin.RiskMeasures.ValueAtRisk
 import MathFin.RiskMeasures.GaussianValueAtRisk
--- Expected negative exposure, exposure VaR (PFE) and netting subadditivity, built on the real
--- CVA expected-exposure substrate; collateralized exposure under an actual Brownian-driven
--- process (lagged collateral is a real earlier value of the process, not an opaque scalar)
+-- Expected negative exposure, potential future exposure (the VaR of V⁺) and netting
+-- subadditivity on the CVA expected-exposure substrate; collateralized exposure under a
+-- Brownian-driven process, the collateral the same process a lag earlier
 import MathFin.RiskMeasures.ExposureMeasures
 import MathFin.RiskMeasures.CollateralizedExposureBrownian
 -- Expected shortfall: Rockafellar–Uryasev for every law, coherence, dual representation; the
@@ -742,9 +762,19 @@ import MathFin.Contracts.Core
 import MathFin.Contracts.Adapted
 import MathFin.Contracts.Pricing
 import MathFin.Contracts.Instruments.Options
+import MathFin.Contracts.Instruments.FixedIncome
+import MathFin.Contracts.Instruments.Credit
+import MathFin.Contracts.Parity
 import MathFin.Contracts.Models.BlackScholes
+import MathFin.Contracts.Models.BlackScholesExchange
+import MathFin.Contracts.Models.BlackScholesAsian
+import MathFin.Contracts.Models.BlackScholesChooser
 import MathFin.Contracts.Models.Binomial
 import MathFin.Contracts.Models.BinomialLimit
+import MathFin.Contracts.Models.Caplet
+import MathFin.Contracts.Models.ShortRate
+import MathFin.Contracts.Models.DefaultTime
+import MathFin.Contracts.Risk
 
 -- Execution: market microstructure — the Glosten-Milgrom adverse-selection
 -- spread, plus a six-point model witnessing that its hypotheses are satisfiable
@@ -753,6 +783,7 @@ import MathFin.Execution.GlostenMilgromModel
 import MathFin.Execution.RollSpread
 -- Continuous-time American put option exercise-boundary geometry
 import MathFin.BlackScholes.AmericanPut.Stopping.PhysicalBoundaryConvexity
+import MathFin.BlackScholes.AmericanPut.Stopping.PlanePartial
 import MathFin.BlackScholes.AmericanPut.Stopping.AEHorizonValue
 -- QRM bridges: equicorrelation, Gaussian VaR/ES-optimal = Markowitz portfolios, the HHI
 -- systematic floor, and the square-root-of-time rule for GBM losses
@@ -820,6 +851,7 @@ import MathFin.Commodities.TheoryOfStorage
 -- AR(1) <-> Ornstein-Uhlenbeck parameter inversion for commodity calibration
 import MathFin.Commodities.AR1OUCalibration
 import MathFin.Binomial.PathMeasure
+import MathFin.Binomial.MultiPeriodFTAP
 import MathFin.BlackScholes.JumpDiffusionThinning
 import MathFin.Bridges.ABCDBlack76
 import MathFin.Bridges.AmericanPutEuropeanBound
