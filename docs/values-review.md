@@ -125,6 +125,11 @@ check "beautiful"; it can check "nobody refreshed the backlog."
 
 ## Review log
 
+Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the **upgrade-driven model**
+(per-lens exemplar → next upgrade; upgrades executed + ranked backlog). Earlier entries are historical
+PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
+should *generate work*, not certify "OK").
+
 ## 2026-11-02 — corpus 755, modules 686 — the standing first pass, scoped to this session's own addition
 
 Scope: the standing first pass (prose vs. statement) plus the eight lenses, over this
