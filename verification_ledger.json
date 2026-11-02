@@ -2698,6 +2698,20 @@
       "input_hash": "a6358cb470edffb8467353e715fc7d4dcd4ab467cbd08de541557e1905255f29",
       "verified_at_commit": "9d0be64"
     },
+    "mf-heston-small-vol-of-vol-blackscholes-limit": {
+      "benchmark_file": "black_scholes.json",
+      "date": "2026-11-01",
+      "elapsed_s": 5.4,
+      "input_hash": "e428f8db4461fbc5f16ef668ade2fabf35b3d9dc16eaa2de3a5f703e0b89b140",
+      "verified_at_commit": "4672813"
+    },
+    "mf-heston-zero-vol-of-vol-integrated-variance": {
+      "benchmark_file": "black_scholes.json",
+      "date": "2026-11-01",
+      "elapsed_s": 5.5,
+      "input_hash": "cdf84ef422cb7791e65a41d8e81e2a0fa64c172b58d6c5ddaefdda65eb1d140b",
+      "verified_at_commit": "4672813"
+    },
     "mf-heynen-kat-independent-bs-factor": {
       "benchmark_file": "exotic_options.json",
       "date": "2026-11-02",
@@ -3866,6 +3880,20 @@
       "elapsed_s": 5.0,
       "input_hash": "536912d1907f8d07131ff78a6af7a83fb3ccc149b1e1024a1320517c53699217",
       "verified_at_commit": "9d0be64"
+    },
+    "mf-sabr-fk-omega0-nu-zero-limit": {
+      "benchmark_file": "black_scholes.json",
+      "date": "2026-11-01",
+      "elapsed_s": 5.4,
+      "input_hash": "0e9ec5b75357e8b62107bc53106c0410ab657251edbb82205f1e9c2142bf8cd9",
+      "verified_at_commit": "4672813"
+    },
+    "mf-sabr-fk-y-beta-one-limit": {
+      "benchmark_file": "black_scholes.json",
+      "date": "2026-11-01",
+      "elapsed_s": 5.4,
+      "input_hash": "db157f1aae66c3e69ff06497201de0253f3b470e4cf3ce7a4a4fbbe23a0a8503",
+      "verified_at_commit": "4672813"
     },
     "mf-sabr-implied-vol-atm-limit": {
       "benchmark_file": "black_scholes.json",
