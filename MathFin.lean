@@ -886,3 +886,6 @@ import MathFin.Foundations.WienerIntegralGirsanov
 import MathFin.RiskMeasures.CreditRiskPlus
 import MathFin.RiskMeasures.OneFactorCopula
 import MathFin.Bridges.LSVPosteriorConditionalExpectation
+-- Weak uniqueness for the constant-coefficient integrated weak forward equation, via
+-- the characteristic-function/Groenwall method
+import MathFin.Foundations.FlowDuality
