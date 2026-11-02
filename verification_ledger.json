@@ -801,13 +801,6 @@
       "input_hash": "6cf0d5c3456581d68c612a07bde14578969310ebac5fcb364e2b0fea1ea26444",
       "verified_at_commit": "9d0be64"
     },
-    "mf-binary-barrier-inout-parity": {
-      "benchmark_file": "exotic_options.json",
-      "date": "2026-11-02",
-      "elapsed_s": 4.8,
-      "input_hash": "9ba20e4b6789270530fcd2c5aee8ac5db3c455cf0e94caf5f210d15104506111",
-      "verified_at_commit": "9d0be64"
-    },
     "mf-binomial-american-call-eq-european": {
       "benchmark_file": "binomial.json",
       "date": "2026-11-02",
@@ -2234,13 +2227,6 @@
       "date": "2026-11-02",
       "elapsed_s": 3.8,
       "input_hash": "ebb9c9c9ac447988f76f463daec9ecabc663a2b3be022b02292a6f6c9caebf37",
-      "verified_at_commit": "9d0be64"
-    },
-    "mf-dupire-local-vol": {
-      "benchmark_file": "black_scholes.json",
-      "date": "2026-11-02",
-      "elapsed_s": 5.0,
-      "input_hash": "7dd3db90a9858c80fd44a6b411300455c9baef1a1fc3795d448522d2920faae2",
       "verified_at_commit": "9d0be64"
     },
     "mf-dupire-tilted-smile-local-skew": {
@@ -3678,13 +3664,6 @@
       "input_hash": "fda174aa3c38ebe18639014f95d802467a788644ffbd2b944ef0f799b07869a6",
       "verified_at_commit": "9d0be64"
     },
-    "mf-partial-time-barrier-down-add-up": {
-      "benchmark_file": "exotic_options.json",
-      "date": "2026-11-02",
-      "elapsed_s": 5.2,
-      "input_hash": "aa2f36c808dd949a34e5fb63faf3f38189ce87da62099c6d673b4369a05995eb",
-      "verified_at_commit": "9d0be64"
-    },
     "mf-performance-gain_to_pain": {
       "benchmark_file": "portfolio_and_performance.json",
       "date": "2026-11-02",
@@ -3949,13 +3928,6 @@
       "date": "2026-11-02",
       "elapsed_s": 5.2,
       "input_hash": "e45edf6c9359dc40ef8cb219a0a170abe63e8a34901468984d2614c95d3437c8",
-      "verified_at_commit": "9d0be64"
-    },
-    "mf-soft-barrier-call-sub-put": {
-      "benchmark_file": "exotic_options.json",
-      "date": "2026-11-02",
-      "elapsed_s": 5.6,
-      "input_hash": "e01485033416422636961347e792ff5ebe2b823668cf9fdb6e0f1948557010e4",
       "verified_at_commit": "9d0be64"
     },
     "mf-sortino-scale-invariant": {
