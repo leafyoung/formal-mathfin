@@ -2229,6 +2229,13 @@
       "input_hash": "ebb9c9c9ac447988f76f463daec9ecabc663a2b3be022b02292a6f6c9caebf37",
       "verified_at_commit": "9d0be64"
     },
+    "mf-dupire-local-vol": {
+      "benchmark_file": "black_scholes.json",
+      "date": "2026-11-01",
+      "elapsed_s": 4.3,
+      "input_hash": "51100fcec0e28f9e5a787acabb94c5456128d2d902597eb416471f14f2e48737",
+      "verified_at_commit": "7c75689"
+    },
     "mf-dupire-tilted-smile-local-skew": {
       "benchmark_file": "black_scholes.json",
       "date": "2026-11-02",
@@ -4271,20 +4278,6 @@
       "date": "2026-11-02",
       "elapsed_s": 4.7,
       "input_hash": "d2322b39c9d1126cf9c67b9fa697058447129539a559ba038228e7835e87b320",
-      "verified_at_commit": "9d0be64"
-    },
-    "mf-vasicek-zero-meanreversion-crosscheck": {
-      "benchmark_file": "interest_rates.json",
-      "date": "2026-11-02",
-      "elapsed_s": 5.7,
-      "input_hash": "28245a1723f4e102128fa0d44df2258d591216194f7c73d9b2657c1d760c0f56",
-      "verified_at_commit": "9d0be64"
-    },
-    "mf-vasicek-zero-meanreversion-limit": {
-      "benchmark_file": "interest_rates.json",
-      "date": "2026-11-02",
-      "elapsed_s": 5.0,
-      "input_hash": "e3f8efb1f62b7b7166257fff390d5789208ed9de2d6eb817aa08e014510f9554",
       "verified_at_commit": "9d0be64"
     },
     "mf-vega": {
