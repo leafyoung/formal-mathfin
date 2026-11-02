@@ -626,16 +626,15 @@ import MathFin.FixedIncome.ABCDVolatility
 -- GSR (Gaussian short rate): two-piece piecewise-constant-volatility bond price
 import MathFin.FixedIncome.GSRPiecewiseVol
 import MathFin.FixedIncome.GSRBondPriceAt
--- Clean/dirty price and accrued interest, on- and between-coupon dates; clean
--- price continuous across a coupon date
+-- Clean/dirty price and accrued interest; clean price continuous across a coupon date
 import MathFin.FixedIncome.CleanPriceAccrued
--- Bond forward price via cash-and-carry replication; derived from forward_price_from_no_arbitrage
+-- Bond forward price derived from forward_price_from_no_arbitrage
 import MathFin.FixedIncome.BondForward
--- Covered and uncovered interest parity, from no-arbitrage and the Garman-Kohlhagen measure
+-- Covered and uncovered interest parity, from no-arbitrage and the Garman–Kohlhagen measure
 import MathFin.FixedIncome.FxForwardParity
 -- Loan amortization: bullet, equal-principal, and level-payment against annuityValue
 import MathFin.FixedIncome.LoanAmortization
--- Key-rate partials sum to the parallel-shift derivative dP/dy
+-- Key-rate partials sum to the parallel-shift derivative; on a flat curve, to dP/dy
 import MathFin.FixedIncome.KeyRateDuration
 
 -- Portfolio
