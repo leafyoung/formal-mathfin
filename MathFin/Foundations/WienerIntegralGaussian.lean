@@ -162,7 +162,7 @@ lemma wienerAssembly_map_eq_gaussianReal (hB : IsPreBrownianReal B μ) (T : ℝ�
     rw [variance_eq_integral
       ((Lp.aestronglyMeasurable (wienerAssembly B hB T x)).aemeasurable), hmean]
     simp only [sub_zero]
-    rw [← Lp_real_two_norm_sq μ (wienerAssembly B hB T x), ← wiener_assembly_isometry hB T x]
+    rw [← lp_two_norm_sq (wienerAssembly B hB T x), ← wiener_assembly_isometry hB T x]
   rw [hmean, hvar]
 
 /-! ### Pass to the L²-limit by characteristic functions -/
@@ -171,11 +171,11 @@ lemma wienerAssembly_map_eq_gaussianReal (hB : IsPreBrownianReal B μ) (T : ℝ�
 lemma L1_norm_le_L2_norm_prob (g : Lp ℝ 2 μ) :
     ∫ ω, ‖g ω‖ ∂μ ≤ ‖g‖ := by
   rw [show (∫ ω, ‖g ω‖ ∂μ) = (eLpNorm (g : Ω → ℝ) 1 μ).toReal by
-    rw [eLpNorm_one_eq_lintegral_enorm,
+    rw [eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable g),
         ← integral_norm_eq_lintegral_enorm (Lp.aestronglyMeasurable g)],
     Lp.norm_def]
   exact ENNReal.toReal_mono (Lp.eLpNorm_ne_top g)
-    (eLpNorm_le_eLpNorm_of_exponent_le one_le_two (Lp.aestronglyMeasurable g))
+    (eLpNorm_le_eLpNorm_of_exponent_le one_le_two)
 
 /-- The characteristic function of `μ.map h` is `|t|`-Lipschitz in `h : L²(μ)`. -/
 lemma charFun_map_lp_dist_le (t : ℝ) (h₁ h₂ : Lp ℝ 2 μ) :
@@ -276,7 +276,7 @@ theorem wienerIntegralLp_hasLaw_gaussian (hB : IsPreBrownianReal B μ) (T : ℝ�
   map_eq := by
     rw [wienerIntegralLp_map_eq_gaussianReal hB T f]
     congr 2
-    exact Lp_real_two_norm_sq (volume.restrict (Set.Ioc (0 : ℝ) (T : ℝ))) f
+    exact lp_two_norm_sq f
 
 /-- The `L²` representative of an `L²` function has the same squared integral. -/
 theorem _root_.MeasureTheory.MemLp.integral_sq_toLp {α : Type*} {mα : MeasurableSpace α}

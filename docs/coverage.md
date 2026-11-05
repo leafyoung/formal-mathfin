@@ -26,31 +26,9 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
-### American early-exercise approximations at their degenerate boundary (2026-11-01)
-
-Two independent small-parameter/boundary limits of American-option early-exercise engines,
-five entries, all `full`, in `benchmarks/american_put_boundary.json`. Corpus 754 → 759.
-
-| Benchmark ID | Mathematical conclusion | Lean declaration |
-|---|---|---|
-| `mf-ju-zhong-raw-eq-stable` | The pre-fix Ju–Zhong quadratic-approximation price and the post-fix, limit-stable price agree identically for every nonzero risk-free rate `r`. | `MathFin.juValueRaw_eq_juValue` |
-| `mf-ju-zhong-zero-rate-limit` | Conditional on continuity of the critical price at `r = 0+` and two nonvanishing side conditions, the pre-fix price along the critical-price path tends to the post-fix price as `r → 0+`. | `MathFin.tendsto_juValueRaw_zero_rate` |
-| `mf-american-put-boundary-expiry-limit` | For `0 < r`, `0 ≤ q ≤ r`, the American put exercise boundary tends to the strike `K` as time-to-expiry tends to `0`. | `MathFin.BlackScholes.AmericanPut.Stopping.tendsto_brownianUsualExerciseBoundary_expiry` |
-| `mf-qdplus-k12-endpoint-differentiable` | The Andersen–Lake–Offengenden QD+ fixed-point quadrature integrand `K12` has an explicit one-sided limit at its collocation endpoint when the trial boundary is differentiable there. | `MathFin.tendsto_qdfpK12_endpoint` |
-| `mf-qdplus-k12-endpoint-differentiability-tight` | The same endpoint limit takes a different value for a continuous but only Hölder-1/2 boundary, showing the differentiability hypothesis cannot be weakened to continuity. | `MathFin.tendsto_qdfpK12_endpoint_holder`, `MathFin.not_tendsto_qdfpK12_endpoint_holder` |
-
-Ju–Zhong (1999)'s quadratic approximation and QuantLib's rewrite of it (`juquadraticengine.cpp`)
-motivate the first two entries; Healy's restatement of Andersen–Lake–Offengenden's fixed-point
-equations (arXiv:2109.15157 §5.1) and QuantLib's `qdfpamericanengine.cpp` motivate the last three.
-Both are transcriptions of printed closed forms, not derivations of the underlying free-boundary
-problem; the Ju–Zhong limit is explicitly conditional (critical-price continuity and two
-nonvanishing side conditions are hypotheses, not derived), and the QD+ entries are over an
-abstract boundary, with no claim about the fixed-point iteration's convergence or pricing
-accuracy.
-
 ### Removable singularities in two stochastic-vol smile models (2026-11-01)
 
-Four `full` entries in `benchmarks/black_scholes.json`. Corpus 754 → 758.
+Three `full` entries in `benchmarks/black_scholes.json`. Corpus 754 → 757.
 
 - **`mf-sabr-fk-y-beta-one-limit`** (`tendsto_sabrFKY_beta_one`): QuantLib's
   `SabrFlochKennedyVolatility` (Le Floc'h & Kennedy, SSRN 2467231, 2014) normalizing transform
@@ -59,21 +37,40 @@ Four `full` entries in `benchmarks/black_scholes.json`. Corpus 754 → 758.
 - **`mf-sabr-fk-omega0-nu-zero-limit`** (`tendsto_sabrFKOmega0_nu_zero`, via
   `tendsto_sabrFKDint_nu_zero` and `sabrFKDint_eq_sabrX` reusing `SABRImpliedVol.lean`'s
   `sabrX`): the same engine's leading-order vol `ω₀(k) = log(F/k)/Dint(k)` is `∞·0` at `ν = 0`;
-  it tends to `-α log(F/k)/y` as `ν → 0`, `ν ≠ 0`, for `α ≠ 0`, `ρ ≠ 1`, `y ≠ 0`. Neither entry
-  covers the full Le Floc'h-Kennedy expansion (the `ω₀` correction terms, `D(F)`, `D(k)`) or its
+  it tends to `-α log(F/k)/y` as `ν → 0`, `ν ≠ 0`, for `α ≠ 0`, `ρ ≠ 1` and `y = sabrFKY F k β ≠ 0`
+  (the printed closed forms; that they equal the integrals `∫_F^k x^(-β) dx` and `∫_k^F dx/D(x)`
+  is not proved). Neither entry covers the full Le Floc'h-Kennedy expansion (the `ω₀` correction terms, `D(F)`, `D(k)`) or its
   approximation quality against the true SABR implied volatility.
 - **`mf-heston-small-vol-of-vol-blackscholes-limit`** (`MathFin.Heston.tendsto_hestonProfile_smallVolOfVol_blackScholes`):
   the Heston transform's Riccati closed forms (`hestonA`, `hestonBv`) carry a `2κθ/ξ²`
-  prefactor that is `∞ · 0` at vol-of-vol `ξ = 0` (the cancellation QuantLib's
-  `AnalyticHestonEngine::chF` Taylor-expands around, for `σ ≤ 1e-6` and `κ ≥ 1e-8`); the
-  transform tends to the Black-Scholes real moment generating function for `κ > 0`,
-  `0 < u < 1`, `v, θ ≥ 0`, `t ≤ T`. Only the real moment transform at the Riccati level is
-  covered, not the complex characteristic function or the identification with an actual
-  Heston process's `E[e^{u log S_T}]`.
-- **`mf-heston-zero-vol-of-vol-integrated-variance`** (`integral_vasicekDeterministic`): the
-  integrated deterministic variance feeding the limit above, `∫₀^τ v(s) ds = v₀B(τ) +
-  θ(τ - B(τ))` for the `ξ = 0` variance path `v(s) = θ + (v₀ - θ)e^{-κs}`, reusing
-  `FixedIncome/Vasicek.lean`'s `vasicekBondB`.
+  prefactor that is `∞ · 0` at vol-of-vol `ξ = 0`; the transform tends to the Black-Scholes real
+  moment generating function with total variance `vasicekIntegratedMean v θ κ (T - t)`, for
+  `κ > 0`, `0 < u < 1`, `v, θ ≥ 0`, `t ≤ T`. The limit is at the Riccati-profile level: not the
+  complex characteristic function, and not identified with a Heston process's `E[e^{u log S_T}]`.
+  (That the total variance is the integral of the `ξ = 0` variance path is the library's
+  `HullWhite.integratedMean_const`, not part of the entry.)
+
+### American early-exercise approximations at their degenerate boundary (2026-11-01)
+
+Two independent small-parameter/boundary limits of American-option early-exercise engines,
+five entries, all `full`, in `benchmarks/american_put_boundary.json`. Corpus 754 → 759.
+
+| Benchmark ID | Mathematical conclusion | Lean declaration |
+|---|---|---|
+| `mf-ju-zhong-raw-eq-stable` | Two Lean transcriptions of the Ju–Zhong quadratic-approximation price, the direct form and the limit-stable form, agree identically for every nonzero risk-free rate `r`; not tied to an American price. | `MathFin.juValueRaw_eq_juValue` |
+| `mf-ju-zhong-zero-rate-limit` | For any `Sk` tending to `S₀ > 0` as `r → 0+`, and two nonvanishing side conditions, the direct form along `Sk` tends to the limit-stable form as `r → 0+`. | `MathFin.tendsto_juValueRaw_zero_rate` |
+| `mf-american-put-boundary-expiry-limit` | For `0 < r`, `0 ≤ q ≤ r`, the American put exercise boundary tends to the strike `K` as time-to-expiry tends to `0`. | `MathFin.BlackScholes.AmericanPut.Stopping.tendsto_brownianUsualExerciseBoundary_expiry` |
+| `mf-qdplus-k12-endpoint-differentiable` | The QD+ fixed-point integrand `K12`, over an abstract boundary function `B`, has an explicit one-sided limit at its collocation endpoint when `B` is differentiable there. | `MathFin.tendsto_qdfpK12_endpoint` |
+| `mf-qdplus-k12-endpoint-differentiability-tight` | The same endpoint limit takes a different value for a continuous but only Hölder-1/2 boundary, showing the differentiability hypothesis cannot be weakened to continuity. | `MathFin.tendsto_qdfpK12_endpoint_holder`, `MathFin.not_tendsto_qdfpK12_endpoint_holder` |
+
+Ju–Zhong (1999)'s quadratic approximation (in Li's restatement, MPRA 15018) motivates the first two
+entries; Healy's restatement of Andersen–Lake–Offengenden's fixed-point equations (arXiv:2109.15157
+§5.1) motivates the last two QD+ entries. Both are transcriptions of printed closed forms, not
+derivations of the underlying free-boundary problem. The Ju–Zhong entries relate two Lean
+transcriptions of the formula and say nothing about an American price; the limit is conditional
+(`Sk` is an arbitrary input function, and two nonvanishing side conditions are hypotheses). The
+QD+ entries are over an abstract boundary function, with no claim about the fixed-point iteration's
+convergence or pricing accuracy.
 
 ### One route to Merton's formula; one Black–Scholes family (2026-10-30)
 
@@ -171,7 +168,7 @@ contains only the translation. Everything about the tree is in `Binomial/`:
 - `crrProb_mem_Icc` is new in `Binomial/CRRConvergence.lean`. It was proved inline twice in
   `Binomial/CRRCharFun.lean`, and both copies now call it.
 
-Every contract is integrable in the tree, because the model is bounded. That is a general fact,
+Every fixed-date contract (`Contract.FixedDated`, no `payAtHit`) is integrable in the tree, because the model is bounded. That is a general fact,
 `Contract.integrable_pathPV_of_bounded` in `Contracts/Adapted.lean`, and it gives
 `Payoff.measurable_eval` its first consumer. So the capped call is priced by composition with no
 integrability lemma of its own.
@@ -598,10 +595,10 @@ split by area. What each bridge proves, by area:
   Heynen–Kat at zero correlation as Black–Scholes times a barrier factor
   (`mf-heynen-kat-independent-bs-factor`, `reduced_core`); the normalised spread is standard normal
   (`mf-margrabe-normalized-spread-normal`); the GBM log return law (`mf-gbm-log-return-law`);
-  Haug's partial-time-start and binary barrier closed forms' in–out identities, with the
-  whole-life and cash-or-nothing price reductions (`mf-partial-time-barrier-down-add-up`,
-  `mf-binary-barrier-inout-parity`, both `reduced_core`; the soft-barrier transcription was
-  dropped from the corpus at review).
+  the in–out identities of Haug's partial-time-start and Rubinstein–Reiner's binary barrier
+  closed forms, the first reduced to the full-life down-and-out form at `t₁ = T`, the second's
+  vanilla leg identified with the digital call contract's value
+  (`mf-partial-time-barrier-down-add-up`, `mf-binary-barrier-inout-parity`, both `reduced_core`).
   `MargrabeGrounding`'s two existential theorems no longer claim to derive their hypothesis: they
   now exhibit the measure and driver.
 - **Structural** (`black_scholes.json`, `binomial.json`). The American put is at least the
@@ -648,7 +645,10 @@ split by area. What each bridge proves, by area:
   the Uniswap v3 position against a covered call, and its price bound
   (`mf-uniswap-v3-position-covered-call`, `mf-uniswap-v3-position-bs-price-bound`, #92); the LP
   value under a lognormal price (`mf-cpmm-lp-expected-value-lognormal`); an AMM arbitrage exists iff
-  the pool price differs from the oracle (the direction of the profitable trade is a separate lemma) (`mf-cpmm-arbitrage-iff-price-divergence`); Glosten–Milgrom
+  the pool price differs from the oracle (the direction of the profitable trade is a separate lemma) (`mf-cpmm-arbitrage-iff-price-divergence`); historical-simulation VaR of a v3
+  concentrated-liquidity position never exceeds its current value and scales linearly with
+  deployed liquidity (`mf-uniswap-v3-concentrated-liquidity-historical-var`; fees, re-ranging and
+  horizon-scaling of the historical scenarios are not modelled); Glosten–Milgrom
   quotes as conditional expectations, and the model's witness (`mf-glosten-milgrom-quote-condexp`,
   `mf-glosten-milgrom-model-witness`); Roll's spread from the autocovariance
   (`mf-roll-spread-autocovariance`). Fees, gas and block timing are not modelled.
@@ -1780,7 +1780,7 @@ What is not covered:
 | `qrm-square-root-of-time` | For a geometric Brownian motion S_t = S₀exp((μ − σ²/2)t + σB_t) driven by a pre-Brownian motion and σ ≥ 0: the h-period log-loss −log(S_{t+h}/S_t) has VaR_α = −(μ − σ²/2)h + σ√h·Φ⁻¹(α), so the volatility term scales with √h. | `MathFin/Bridges/SquareRootOfTime.lean`, `MathFin.valueAtRisk_gbm_loss` | `full` |
 | `qrm-expectile-exists-unique` | For an integrable loss Y and α ∈ (0, 1) there is exactly one e with α·E[(Y − e)⁺] = (1 − α)·E[(e − Y)⁺] (the α-expectile). | `MathFin/RiskMeasures/Expectile.lean`, `MathFin.existsUnique_expectileGap_eq_zero` | `full` |
 | `qrm-expectile-monotone` | For an integrable loss Y and 0 < α ≤ β < 1, the α-expectile is at most the β-expectile. | `MathFin/RiskMeasures/Expectile.lean`, `MathFin.expectile_mono` | `full` |
-| `qrm-covariance-cauchy-schwarz` | For square-integrable X, Y on a probability space: cov(X, Y) ≤ √Var X · √Var Y. | `MathFin/RiskMeasures/StandardDeviationPrinciple.lean`, `MathFin.covariance_le_sqrt_mul_sqrt` | `full` |
+| `qrm-covariance-cauchy-schwarz` | For square-integrable X, Y on a probability space: cov(X, Y) ≤ √Var X · √Var Y. | `MathFin/Foundations/FiniteMeasureCauchySchwarz.lean`, `MathFin.covariance_le_sqrt_mul_sqrt` | `full` |
 | `qrm-sd-principle-subadditive` | For k ≥ 0 and square-integrable X, Y: E[X + Y] + k·sd(X + Y) ≤ (E[X] + k·sd(X)) + (E[Y] + k·sd(Y)). | `MathFin/RiskMeasures/StandardDeviationPrinciple.lean`, `MathFin.stdDevPrinciple_add_le` | `full` |
 | `qrm-sd-principle-not-monotone` | For k ≥ 0 and a loss B ≤ 0 equal to −1 with probability q > 0 and 0 otherwise, if q(1 + k²) < k² then E[B] + k·sd(B) > 0 = the principle's value at the zero loss, although B ≤ 0. | `MathFin/RiskMeasures/StandardDeviationPrinciple.lean`, `MathFin.stdDevPrinciple_not_monotone` | `full` |
 

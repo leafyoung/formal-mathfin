@@ -130,6 +130,244 @@ Entries from 2026-06-29 (corpus 302, the whole-repo review below) onward use the
 PASS / PASS-WITH-NOTES verdicts, kept as-is — the transition itself was an upgrade to lens 4 (the review
 should *generate work*, not certify "OK").
 
+## 2026-11-05 — corpus 779, modules 709 — the backlog closed on main, read before it lands
+
+Scope: #418, the CDS half of #367 and the backlogs of the two 2026-11-04 entries, in four areas
+(pricing and FTAP, fixed income, the Itô stack, risk and the American put) worked in parallel and
+merged into one tree. Two read-only reviewers read the merged diff; their findings were executed
+before it reached main, each change built, the final no-argument build and lint green.
+
+### The standing first pass: prose against statement
+
+A new corpus description cited `mf-ftap-discrete-complete` (existence of an EMM) as the discrete
+instance of "replication pins the pricing measure", whose instance is `mf-ftap-two-discrete`; the
+Brownian half named no entry. The tree-Snell entry called the general envelope "the smallest
+supermartingale above the payoff", which the Lean proves only at the exercise times and the horizon.
+The CDS protection contract was "the contract whose value is `Cox.protectionLeg`", true under the
+Cox default time at a flat rate; the general value is an identity of Bochner integrals, which now says
+both sides are `0` off integrability. In the Itô stack, ten docstrings still named the threaded
+hypotheses the bundle replaced (`hMeq`, `hMadap`) or narrated stage layouts that had moved, and one
+"stated once" was false (a third `lp_two_norm_sq` sat in `WienerIntegralL2`). All restated; three
+bridges rows had their new sentences in the status column (and one an unescaped `|` that split the
+table since 2026-11-04), repaired.
+
+### Upgrades executed
+
+- **Replication pins the measure, once.** `ReplicationPricing.measure_eq_of_replicates`: two
+  gains-neutral measures agree on every event whose indicator is replicated. The finite market's
+  `IsEMM.measure_eq_of_isCompleteMarket` and the Brownian `measure_eq_of_pricesGainsAtZero` are its
+  instances (2026-11-04 backlog 7), and the private copies in `MarketCompleteness` are gone.
+- **The hedge is priced by the contract.** `exists_hedge_eq_value`: in the complete tree the capital
+  of the replication of a European contract is its `Contract.value` (lens 1 of 2026-11-04).
+- **The tree's Snell envelope is a Mathlib `Supermartingale`**, frozen at the horizon (lens 2).
+- **A payment at a random time.** `Contract.payAtHit` pays at Mathlib's `hittingAfter` on the
+  observed path, so CDS protection is a contract paying at default: worth `(1 − R)·𝔼[D(τ)1{τ ≤ T}]`,
+  `Cox.protectionLeg` under the Cox time, the limit of the grid legs (#367). `Contract.FixedDated`
+  carries the one restriction a random date brings: integrability is proved for fixed-date contracts.
+- **The forward measure in Foundations**, the Wiener forward-measure law beside the Wiener integral,
+  so the GSR bond price no longer imports a timing-adjustment file; the GSR put at `σ₁ = σ₂` is the
+  Vasicek put (`valueDisc_bondPut_gsr_self`).
+- **The drift stack's hypotheses as two structures.** `IsAdaptedIntegrand` (δ adapted, continuous,
+  bounded) and `IsAdaptedItoDrift` extending it with the version `M`, with a named integrand; five
+  arguments threaded through about 25 theorems and their callers become one. `clm_band_energy` sits
+  beside `itoProcessCLM_norm_sq` and is Pythagoras for the martingale; the two-band split is one
+  `setIntegral_Ioc_prod_add`; `lp_two_norm_sq` is stated once; `stepSum_pow4_le` is its own module.
+- **Risk.** Covariance Cauchy–Schwarz from the library's Hölder lemma, in Foundations; Gaussian VaR
+  subadditivity a corollary, a third discriminant derivation deleted. `DiscreteVaR` takes a
+  `StdSimplex`, built with a new `StdSimplex.prod` (absent from Mathlib, an upstream candidate).
+
+Closed as already done, the boxes stale: the freeze lemma, `SimpleStrategy.toDiscrete`,
+`bond_mul_capletPayoff`, `SwapModel` through `HasBondPrice`, the CDS mesh limit,
+`martingale_iff_setIntegral_eq` at a σ-finite filtration (Mathlib still has only the ℕ-indexed form).
+Declined with reason: the `itoProcessCLM` density proofs (the engine's own is irreducible, the
+corollary already one line); a C² preamble bundle (its files carry different hypothesis subsets);
+the classical track's `Coe` (`Tangency` needs it) and canonical restatements (inlining them
+re-threads the parameter list).
+
+### Ranked backlog
+
+1. `stepSum_pow4_le`: 500 lines at `maxHeartbeats 1600000`, now in its own module but still one
+   proof; one lemma per idea (the Young dominations as a Hölder `MemLp.integrable_mul` step, `hY4mem`)
+   should drop the heartbeat bump.
+2. The CDS premium leg as a contract: the tower has no continuous payment stream.
+3. `snellAux_supermartingale`'s pathwise clause, kept because `bermudanPrice_snell_minimal` and a
+   benchmark state pathwise hypotheses; restate them a.e. and drop it.
+4. `Foundations/FiniteMeasureCauchySchwarz` now also holds covariance lemmas under
+   `IsProbabilityMeasure`; `StdSimplex.prod` and `lp_two_norm_sq` are upstream candidates.
+
+## 2026-11-04 — corpus 773, modules 703 — the pin bump (BrownianMotion 497e5e2, Mathlib e91b128), read before it lands
+
+Scope: the port to Lean v4.35.0, Mathlib e91b128 and BrownianMotion 497e5e2. One read-only
+reviewer read the whole diff against the new upstream API; nothing blocked. Its findings were
+executed before the push, each change built, the final no-argument build green.
+
+### Upgrades executed
+
+- **Upstream absorbs the library's copies.** `HasLaw.integrable`, `.memLp` and
+  `.integrable_fun_comp` replace five Gaussian, Student-t and Rademacher integrability lemmas and the
+  private map-form `integrable_exp_mul_of_map_eq_gaussianReal`; `isLocalMartingale_congr_ae` replaces
+  the American put's own path-congruence lemma; `List.signVariations` replaces `signVariationsList`;
+  the upstream instance replaces `isProbabilityMeasure_map_const_mul`; `gaussianReal_const_mul` and
+  `gaussianReal_map_neg` replace hand-built scalings in `BernoulliMixture` and `BivariateNormalCDF`.
+- **The predictable-`L²`-is-product-`L²` block, once** (2026-11-04 wave backlog, item 6). Eleven
+  hand-rolled `eLpNorm_trim` rewrites are Mathlib's `memLp_of_memLp_trim`; the six `Lp` cases are one
+  `ItoIntegralCLM.memLp_prod_of_lp`, and `PointwiseBracket`'s private copy is gone.
+- **Probability vectors, one spelling.** The convex-separation roots take "no nonnegative `v` with
+  `∑ v = 1` lies in `C`", so FTAP I's two proofs lose their `generalize` ritual; `Convexity.StdSimplex`
+  stays where a statement ranges over the simplex (`representingSet_worstCase`).
+- **Indistinguishability stated as such.** `brownianInteriorRule_ito_representation` concludes `≡ᵐ` in
+  the orientation its caller needs, and the manual flips in `StochasticIntegralCharacterisation`
+  are `.symm`.
+
+### Ranked backlog
+
+1. `DiscreteVaR`: bundle the probability vector so `hq₀ hq₁` stop being threaded. Skipped in the
+   port: `StdSimplex` has no product constructor for `jointQ`, and `PMF` would put every explicit
+   cdf lemma behind `ENNReal.toReal`. The right move is probably a small product lemma for
+   `StdSimplex`, upstreamable.
+2. `MarkovPathMeasure` keeps `unfold; infer_instance`, because `inferInstanceAs` times out in `whnf`
+   there. The definition wants an `instance` lemma of its own, as `referenceIntensity` now has.
+
+## 2026-11-04 — corpus 773, modules 703 — the backlog wave, read before it lands
+
+Scope: the four maintainer branches that close the 2026-10-31 backlog, merged with the five
+contributor PRs into one integration branch so the corpus is swept once: `feat/snell-ftap2` (one
+Snell envelope, FTAP II for the finite market and the tree), `feat/aput-coherence` (the American-put
+grid and sampling layer), `feat/ito-stack-c2` (the 4000-line `ItoFormulaAdaptedDrift` split by stage,
+the Itô-isometry files on one kernel, the American-put Itô chain at C²) and `feat/gsr-bond-put` (#367's
+GSR bond put as a contract value). Three read-only reviewers, one per area; their findings were
+executed before the merge, not backlogged, by two fixers and the maintainer, each change built.
+
+### The standing first pass: prose against statement
+
+The overclaims were of two kinds. Dropped hypotheses: FTAP II stated as "complete iff the EMM is
+unique" without `𝓕 T = ⊤`, which the completeness-to-uniqueness direction needs; the tree's Snell
+envelope "the discounted Bermudan price at every time" for a statement at `k ≤ N`, almost surely; the
+README's FTAP bullet without its hypotheses; "and both hold" attached to an iff it does not belong to.
+Prose that outlived a refactor: the split Itô modules kept the monolith's stage headers, each
+narrating an assembly that now lives elsewhere (`ItoDriftMartingaleKill` described the whole proof
+and proved one lemma); "the one envelope of the library" while the tree's `snell` keeps its own
+recursion, tied to the general envelope only almost surely; a bridges row naming the deleted
+`FiniteBellman`; a roadmap naming a branch and calling CMS "next" after #419. All restated to what is
+proved; `aeStoppingValue` (a bare `sSup`) gained the junk-value sentence `stoppingValue` carries.
+
+### Upgrades executed
+
+- **Duplicates of Mathlib and of the library, deleted.** In the Itô stack:
+  `integral_abs_mul_le_L2L2` was `integral_abs_mul_le_sqrt_mul_sqrt`; `pow3_add_le` was `add_pow_le`;
+  the private `1/(n+1)` null sequence was `tendsto_one_div_add_atTop_nhds_zero_nat`; the hand-rolled
+  `L²` triangle inequalities and `sqIntegral_of_Lp` went to the `Lp` norm; `continuous_of_dominated`,
+  `Even.pow_abs`, `sq_le_sq'`, `Set.Disjoint.set_prod_left` replace their re-proofs; the
+  independence step "compose with a power, integrate the product" is one `IndepFun.integral_mul_comp`,
+  used by the moment bounds and the quadratic-variation and Poisson isometry files;
+  `expectation_pathIntegral_eq` is stated almost surely, absorbing its `_of_ae` twin.
+- **A module that was a corollary, dissolved.** `ItoDriftMartingaleKill` proved the martingale
+  congruence three times; the hypothesised `M` is now a Mathlib `Martingale` once (`martingale_M`),
+  and the kill lemma is `integral_inner_sub_eq_zero` at `F = ℝ`.
+- **The Gaussian bond put, once.** `valueDisc_bondPut_wiener` carries the plumbing for any
+  integrated short rate in Wiener representation `R T = M T + c T·∫ g_T dB` (integrable discount
+  factor, forward measure a probability measure, the put by `valueDisc_bondPut_gaussian`); the
+  Hull–White and GSR puts, which repeated 25 lines of it, are now its instances, and Vasicek is
+  Hull–White at constant forcing. `vasicekBondB_pos` replaces two inline proofs. The Hull–White caplet
+  gets the corpus entry its Vasicek and GSR siblings had.
+- **Snell and FTAP.** The tree's Snell envelope agrees with the general one
+  (`snell_ae_eq_snellEnvelope`, now a corpus entry and a bridges row); the Doob decomposition of the
+  envelope moves to `Foundations/SnellDoobDecomposition` in namespace `MathFin` (it never needed the
+  American put); the `*_bellman` lemma names follow the object they are about (`snellEnvelope`);
+  FTAP II's 45-line `by_contra` ladder is two lemmas in `ConvexSeparation` (a nonzero annihilator of a
+  proper subspace, on Mathlib's `Submodule.exists_le_ker_of_lt_top`; a positive perturbation); one
+  `BinomialNoArb.exists_nnreal_crrUpProb` in `Binomial/Model` replaces a repeated block; `gridTime_mono`
+  replaces three cast inequalities; implicit `hq` arguments that every caller named became explicit.
+
+### Lens gradients
+
+1. Inspired math. Exemplar: `isCompleteMarket_of_unique`. Next: `isCompleteMarket_horizonSpot` names no
+   hedge; tie its `(x, φ)` to `pathPV_eq_value_add_gains`, so `x` is a `Contract.value`.
+2. Coherence. Exemplar: `snell_ae_eq_snellEnvelope`. Next: the tree's `snell` as a Mathlib
+   `Supermartingale` under `coinFlipMeasure`, dropping its pathwise clause where a.e. suffices.
+4. Architecture. Exemplar: `valueDisc_bondPut_wiener`. Next: `stepSum_pow4_le` (500 lines, run at
+   `maxHeartbeats 1600000`) as its own module, "the fourth moment of a bounded adapted Brownian sum".
+6. Idiomatic register. Exemplar: the stage modules without their `omit` lists. Next: one
+   `IsAdaptedItoDrift` bundle for the seven hypotheses every drift-stack lemma re-threads.
+8. Beauty. Exemplar: the kill lemma as a one-line corollary. Next: the GSR put at `σ₁ = σ₂` is the
+   Vasicek put (`gsrShortRateV_self`), stated and proved as such.
+
+### Ranked backlog
+
+1. The CDS half of #367: a pay-at-a-stopping-time combinator and the mesh limit of the grid legs.
+2. `isCompleteMarket_horizonSpot`'s hedge as a contract value (lens 1).
+3. `stepSum_pow4_le` in its own module; the `IsAdaptedItoDrift` bundle (lenses 4, 6).
+4. `hasLaw_forwardMeasure_wienerIntegralLp` beside the Wiener integral, so `GSRBondPriceAt` stops
+   importing a timing-adjustment file for a Wiener fact; the GSR–Vasicek bridge (lens 8).
+5. `lp_two_norm_sq` stated twice (`PoissonCompensatedIntegralOperator`, `ItoIntegralL2`); the band
+   split argument still repeated between `ItoDriftIncrementEnergy` and `ItoDriftWeightedIsometry`.
+6. The predictable-`L²`-is-product-`L²` block, four times across the Girsanov and drift-process files
+   (found by the pin-bump port).
+7. Unjoined twins: `measure_eq_of_pricesGainsAtZero` (Brownian market) and
+   `measureReal_eq_of_replicates` (finite market) are one argument without a theorem linking them.
+
+Closed from earlier backlogs: one Snell envelope (2026-10-31, item 2); FTAP II for the tree (item 7);
+the split of `ItoFormulaAdaptedDrift` (item 8); the C³ chain at C² (item 4); #423's two squeeze
+scaffolds as one lemma (2026-11-04, item 4).
+
+## 2026-11-04 — corpus 756, modules 687 — five contributor PRs, read at the raised merge bar
+
+Scope: Yang Ye's five open PRs (#325 Haug barriers, #423 Vasicek κ → 0, #427 American exercise
+approximations at their degenerate boundary, #428 removable singularities in Heston and SABR, #429
+weak uniqueness for the constant-coefficient forward equation), read by three independent reviewers
+and then by the maintainer. The bar since v1.8.0 is coherence, integration and elegance, not only
+honest prose: a contribution consumes the objects the library already has, connects to them through
+a proved theorem (an instrument with a price is a `Contract` whose `value` is that price), and leaves
+no parallel scaffolding behind. Each PR carried a self-review entry written to clear the cadence
+gate; those are replaced by this one.
+
+### The standing first pass: prose against statement
+
+Every PR had sentences stronger than its Lean, all in the same direction: a transcribed closed form
+described as a price or as "the standard" object. #325: the binary vanilla leg called "a genuine
+price" by a theorem that only multiplied `bboB1_eq_Phi_bsd2` by `e^{−rT}`; "the closed-form instance
+of `knockIn_add_knockOut_eq_vanilla`" for an identity not derived from it; "the standard down-and-out
+closed form" for an expression with no Lean name. #423: the κ → 0 limit's description named the
+driftless model the separate cross-check entry identifies. #427: a hypothesis said to "fail" for puts
+where Lean proves only that the r = 0 equation has no positive root; "divides by zero" and "jointly
+necessary" asserted without proof. #428: integral identities stated for closed forms that never
+mention an integral; a Riccati-profile limit described as the Heston expectation. #429: the same
+hypothesis-difference sentence repeated in six places.
+
+### Upgrades executed
+
+- **#325, integration through the contracts tower.** `value_digitalCall_eq_bboB1`: the Black–Scholes
+  value of `Contracts.digitalCall K T` is the binary parity's vanilla leg `e^{−rT}·B₁`, through
+  `Contracts.BlackScholes.value_digitalCall`; it replaces the restating theorem. `ptDownOutCall`
+  names the full-life down-and-out closed form, so both partial-time theorems state against one
+  object instead of a four-line expression written four times; `e₁`/`e₂` are `bsd1`/`bsd2`. Prose
+  says "counterpart", not "instance", and the README's limitation paragraph shrank to what is proved.
+- The other four PRs get their reviewers' blocking and coherence findings in their own maintainer
+  commits before merge: #428 drops `integral_vasicekDeterministic` and its entry for
+  `HullWhiteCalibration.integratedMean_const`; #427 consumes `continuous_gaussianPDFReal` instead of
+  five inline re-proofs and drops its release-metadata edits; #429 replaces `IsWeakForwardFlow` and
+  the inline `hgate` block of `gyongy_mimicry_gated` by one predicate, so the Gyöngy theorem consumes
+  what the uniqueness theorem is about, and the module is renamed for what it proves.
+
+### Lens gradients
+
+2. Coherence. Exemplar: #428's Heston limit, which writes `hestonA` as an integral through
+   `hasDerivAt_hestonA` and avoids the 2κθ/ξ² cancellation entirely. Next: the reflection factor
+   `(H/S)^{2μ}` is defined twice (`bboHS2mu`, `ptHSmu`) and once more implicitly in Heynen–Kat.
+4. Architecture. Exemplar after the rework: Gyöngy consuming the weak-forward predicate. Next: a
+   non-vacuity witness — the Gaussian flow `s ↦ N(bs, vs)` satisfies the predicate — which is the
+   bridge from the Itô side.
+8. Beauty. Exemplar: #423's `abs_vasicekBondV_sub_le`. Next: #429's cos/sin Volterra pair is the real
+   and imaginary part of one complex linear ODE; solving it identifies the flow, `ρ_s = ρ_0 ∗ N(bs, vs)`,
+   a stronger theorem with a shorter proof.
+
+### Ranked backlog
+
+1. The barriers as contracts: a payoff on a path event, so the transcribed knock-out closed forms can
+   be stated as values once the reflection principle is derived rather than assumed.
+2. #429's flow identification through one complex ODE (lens 8 above).
+3. One reflection factor `(H/S)^{2μ}` for the binary, partial-time and Heynen–Kat barriers.
+4. #423's two squeeze scaffolds as one lemma ("`|f κ − L| ≤ C|κ|` near 0⁺ gives the limit").
 ## 2026-11-02 — corpus 755, modules 686 — the standing first pass, scoped to this session's own addition
 
 Scope: the standing first pass (prose vs. statement) plus the eight lenses, over this
@@ -496,7 +734,6 @@ Citations verified against the live QuantLib source (`sabr.cpp`, `analyticheston
 papers (Le Floc'h & Kennedy SSRN 2467231 2014, Heston 1993 RFS 6(2) 327-343), not just trusted
 strings. Zero `sorry`, `#print axioms` on every public declaration showing exactly `[propext,
 Classical.choice, Quot.sound]`. `lake build`/`lake lint` clean; ledger sweep dispatched.
-
 
 ## 2026-10-31 — corpus 742, modules 678 — elegance: does each headline proof read as its argument
 

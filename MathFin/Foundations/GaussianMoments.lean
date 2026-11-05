@@ -37,6 +37,40 @@ lemma integral_sq_gaussianReal (v : ℝ≥0) :
   rw [variance_of_integral_eq_zero aemeasurable_id h_mean] at h_var
   exact h_var
 
+/-- Third moment of a centered real Gaussian (odd moment, by density symmetry). -/
+lemma integral_pow3_gaussianReal (v : ℝ≥0) :
+    ∫ x, x ^ 3 ∂(gaussianReal 0 v) = 0 := by
+  rcases eq_or_ne v 0 with rfl | hv
+  · rw [gaussianReal_zero_var]
+    simp
+  · rw [integral_gaussianReal_eq_integral_smul hv]
+    simp only [smul_eq_mul]
+    have hmap : Measure.map (fun x : ℝ ↦ -x) (volume : Measure ℝ) = volume :=
+      (Measure.measurePreserving_neg (μ := (volume : Measure ℝ))).map_eq
+    have hpdfneg : ∀ x : ℝ, gaussianPDFReal 0 v (-x) = gaussianPDFReal 0 v x := by
+      intro x
+      simp only [gaussianPDFReal, sub_zero, neg_sq]
+    have hsub : ∫ y, gaussianPDFReal 0 v y * y ^ 3 ∂volume
+        = ∫ x, gaussianPDFReal 0 v (-x) * (-x) ^ 3 ∂volume := by
+      have h1 : ∫ y, gaussianPDFReal 0 v y * y ^ 3 ∂volume
+          = ∫ y, gaussianPDFReal 0 v y * y ^ 3
+              ∂(Measure.map (fun x : ℝ ↦ -x) (volume : Measure ℝ)) := by
+        rw [hmap]
+      rw [h1]
+      exact integral_map_equiv (MeasurableEquiv.neg (G := ℝ))
+        (fun y : ℝ ↦ gaussianPDFReal 0 v y * y ^ 3)
+    rw [hsub]
+    have hcongr : ∫ x, gaussianPDFReal 0 v (-x) * (-x) ^ 3 ∂volume
+        = -∫ x, gaussianPDFReal 0 v x * x ^ 3 ∂volume := by
+      have hpt : ∀ x : ℝ, gaussianPDFReal 0 v (-x) * (-x) ^ 3
+          = -(gaussianPDFReal 0 v x * x ^ 3) := by
+        intro x
+        rw [hpdfneg x]
+        ring
+      rw [integral_congr_ae (Filter.Eventually.of_forall hpt), integral_neg]
+    rw [hcongr]
+    linarith
+
 /-- Fourth moment of a centered real Gaussian: `∫ x, x⁴ ∂(gaussianReal 0 v) = 3 v²`
 (the kurtosis identity `E[X⁴] = 3·Var²`, the source of the `2(Δt)²` variance of squared
 Brownian increments). Via the `(2n)`-th central-moment formula
@@ -129,19 +163,6 @@ theorem integral_sq_of_hasLaw_gaussianReal {Ω : Type*} {mΩ : MeasurableSpace �
   simp only [Function.comp_def] at hc
   rw [hc]
   linarith
-
-/-- `Real.exp (α · X) ∘ Z` is integrable when `Z` has a Gaussian law (the law supplies the
-required `AEMeasurable`). Shared helper for `waldExponential_isMartingale`, the marginal
-exponential moments in `BrownianExpMoment` and the exponential-of-a-Gaussian integrability
-(`α = 1`). -/
-lemma _root_.ProbabilityTheory.integrable_exp_mul_of_hasLaw {Ω : Type*} {mΩ : MeasurableSpace Ω}
-    {P : Measure Ω} {Z : Ω → ℝ} {m : ℝ} {v : ℝ≥0}
-    (hZ : HasLaw Z (gaussianReal m v) P) (α : ℝ) :
-    Integrable (fun ω ↦ Real.exp (α * Z ω)) P := by
-  rw [show (fun ω ↦ Real.exp (α * Z ω)) = (fun x ↦ Real.exp (α * x)) ∘ Z from rfl]
-  refine Integrable.comp_aemeasurable ?_ hZ.aemeasurable
-  rw [hZ.map_eq]
-  exact integrable_exp_mul_gaussianReal α
 
 /-! ### Brownian increments -/
 

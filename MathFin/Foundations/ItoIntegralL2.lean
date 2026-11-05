@@ -10,6 +10,7 @@ public import BrownianMotion.Gaussian.BrownianMotion
 public import BrownianMotion.StochasticIntegral.SimpleProcess
 public import BrownianMotion.StochasticIntegral.L2M
 public import MathFin.Foundations.ItoIsometryAdapted
+public import MathFin.Foundations.LpMulIsometry
 
 /-!
 # The L²-adapted Itô isometry, anchored on Degenne's `SimpleProcess`
@@ -170,18 +171,6 @@ theorem itoSimple_sq_integral (hB : IsPreBrownianReal B μ) (hBmeas : ∀ t, Mea
           (fun ω ↦ by rw [← Real.norm_eq_abs]; exact V.value_le_valueBound q ω)
           (V.le_of_mem_support_value p hp) (V.le_of_mem_support_value q hq)
 
-/-- For `g : Lp ℝ 2 ν`, `‖g‖² = ∫ (g a)² ∂ν` (the real `L²` norm-square as an integral).
-Public: the time-indexed Itô-isometry layer (`ItoIntegralProcessIsometry`) reuses it. -/
-lemma lp_two_norm_sq {α : Type*} {mα : MeasurableSpace α} {ν : Measure α}
-    (g : Lp ℝ 2 ν) : ‖g‖ ^ 2 = ∫ a, (g a) ^ 2 ∂ν := by
-  have h : ⟪g, g⟫_ℝ = ‖g‖ ^ 2 := real_inner_self_eq_norm_sq g
-  rw [L2.inner_def] at h
-  rw [← h]
-  refine integral_congr_ae ?_
-  filter_upwards with a
-  change (g a) * (g a) = (g a) ^ 2
-  ring
-
 /-- **The Itô isometry in `Lp`-norm form.** `‖itoSimpleLp V‖²` equals the predictable-
 rectangle double sum — i.e. `‖V‖²` in the predictable `L²` space. This is the norm
 identity that `extendOfNorm` consumes to build the continuous Itô integral. -/
@@ -283,11 +272,11 @@ finite-measure interval `(p.1,p.2]` and `V(p)` is bounded. -/
 lemma memLp_rectTerm (hBmeas : ∀ t, Measurable (B t))
     (V : SimpleProcess ℝ (natFiltration (mΩ := mΩ) hBmeas)) (p : ℝ≥0 × ℝ≥0) :
     MemLp (rectTerm hBmeas V p) 2 (timeMeasure.prod μ) := by
-  haveI : IsFiniteMeasure (timeMeasure.restrict (Set.Ioc p.1 p.2)) :=
+  have : IsFiniteMeasure (timeMeasure.restrict (Set.Ioc p.1 p.2)) :=
     ⟨by rw [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter, timeMeasure_Ioc];
         exact ENNReal.ofReal_lt_top⟩
   rw [rectTerm_eq_indicator,
-      memLp_indicator_iff_restrict (measurableSet_Ioc.prod MeasurableSet.univ),
+      memLp_indicator_iff_restrict (measurableSet_Ioc.prod MeasurableSet.univ).nullMeasurableSet,
       ← Measure.prod_restrict, Measure.restrict_univ]
   have hmeas : Measurable (fun z : ℝ≥0 × Ω ↦ V.value p z.2) :=
     ((V.measurable_value p).mono ((natFiltration hBmeas).le p.1) le_rfl).comp measurable_snd
@@ -343,8 +332,7 @@ lemma memLp_uncurry_trim (hBmeas : ∀ t, Measurable (B t))
     (V : SimpleProcess ℝ (natFiltration (mΩ := mΩ) hBmeas)) :
     MemLp (Function.uncurry ⇑V) 2
       ((timeMeasure.prod μ).trim (natFiltration hBmeas).predictable_le_prod) :=
-  ⟨V.isStronglyPredictable.aestronglyMeasurable,
-   by rw [eLpNorm_trim _ V.isStronglyPredictable]; exact (memLp_uncurry_prod hBmeas V).2⟩
+  by rw [memLp_iff, eLpNorm_trim _ V.isStronglyPredictable]; exact memLp_uncurry_prod hBmeas V
 
 /-- **The embedding** of a simple process into the predictable `L²` space, as the class of
 its uncurried version. The codomain `Lp ℝ 2 ((timeMeasure.prod μ).trim …)` is *definitionally*

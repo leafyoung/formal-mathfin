@@ -6,6 +6,7 @@ Authors: Raphael Coelho
 module
 
 public import MathFin.Foundations.ItoIntegralProcessGeneral
+public import MathFin.Foundations.LpMulIsometry
 
 /-! # The time-indexed Itô isometry for the general Itô integral (B1b)
 
@@ -46,7 +47,7 @@ private lemma integral_rectTerm_mul_band (t : ℝ≥0) (hBmeas : ∀ u, Measurab
         rectTerm hBmeas V p z * rectTerm hBmeas V q z ∂(timeMeasure.prod μ)
       = (∫ ω, V.value p ω * V.value q ω ∂μ)
           * max 0 ((min (min (p.2 : ℝ) q.2) (t : ℝ)) - (max (p.1 : ℝ) q.1)) := by
-  haveI : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
+  have : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
   have hfun : (fun z : ℝ≥0 × Ω ↦ rectTerm hBmeas V p z * rectTerm hBmeas V q z)
       = fun z ↦ ((Set.Ioc p.1 p.2).indicator (fun _ ↦ (1 : ℝ)) z.1
                     * (Set.Ioc q.1 q.2).indicator (fun _ ↦ (1 : ℝ)) z.1)
@@ -148,7 +149,7 @@ private lemma band_integral_uncurry_sq {t T : ℝ≥0} (htT : t ≤ T)
       = ∑ p ∈ V.value.support, ∑ q ∈ V.value.support,
           (∫ ω, V.value p ω * V.value q ω ∂μ)
             * max 0 ((min (min (p.2 : ℝ) q.2) (t : ℝ)) - max (p.1 : ℝ) q.1) := by
-  haveI : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
+  have : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
   -- (A) collapse band+trim to the horizon-`t` measure, then drop the trim.
   rw [trimMeasure_T_restrict_band htT]
   simp only [pow_two]
@@ -204,7 +205,15 @@ private lemma measurableSet_band (t : ℝ≥0) (hBmeas : ∀ u, Measurable (B u)
   MeasureTheory.measurableSet_predictable_Ioc_prod (𝓕 := natFiltration hBmeas) 0 t
     MeasurableSet.univ
 
-omit hB in
+omit [IsProbabilityMeasure μ] hB in
+/-- Truncation to the `(0,t]`-band keeps `L²`. -/
+private lemma memLp_truncBand (T t : ℝ≥0) (hBmeas : ∀ u, Measurable (B u))
+    (φ : Lp ℝ 2 (trimMeasure_T (μ := μ) T hBmeas)) :
+    MemLp ((Set.Ioc 0 t ×ˢ (Set.univ : Set Ω)).indicator (φ : ℝ≥0 × Ω → ℝ)) 2
+      (trimMeasure_T (μ := μ) T hBmeas) :=
+  (Lp.memLp φ).indicator (measurableSet_band t hBmeas).nullMeasurableSet
+
+omit [IsProbabilityMeasure μ] hB in
 /-- **Band truncation as a norm-`≤1` CLM** on the predictable `L²` space: pointwise
 indicator multiplication `φ ↦ 𝟙_{(0,t]×Ω} · φ` (on `L²` this is the orthogonal projection
 onto the `(0,t]`-band, but it is formalised here only as a norm-`≤1` CLM — `mkContinuous`
@@ -215,24 +224,24 @@ private noncomputable def truncCLM (T t : ℝ≥0) (hBmeas : ∀ u, Measurable (
     Lp ℝ 2 (trimMeasure_T (μ := μ) T hBmeas) →L[ℝ]
       Lp ℝ 2 (trimMeasure_T (μ := μ) T hBmeas) :=
   LinearMap.mkContinuous
-    { toFun := fun φ ↦ ((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).toLp
+    { toFun := fun φ ↦ (memLp_truncBand T t hBmeas φ).toLp
         ((Set.Ioc 0 t ×ˢ (Set.univ : Set Ω)).indicator (φ : ℝ≥0 × Ω → ℝ))
       map_add' := fun φ ψ ↦ by
         refine Lp.ext ?_
-        filter_upwards [((Lp.memLp (φ + ψ)).indicator (measurableSet_band t hBmeas)).coeFn_toLp,
-          Lp.coeFn_add (((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).toLp _)
-            (((Lp.memLp ψ).indicator (measurableSet_band t hBmeas)).toLp _),
-          ((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).coeFn_toLp,
-          ((Lp.memLp ψ).indicator (measurableSet_band t hBmeas)).coeFn_toLp,
+        filter_upwards [(memLp_truncBand T t hBmeas (φ + ψ)).coeFn_toLp,
+          Lp.coeFn_add ((memLp_truncBand T t hBmeas φ).toLp _)
+            ((memLp_truncBand T t hBmeas ψ).toLp _),
+          (memLp_truncBand T t hBmeas φ).coeFn_toLp,
+          (memLp_truncBand T t hBmeas ψ).coeFn_toLp,
           Lp.coeFn_add φ ψ] with z e_sum e_radd e_φ e_ψ h_φψ
         rw [e_sum, e_radd, Pi.add_apply, e_φ, e_ψ]
         simp only [Set.indicator_apply, h_φψ, Pi.add_apply]
         split_ifs <;> ring
       map_smul' := fun c φ ↦ by
         refine Lp.ext ?_
-        filter_upwards [((Lp.memLp (c • φ)).indicator (measurableSet_band t hBmeas)).coeFn_toLp,
-          Lp.coeFn_smul c (((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).toLp _),
-          ((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).coeFn_toLp,
+        filter_upwards [(memLp_truncBand T t hBmeas (c • φ)).coeFn_toLp,
+          Lp.coeFn_smul c ((memLp_truncBand T t hBmeas φ).toLp _),
+          (memLp_truncBand T t hBmeas φ).coeFn_toLp,
           Lp.coeFn_smul c φ] with z e_sm e_rsmul e_φ h_φ
         rw [e_sm, RingHom.id_apply, e_rsmul, Pi.smul_apply, e_φ]
         simp only [Set.indicator_apply, h_φ, Pi.smul_apply, smul_eq_mul]
@@ -240,7 +249,8 @@ private noncomputable def truncCLM (T t : ℝ≥0) (hBmeas : ∀ u, Measurable (
     1 (fun φ ↦ by
       simp only [LinearMap.coe_mk, AddHom.coe_mk]
       rw [one_mul, Lp.norm_toLp, Lp.norm_def]
-      exact ENNReal.toReal_mono (Lp.memLp φ).2.ne (eLpNorm_indicator_le _))
+      exact ENNReal.toReal_mono (Lp.memLp φ).eLpNorm_ne_top
+        (eLpNorm_indicator_le _ (measurableSet_band t hBmeas).nullMeasurableSet))
 
 omit [IsProbabilityMeasure μ] hB in
 /-- **The truncation CLM realises the band energy.** `‖truncCLM T t φ‖² = ∫_{(0,t]×Ω} φ²`:
@@ -253,7 +263,7 @@ private lemma truncCLM_norm_sq (T t : ℝ≥0) (hBmeas : ∀ u, Measurable (B u)
           ∂(trimMeasure_T (μ := μ) T hBmeas) := by
   rw [lp_two_norm_sq, ← integral_indicator (measurableSet_band t hBmeas)]
   refine integral_congr_ae ?_
-  filter_upwards [((Lp.memLp φ).indicator (measurableSet_band t hBmeas)).coeFn_toLp] with z hz
+  filter_upwards [(memLp_truncBand T t hBmeas φ).coeFn_toLp] with z hz
   rw [show (truncCLM (μ := μ) T t hBmeas φ : ℝ≥0 × Ω → ℝ) z
         = (Set.Ioc 0 t ×ˢ (Set.univ : Set Ω)).indicator (φ : ℝ≥0 × Ω → ℝ) z from hz]
   by_cases hzm : z ∈ (Set.Ioc 0 t ×ˢ (Set.univ : Set Ω))
@@ -283,6 +293,63 @@ theorem itoProcessCLM_norm_sq {t T : ℝ≥0} (htT : t ≤ T) (hBmeas : ∀ u, M
   filter_upwards [ae_restrict_of_ae (memLp_uncurry_trim_T T hBmeas V.val).coeFn_toLp] with z hz
   rw [show (simpleAssembly_T (μ := μ) T hBmeas V : ℝ≥0 × Ω → ℝ) z
         = Function.uncurry ⇑V.val z from hz]
+
+
+omit hB [IsProbabilityMeasure μ] in
+/-- **The band integral is additive in the time band**: for an integrable space-time function the
+integral over `(a,c] × Ω` of the predictable trim measure is the sum of the integrals over the
+adjacent bands `(a,b] × Ω` and `(b,c] × Ω`. -/
+theorem setIntegral_Ioc_prod_add {T : ℝ≥0} (hBmeas : ∀ t, Measurable (B t)) {F : ℝ≥0 × Ω → ℝ}
+    (hF : Integrable F (trimMeasure_T (μ := μ) T hBmeas)) {a b c : ℝ≥0} (hab : a ≤ b)
+    (hbc : b ≤ c) :
+    ∫ z in Set.Ioc a c ×ˢ (Set.univ : Set Ω), F z ∂(trimMeasure_T (μ := μ) T hBmeas)
+      = ∫ z in Set.Ioc a b ×ˢ (Set.univ : Set Ω), F z ∂(trimMeasure_T (μ := μ) T hBmeas)
+        + ∫ z in Set.Ioc b c ×ˢ (Set.univ : Set Ω), F z ∂(trimMeasure_T (μ := μ) T hBmeas) := by
+  rw [← Set.Ioc_union_Ioc_eq_Ioc hab hbc, Set.union_prod]
+  exact setIntegral_union (Set.Disjoint.set_prod_left (Set.Ioc_disjoint_Ioc_of_le le_rfl) _ _)
+    (measurableSet_predictable_Ioc_prod b c MeasurableSet.univ) hF.integrableOn hF.integrableOn
+
+/-- **The band-energy law of the Itô integral process**: the `L²` energy of the increment of
+`(φ●B)` over a band `(u,v]`, `v ≤ T`, is the band energy of the integrand,
+
+  `𝔼[((φ●B)_v − (φ●B)_u)²] = ∫_{(u,v]×Ω} φ² d(trimMeasure_T T)`.
+
+Pythagoras for the martingale `itoProcessCLM` (`(φ●B)_u` is the conditional expectation of
+`(φ●B)_v`: `condVar_ae_eq_condExp_sq_sub_sq_condExp`), then the time-indexed isometry
+`itoProcessCLM_norm_sq` at `v` and at `u` and the band additivity `setIntegral_Ioc_prod_add`. -/
+theorem clm_band_energy (hBmeas : ∀ t, Measurable (B t)) {T : ℝ≥0}
+    (φ : Lp ℝ 2 (trimMeasure_T (μ := μ) T hBmeas)) {u v : ℝ≥0} (huv : u ≤ v) (hvT : v ≤ T) :
+    ∫ ω, ((itoProcessCLM hB T v hBmeas φ : Ω → ℝ) ω
+        - (itoProcessCLM hB T u hBmeas φ : Ω → ℝ) ω) ^ 2 ∂μ
+      = ∫ z in Set.Ioc u v ×ˢ (Set.univ : Set Ω), (φ z) ^ 2
+          ∂(trimMeasure_T (μ := μ) T hBmeas) := by
+  set A := itoProcessCLM hB T v hBmeas φ
+  set b := itoProcessCLM hB T u hBmeas φ
+  have hm := (natFiltration hBmeas).le u
+  have hmart : μ[(A : Ω → ℝ) | natFiltration hBmeas u] =ᵐ[μ] (b : Ω → ℝ) :=
+    itoIntegralProcessGen_isMartingale hB T hBmeas φ huv
+  have hnrm (w : ℝ≥0) (hw : w ≤ T) : ∫ ω, (itoProcessCLM hB T w hBmeas φ : Ω → ℝ) ω ^ 2 ∂μ
+      = ∫ z in Set.Ioc 0 w ×ˢ (Set.univ : Set Ω), (φ z) ^ 2 ∂(trimMeasure_T (μ := μ) T hBmeas) :=
+    (lp_two_norm_sq _).symm.trans (itoProcessCLM_norm_sq hB hw hBmeas φ)
+  have hpyth : ∫ ω, ((A : Ω → ℝ) ω - μ[(A : Ω → ℝ) | natFiltration hBmeas u] ω) ^ 2 ∂μ
+      = ∫ ω, (A : Ω → ℝ) ω ^ 2 ∂μ - ∫ ω, μ[(A : Ω → ℝ) | natFiltration hBmeas u] ω ^ 2 ∂μ := by
+    have hA := Lp.memLp A
+    have hsq : Integrable (μ[(A : Ω → ℝ) | natFiltration hBmeas u] ^ 2) μ :=
+      (hA.condExp one_le_two).integrable_sq
+    have h := integral_congr_ae (condVar_ae_eq_condExp_sq_sub_sq_condExp hm hA)
+    rw [condVar, integral_condExp hm, integral_sub' integrable_condExp hsq,
+      integral_condExp hm] at h
+    exact h
+  calc _ = ∫ ω, ((A : Ω → ℝ) ω - μ[(A : Ω → ℝ) | natFiltration hBmeas u] ω) ^ 2 ∂μ :=
+        integral_congr_ae (by filter_upwards [hmart] with ω hω using by rw [hω])
+    _ = ∫ ω, (A : Ω → ℝ) ω ^ 2 ∂μ - ∫ ω, (b : Ω → ℝ) ω ^ 2 ∂μ := by
+        rw [hpyth, show ∫ ω, μ[(A : Ω → ℝ) | natFiltration hBmeas u] ω ^ 2 ∂μ
+          = ∫ ω, (b : Ω → ℝ) ω ^ 2 ∂μ from
+          integral_congr_ae (by filter_upwards [hmart] with ω hω using by rw [hω])]
+    _ = _ := by
+        rw [hnrm v hvT, hnrm u (huv.trans hvT),
+          setIntegral_Ioc_prod_add hBmeas (Lp.memLp φ).integrable_sq zero_le huv]
+        ring
 
 end ItoIntegralProcessGeneral
 end MathFin

@@ -598,14 +598,6 @@ Markov property, no PDE — entirely inside the Itô tower. -/
 
 -- Poisson-process theory + Itô-process QV (2026-06-05 full-push round)
 
-/-- info: 'MathFin.PoissonSuperposition.poissonMeasure_conv_poissonMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.PoissonSuperposition.poissonMeasure_conv_poissonMeasure
-
-/-- info: 'MathFin.PoissonSuperposition.indepFun_map_add_poissonMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.PoissonSuperposition.indepFun_map_add_poissonMeasure
-
 /-- info: 'MathFin.PoissonThinning.markedPoissonMeasure_eq_prod' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.PoissonThinning.markedPoissonMeasure_eq_prod
@@ -1968,8 +1960,8 @@ forms exactly once; every composed instrument built from them afterward prices b
 three values rather than by a fresh integration argument.
 
 A second model prices the same terms (2026-10-28). `Contracts/Models/Binomial.lean` reads the
-underlying off coin-flip paths and gives each European payoff its tree price; there every contract
-is integrable, because the model is bounded (`Contract.integrable_pathPV_of_bounded`).
+underlying off coin-flip paths and gives each European payoff its tree price; there every fixed-date
+contract is integrable, because the model is bounded (`Contract.integrable_pathPV_of_bounded`).
 `tendsto_binomial_value_europeanCall` then shows that `europeanCall K T`, one term, has CRR values
 converging to its Black–Scholes value. The contract stays fixed and only the model moves.
 In the tree the value is also the cost of a hedge (2026-10-29): `pathPV_eq_value_add_gains` writes
@@ -2331,7 +2323,8 @@ and any error bound against the SABR model are not proved. -/
 /-! ### Dupire: the distributional headline and the pointwise Thm 9.5 (2026-10-25)
 
 Bagaria ch. 9, zero rates, on the driftless Itô process `X = c + M` with `M` a hypothesized
-version of `∫δ dB` (pinned to the CLM integral a.e. at each `t` by `hMeq`). `dupire_weak` (Thm 9.5 ∘
+version of `∫δ dB` (pinned to the CLM integral a.e. at each `t` by `hD.ae_eq`). `dupire_weak` (Thm
+9.5 ∘
 Thm 9.7 in distributional form): for every smooth compactly supported strike density `ψ`,
 `d/dT ∫ ψ(K) C(T, K) dK = ½ · 𝔼[ψ(X_T) · b̂²(T, X_T)]` — together with `breedenLitzenberger_weak`
 this is `∂_T C = ½ · b̂²(T, ·) · ∂²_K C` in `D'(ℝ_K)`, with no density, no Tanaka formula and no

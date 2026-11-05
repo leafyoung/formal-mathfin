@@ -38,8 +38,8 @@ variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsFiniteMeasure P]
 
 theorem martingale_smaller_filtration (hFG : 𝓕 ≤ 𝓖) (hX : Martingale X 𝓖 P)
     (hadapt : StronglyAdapted 𝓕 X) : Martingale X 𝓕 P :=
-  martingale_of_setIntegral_eq hadapt hX.integrable
-    (fun _ _ hij _ hs => hX.setIntegral_eq hij (hFG _ _ hs))
+  martingale_iff_setIntegral_eq.2 ⟨hadapt, hX.integrable,
+    fun _ _ hij _ hs => hX.setIntegral_eq hij (hFG _ _ hs)⟩
 
 theorem locally_bounded_localMartingale_is_martingale (hX : IsLocalMartingale X 𝓕 P)
     (hadapt : StronglyAdapted 𝓕 X)
@@ -78,8 +78,7 @@ theorem locally_bounded_localMartingale_is_martingale (hX : IsLocalMartingale X 
     obtain ⟨C,hC⟩ := hbound t
     exact (integrable_const C).mono' ((hadapt t).mono (𝓕.le t)).aestronglyMeasurable
       (Eventually.of_forall (hC t le_rfl))
-  apply martingale_of_setIntegral_eq hadapt hint
-  intro i j hij s hs
+  refine martingale_iff_setIntegral_eq.2 ⟨hadapt, hint, fun i j hij s hs ↦ ?_⟩
   have hconv (t : ℝ≥0) : Tendsto (fun n => ∫ ω in s, Y n t ω ∂P) atTop
       (𝓝 (∫ ω in s, X t ω ∂P)) := by
     obtain ⟨C,hC⟩ := hYbound t
@@ -109,7 +108,7 @@ theorem martingale_stoppedProcess_of_locally_bounded {ρ : Ω → WithTop ℝ≥
     Martingale (stoppedProcess X ρ) 𝓕 P := by
   have hloc := (isStable_martingale (𝓕 := 𝓕) (P := P)).locally X hX _ hρ
   rw [stoppedProcess_indicator_eq hpos] at hloc
-  have had := hXad.stoppedProcess_indicator (fun ω ↦ (hXc ω).isCadlag.right_continuous) hρ
+  have had := hXad.stoppedProcess_indicator (fun ω ↦ (hXc ω).isCadlag.isRightContinuous) hρ
   rw [stoppedProcess_indicator_eq hpos] at had
   exact locally_bounded_localMartingale_is_martingale hloc had hbound
 
@@ -143,7 +142,7 @@ cadlag paths: the stopped processes are almost surely equal at each time, hence 
 conditional expectations, and the stopped `Y` is adapted. -/
 theorem isLocalMartingale_congr_ae {Y : ℝ≥0 → Ω → ℝ} (hX : IsLocalMartingale X 𝓕 P)
     (hY : StronglyAdapted 𝓕 Y) (hYc : ∀ ω, IsCadlag fun t ↦ Y t ω)
-    (hXY : ∀ᵐ ω ∂P, ∀ t, X t ω = Y t ω) : IsLocalMartingale Y 𝓕 P := by
+    (hXY : X ≡ᵐ[P] Y) : IsLocalMartingale Y 𝓕 P := by
   obtain ⟨τ, hτ, hloc⟩ := hX
   refine ⟨τ, hτ, fun n ↦ ?_⟩
   obtain ⟨hmart, -⟩ := hloc n
@@ -151,7 +150,7 @@ theorem isLocalMartingale_congr_ae {Y : ℝ≥0 → Ω → ℝ} (hX : IsLocalMar
       =ᵐ[P] fun ω ↦ stoppedProcess (fun i ↦ {ω | ⊥ < τ n ω}.indicator (Y i)) (τ n) t ω := by
     filter_upwards [hXY] with ω h
     simp only [stoppedProcess, Set.indicator_apply, h]
-  exact ⟨⟨hY.stoppedProcess_indicator (fun ω ↦ (hYc ω).right_continuous) (hτ.isStoppingTime n),
+  exact ⟨⟨hY.stoppedProcess_indicator (fun ω ↦ (hYc ω).isRightContinuous) (hτ.isStoppingTime n),
     fun i j hij ↦ (condExp_congr_ae (ht j).symm).trans ((hmart.2 i j hij).trans (ht i))⟩,
     isStable_isCadlag Y hYc _ (hτ.isStoppingTime n)⟩
 

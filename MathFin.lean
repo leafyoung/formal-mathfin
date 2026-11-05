@@ -42,6 +42,8 @@
 -- Foundations
 import MathFin.Foundations.StandardNormal
 import MathFin.Foundations.DoobDecomposition
+import MathFin.Foundations.SnellDoobDecomposition
+import MathFin.Foundations.SnellEnvelope
 import MathFin.Foundations.L2MartingaleConvergence
 import MathFin.Foundations.BrownianMarkov
 -- Markov-chain path law derived from the pin's Ionescu–Tulcea trajectory
@@ -103,6 +105,8 @@ import MathFin.Foundations.GirsanovConstantTheta
 import MathFin.Foundations.SimpleDoleansExponential
 import MathFin.Foundations.GirsanovSimpleTheta
 import MathFin.Foundations.Numeraire
+-- The T-forward measure: the zero-coupon bond as numéraire (change-of-numéraire instance)
+import MathFin.Foundations.ForwardMeasure
 import MathFin.Foundations.BrownianQuadraticVariation
 -- The uniform partition of [0, T] (and [s, t]): the one equipartition of the Itô stack
 import MathFin.Foundations.UnifPart
@@ -110,9 +114,11 @@ import MathFin.Foundations.QuadraticVariationL2
 import MathFin.Foundations.ExpMin
 import MathFin.Foundations.NoArbitrageCore
 import MathFin.Foundations.FTAP
+import MathFin.Foundations.ReplicationPricing
 import MathFin.Foundations.OptionalSamplingInequality
 import MathFin.Foundations.LpContinuousMartingaleConvergence
 import MathFin.Foundations.MartingaleSetIntegral
+import MathFin.Foundations.IndepIsometryKernel
 import MathFin.Foundations.MartingaleTransform
 import MathFin.Foundations.DoobLpMaximalInequality
 import MathFin.Foundations.ExtendOfNormIsometry
@@ -215,6 +221,7 @@ import MathFin.Foundations.ItoProcessPredictable
 -- Predictability of the assembled drift process (SDE-existence keystone II)
 -- Cauchy–Schwarz on a finite measure (shared by the drift L² bound and SDE uniqueness)
 import MathFin.Foundations.FiniteMeasureCauchySchwarz
+import MathFin.Foundations.StdSimplexProd
 import MathFin.Foundations.DriftProcessPredictable
 -- σ-realization: a bounded adapted continuous process as an Itô-integrand L² class (α4 gap)
 import MathFin.Foundations.AdaptedProcessToLp
@@ -307,6 +314,14 @@ import MathFin.Foundations.ItoDriftExpectation
 -- The integrated Itô–drift identity for adapted coefficients along `X_t = c + ∫β + M`,
 -- conditional on a hypothesized adapted, path-continuous version `M` of the Itô integral
 -- (the library does not construct one for general δ)
+import MathFin.Foundations.ItoDriftIncrementEnergy
+import MathFin.Foundations.ItoDriftWeightedIsometry
+import MathFin.Foundations.ItoDriftGapDecay
+import MathFin.Foundations.ItoStepSumFourthMoment
+import MathFin.Foundations.ItoDriftMomentBounds
+import MathFin.Foundations.ItoDriftBlock
+import MathFin.Foundations.ItoDriftQuadraticCorrections
+import MathFin.Foundations.ItoDriftTaylorRemainder
 import MathFin.Foundations.ItoFormulaAdaptedDrift
 -- The companion with no hypothesized M (for B with continuous paths): the same identity for
 -- the constructed process, derived from ito_formula_adapted (centering + Fubini)
@@ -344,6 +359,8 @@ import MathFin.Foundations.FTAPTwoState
 import MathFin.DeFi.ConstantProductAMM
 -- DeFi/AMM group: Uniswap v2/v3 mechanics (impermanent loss, TWAP, fee invariant, v3 real reserves)
 import MathFin.DeFi.UniswapMechanics
+-- Historical-simulation VaR for a Uniswap v3 concentrated-liquidity position
+import MathFin.DeFi.ConcentratedLiquidityVaR
 -- DeFi/lending group: Aave kinked-rate + health factor, Compound cToken exchange rate
 import MathFin.DeFi.Aave
 import MathFin.DeFi.Compound
@@ -363,6 +380,7 @@ import MathFin.Foundations.EquivMeasure
 -- Phase 42: Multi-state FTAP backward (hypothesis-form, forward direction proved)
 import MathFin.Foundations.FTAPMultiState
 import MathFin.Foundations.FTAPDiscrete
+import MathFin.Foundations.FTAPComplete
 -- General-Ω one-period FTAP (Föllmer–Schied §1.2 / one-period DMW, scalar)
 import MathFin.Foundations.FTAPOnePeriod
 -- General-Ω one-period FTAP, d assets (Esscher minimal-divergence EMM, full — finite-dim market)
@@ -625,7 +643,7 @@ import MathFin.FixedIncome.VasicekMarketPriceOfRisk
 import MathFin.FixedIncome.VasicekZeroMeanReversionLimit
 -- CIR loadings: B solves the Riccati equation, A solves A' = −κθB
 import MathFin.FixedIncome.CIRRiccati
--- The T-forward measure: the zero-coupon bond as numéraire (change-of-numéraire instance)
+-- The Black–Scholes forward price under the T-forward measure
 import MathFin.FixedIncome.ForwardMeasure
 -- Inflation is FX: the zero-coupon inflation swap and the YoY convexity
 import MathFin.FixedIncome.Inflation
@@ -786,6 +804,7 @@ import MathFin.Contracts.Models.BlackScholesExchange
 import MathFin.Contracts.Models.BlackScholesAsian
 import MathFin.Contracts.Models.BlackScholesChooser
 import MathFin.Contracts.Models.Binomial
+import MathFin.Contracts.Models.BinomialCompleteMarket
 import MathFin.Contracts.Models.BinomialLimit
 import MathFin.Contracts.Models.Caplet
 import MathFin.Contracts.Models.CMS
@@ -882,7 +901,6 @@ import MathFin.Binomial.MultiPeriodFTAP
 import MathFin.BlackScholes.JumpDiffusionThinning
 import MathFin.Bridges.ABCDBlack76
 import MathFin.Bridges.AmericanPutEuropeanBound
-import MathFin.Bridges.BellmanDoobDecomposition
 import MathFin.Bridges.ConstantProductLPLognormal
 import MathFin.Bridges.LiquidationAsStructuralDefault
 import MathFin.Bridges.OUHermiteVasicek
@@ -894,10 +912,12 @@ import MathFin.FixedIncome.VasicekYieldNelsonSiegel
 import MathFin.Foundations.GaussianPairLinearLaw
 import MathFin.Foundations.GaussianPartialMoments
 import MathFin.Foundations.WienerIntegralExpMoment
+-- The law of a Wiener-represented rate under the forward measure of a Wiener-represented account
+import MathFin.Foundations.WienerIntegralForwardMeasure
 import MathFin.Foundations.WienerIntegralGirsanov
 import MathFin.RiskMeasures.CreditRiskPlus
 import MathFin.RiskMeasures.OneFactorCopula
 import MathFin.Bridges.LSVPosteriorConditionalExpectation
 -- Weak uniqueness for the constant-coefficient integrated weak forward equation, via
 -- the characteristic-function/Groenwall method
-import MathFin.Foundations.FlowDuality
+import MathFin.Foundations.WeakForwardUniqueness

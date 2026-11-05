@@ -37,8 +37,7 @@ theorem canonicalDiscountedPrice_apply (k h x : ℝ) (T t : ℝ≥0) (ω : ℝ�
       Real.exp (-k*(min t T : ℝ≥0))*canonicalPrice k h
         (brownianLogState (k-h-1) (Real.sqrt 2) x (min t T) ω) ((T : ℝ)-(min t T : ℝ≥0)) := by
   unfold canonicalDiscountedPrice
-  simp only [classicalCandidate,classicalLogSpot_canonical,sqrt_two_sq_div_two_mul,one_mul,
-    brownianLogState]
+  simp [classicalCandidate,brownianLogState]
 
 theorem canonicalDiscountedPrice_initial (k h x : ℝ) (T : ℝ≥0) :
     canonicalDiscountedPrice k h x T 0 =ᵐ[gaussianLimit] fun _ => canonicalPrice k h x (T : ℝ) := by
@@ -82,7 +81,7 @@ theorem canonicalDiscountedPrice_usual_supermartingale {k h : ℝ} (hk : 0 ≤ k
   have hu := bounded_supermartingale_completion gaussianLimit
     (canonicalDiscountedPrice_supermartingale (h := h) hk x T)
         (canonicalDiscountedPrice_bound hk x T)
-  letI : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
+  let : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
   exact bounded_continuous_supermartingale_rightCont (supermartingale_nullAugmentation hu)
     (canonicalDiscountedPrice_continuous hk x T) (canonicalDiscountedPrice_bound hk x T)
 

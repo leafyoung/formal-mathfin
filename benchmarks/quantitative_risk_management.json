@@ -408,7 +408,7 @@
       "description": "For a loss with continuous CDF and α ∈ (0, 1), the median of the conditional law of X given X > VaR_α(X) equals VaR_{(1+α)/2}(X).",
       "domain": "mathematical_finance",
       "code": {
-        "lean": "import MathFin.RiskMeasures.RiskClosedForms\n\nopen MeasureTheory ProbabilityTheory Set Filter Topology\nopen scoped NNReal ENNReal\nopen MathFin\n\ntheorem medianShortfall_eq_valueAtRisk_thm {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} {X : Ω → ℝ} {α : ℝ} [IsProbabilityMeasure P] (hX : AEMeasurable X P) (hF : Continuous (cdf (P.map X))) (hα : α ∈ Ioo 0 1) :\n    medianShortfall X P α = valueAtRisk X P ((1 + α) / 2) :=\n  MathFin.medianShortfall_eq_valueAtRisk hX hF hα\n\n"
+        "lean": "import MathFin.RiskMeasures.RiskClosedForms\n\nopen MeasureTheory ProbabilityTheory Set Filter Topology\nopen scoped NNReal ENNReal\nopen MathFin\n\ntheorem medianShortfall_eq_valueAtRisk_thm {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} {X : Ω → ℝ} {α : ℝ} [IsProbabilityMeasure P] (hF : Continuous (cdf (P.map X))) (hα : α ∈ Ioo 0 1) :\n    medianShortfall X P α = valueAtRisk X P ((1 + α) / 2) :=\n  MathFin.medianShortfall_eq_valueAtRisk hF hα\n\n"
       },
       "metadata": {
         "chapter": 2,
@@ -959,7 +959,7 @@
         "reference": "QRM Exercise Book Ex. 8.4",
         "difficulty": "intermediate",
         "formalization_status": "full",
-        "formalization_scope": "Full formal proof. Subadditivity of the portfolio standard deviation for a PSD covariance kernel and Φ⁻¹(α) ≥ 0. Lives in MathFin/Bridges/GaussianRiskMarkowitz.lean. Axioms-clean."
+        "formalization_scope": "Full formal proof. Two portfolio losses of a Gaussian vector are a jointly Gaussian pair, so this is the pair theorem (VaR = E + sd Φ⁻¹(α) with sd subadditive and Φ⁻¹(α) ≥ 0). Lives in MathFin/Bridges/GaussianRiskMarkowitz.lean. Axioms-clean."
       }
     },
     {
@@ -1032,14 +1032,14 @@
       "description": "For square-integrable X, Y on a probability space: cov(X, Y) ≤ √Var X · √Var Y.",
       "domain": "mathematical_finance",
       "code": {
-        "lean": "import MathFin.RiskMeasures.StandardDeviationPrinciple\n\nopen MeasureTheory ProbabilityTheory Set Filter Topology\nopen scoped NNReal ENNReal\nopen MathFin\n\ntheorem covariance_le_sqrt_mul_sqrt_thm {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} [IsProbabilityMeasure P] {X : Ω → ℝ} {Y : Ω → ℝ} (hX : MemLp X 2 P) (hY : MemLp Y 2 P) :\n    cov[X, Y; P] ≤ √Var[X; P] * √Var[Y; P] :=\n  MathFin.covariance_le_sqrt_mul_sqrt hX hY\n\n"
+        "lean": "import MathFin.Foundations.FiniteMeasureCauchySchwarz\n\nopen MeasureTheory ProbabilityTheory Set Filter Topology\nopen scoped NNReal ENNReal\nopen MathFin\n\ntheorem covariance_le_sqrt_mul_sqrt_thm {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} [IsProbabilityMeasure P] {X : Ω → ℝ} {Y : Ω → ℝ} (hX : MemLp X 2 P) (hY : MemLp Y 2 P) :\n    cov[X, Y; P] ≤ √Var[X; P] * √Var[Y; P] :=\n  MathFin.covariance_le_sqrt_mul_sqrt hX hY\n\n"
       },
       "metadata": {
         "chapter": 8,
         "reference": "QRM Exercise Book Ex. 8.11 context",
         "difficulty": "basic",
         "formalization_status": "full",
-        "formalization_scope": "Full formal proof. Discriminant of the nonnegative quadratic t ↦ Var(X + tY). Lives in MathFin/RiskMeasures/StandardDeviationPrinciple.lean. Axioms-clean."
+        "formalization_scope": "Full formal proof. Cauchy–Schwarz in expectation (Hölder at exponents 2, 2) at the centred variables X − E X, Y − E Y. Lives in MathFin/Foundations/FiniteMeasureCauchySchwarz.lean. Axioms-clean."
       }
     },
     {
@@ -1151,7 +1151,7 @@
         "reference": "MFE (2015) Example 2.15",
         "difficulty": "intermediate",
         "formalization_status": "full",
-        "formalization_scope": "Full formal proof. Re-export of MathFin.valueAtRisk_le_expectedShortfall_of_hasLaw_studentTMeasure: valueAtRisk_le_expectedShortfall at the integrable loss μ + σT (integrable_of_hasLaw_studentTMeasure, ν > 1). The closed-form reading, quantile_studentTMeasure_le_expectedShortfall_closedForm, applies the same inequality to the identity under the law and rewrites with the Student-t VaR and ES theorems. Lives in MathFin/RiskMeasures/StudentTValueAtRisk.lean. Axioms-clean."
+        "formalization_scope": "Full formal proof. Re-export of MathFin.valueAtRisk_le_expectedShortfall_of_hasLaw_studentTMeasure: valueAtRisk_le_expectedShortfall at the integrable loss μ + σT (HasLaw.integrable with integrable_id_studentTMeasure, ν > 1). The closed-form reading, quantile_studentTMeasure_le_expectedShortfall_closedForm, applies the same inequality to the identity under the law and rewrites with the Student-t VaR and ES theorems. Lives in MathFin/RiskMeasures/StudentTValueAtRisk.lean. Axioms-clean."
       }
     },
     {

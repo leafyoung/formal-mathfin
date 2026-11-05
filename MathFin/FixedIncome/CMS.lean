@@ -41,7 +41,7 @@ adjustment on the swap layer of `MathFin/FixedIncome/InterestRateSwap.lean`
   (`D = e^{−rT}` is the deterministic money market) — an execution of
   `MathFin.changeOfNumeraire`
   (`Foundations/Numeraire.lean`), alongside the stock and the `T`-bond (the
-  forward measure of `FixedIncome/ForwardMeasure.lean`). `annuityMeasure_price`
+  forward measure of `Foundations/ForwardMeasure.lean`). `annuityMeasure_price`
   proves `A₀·𝔼^{Qᴬ}[S] = 𝔼^Q[D·S·A_T]` — `Qᴬ`-expectations price
   annuity-settled payoffs `S·A_T`; `annuityMeasure_isProbabilityMeasure` proves
   `Qᴬ` is a probability *given the annuity repricing condition*
@@ -308,7 +308,7 @@ private theorem annuityRandom_pos {δ : ℝ} (hδ : 0 < δ) {P : Ω → ι → �
 /-- **The annuity measure** `Qᴬ`: the change-of-numéraire measure with the
 annuity `A_T` in the numéraire seat against the money market `B_T = 1/D`, `D` the (random)
 discount factor to the fixing date — an execution of `MathFin.changeOfNumeraire`, alongside the
-stock and the `T`-bond (the forward measure of `FixedIncome/ForwardMeasure.lean`).
+stock and the `T`-bond (the forward measure of `Foundations/ForwardMeasure.lean`).
 Density: `dQᴬ/dQ = A_T·D/A₀`. A deterministic money market `e^{rT}` is `D = e^{−rT}`. -/
 noncomputable def annuityMeasure (Q : Measure Ω) (D : Ω → ℝ) (δ : ℝ) (P : Ω → ι → ℝ)
     (s : Finset ι) (A0 : ℝ) : Measure Ω :=
@@ -359,7 +359,7 @@ theorem annuityMeasure_price {Q : Measure Ω} (D : Ω → ℝ) (δ : ℝ) (P : �
       = ∫ ω, D ω * (S ω * annuityRandom δ P s ω) ∂Q := by
     rw [one_mul]
     exact integral_congr_ae (ae_of_all _ fun ω ↦ by
-      show S ω * annuityRandom δ P s ω / (D ω)⁻¹ = D ω * (S ω * annuityRandom δ P s ω)
+      change S ω * annuityRandom δ P s ω / (D ω)⁻¹ = D ω * (S ω * annuityRandom δ P s ω)
       rw [div_inv_eq_mul, mul_comm])
   rw [← h2]
   exact h
@@ -389,7 +389,7 @@ theorem cmsCurveRate_jensenGap_nonneg {Q : Measure Ω} (D : Ω → ℝ) (δ P0 C
     (hfwd : ∫ ω, W ω ∂(annuityMeasure Q D δ P s A0) = x₀) :
     cmsCurveRate P0 δ C x₀
       ≤ ∫ ω, cmsCurveRate P0 δ C (W ω) ∂(annuityMeasure Q D δ P s A0) := by
-  haveI hprob := annuityMeasure_isProbabilityMeasure D δ P s A0 hD hδ hs hP hA0 hint hrepr
+  have hprob := annuityMeasure_isProbabilityMeasure D δ P s A0 hD hδ hs hP hA0 hint hrepr
   have hfs : ∀ᵐ ω ∂(annuityMeasure Q D δ P s A0), W ω ∈ Set.Ici (0 : ℝ) :=
     ae_of_all _ fun ω ↦ Set.mem_Ici.2 (hWpos ω)
   have hj := ConvexOn.map_integral_le (f := W) (g := cmsCurveRate P0 δ C)

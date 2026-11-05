@@ -8,7 +8,7 @@ module
 public import MathFin.BlackScholes.AmericanPut.Stopping.BrownianBellman
 public import MathFin.BlackScholes.AmericanPut.Stopping.BrownianUsualTransition
 
-/-! # The same Gaussian Bellman prices in the raw and usual Brownian filtrations
+/-! # The same Gaussian Snell-envelope prices in the raw and usual Brownian filtrations
 
 Finite-grid identification and convergence remove the classical-solution premise
 from raw/usual American-value equality at positive spot.
@@ -43,7 +43,7 @@ theorem brownianGridPrice_tendsto_usual {K r q σ : ℝ} (hK : 0 ≤ K) (hr : 0 
     Tendsto (fun n => brownianGridPrice K r q σ T (gridStep n) x) atTop
       (𝓝 (brownianUsualAmericanPut K r q σ (Real.exp x) T)) := by
   let μ := completedMeasure gaussianLimit
-  letI : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
+  let : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
   have he : (fun n => brownianGridPrice K r q σ T (gridStep n) x) =
       fun n => gridAmericanPutValue μ brownianUsualFiltration brownian
         K r q σ (Real.exp x) T (gridStep n) :=

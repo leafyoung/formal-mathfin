@@ -70,6 +70,13 @@ lemma crrUpProb_mem_Ioo {u d r : ℝ} (h : BinomialNoArb u d r) :
   · unfold crrUpProb
     rw [div_lt_one h_ud]; linarith [h.lt_u]
 
+/-- Under no-arbitrage the risk-neutral up-probability `crrUpProb u d r` is a probability in
+`ℝ≥0`: the form the `ℝ≥0`-parametrised flip laws (`coinFlipMeasure`, `horizonMeasure`) take. -/
+lemma BinomialNoArb.exists_nnreal_crrUpProb {u d r : ℝ} (h : BinomialNoArb u d r) :
+    ∃ q : NNReal, q ≤ 1 ∧ crrUpProb u d r = q :=
+  ⟨(crrUpProb u d r).toNNReal, Real.toNNReal_le_one.2 (crrUpProb_mem_Ioo h).2.le,
+    (Real.coe_toNNReal _ (crrUpProb_mem_Ioo h).1.le).symm⟩
+
 /-- The probability `1 - q = (u - e^r) / (u - d)`. -/
 lemma one_sub_crrUpProb {u d r : ℝ} (h : BinomialNoArb u d r) :
     1 - crrUpProb u d r = (u - Real.exp r) / (u - d) := by
@@ -188,14 +195,14 @@ lemma bermudanPrice_succ_of_mem {E : Set ℕ} {n : ℕ} (hn : n + 1 ∈ E) (u d 
     (S : ℝ) :
     bermudanPrice E u d r g (n + 1) S = max (g S) (binomialOptionPriceOnePeriod u d r
       (bermudanPrice E u d r g n (S * u)) (bermudanPrice E u d r g n (S * d))) := by
-  rw [bermudanPrice, if_pos hn]
+  rw [bermudanPrice, ite_eq_left hn]
 
 /-- Bellman step off the exercise set (`n + 1 ∉ E`): the bare continuation. -/
 lemma bermudanPrice_succ_of_notMem {E : Set ℕ} {n : ℕ} (hn : n + 1 ∉ E) (u d r : ℝ)
     (g : ℝ → ℝ) (S : ℝ) :
     bermudanPrice E u d r g (n + 1) S = binomialOptionPriceOnePeriod u d r
       (bermudanPrice E u d r g n (S * u)) (bermudanPrice E u d r g n (S * d)) := by
-  rw [bermudanPrice, if_neg hn]
+  rw [bermudanPrice, ite_eq_right hn]
 
 /-- **Supermartingale clause**: the one-period continuation never exceeds the price. -/
 lemma bermudanPrice_supermartingale (E : Set ℕ) (u d r : ℝ) (g : ℝ → ℝ) (n : ℕ) (S : ℝ) :

@@ -23,9 +23,9 @@ instantiates it at `F = ℝ`; a multi-asset model would instantiate at `F = Fin 
 * `IsEMM 𝓕 P S T Q` — `Q` is an equivalent martingale measure for `S` up to the horizon `T`:
   `Q ≈ P` (mutual absolute continuity) and `S` is a `Q`-martingale w.r.t. the filtration `𝓕` on
   `{t ≤ T}`, i.e. the process stopped at `T` is a `Q`-martingale. This is the discrete
-  `MathFin.IsEMM` (`FTAP.lean`) with `ℝ≥0` for `ℕ`, and `IsEMM.sampled` restricts it to one; it is what an
-  equivalent measure obtained by a density change on `𝓕_T` can be: the Girsanov/Esscher measure
-  makes the discounted Black–Scholes price a martingale on `[0, T]` and no further
+  `MathFin.IsEMM` (`FTAP.lean`) with `ℝ≥0` for `ℕ`, and `IsEMM.sampled` restricts it to one; it
+  is what an equivalent measure obtained by a density change on `𝓕_T` can be: the Girsanov/Esscher
+  measure makes the discounted Black–Scholes price a martingale on `[0, T]` and no further
   (`bs_discounted_isEMM`). A martingale on all of `ℝ≥0` is an EMM at every horizon.
 * `SimpleStrategy 𝓕 F` — a piecewise-constant, predictable, bounded trading strategy:
   finitely many trading dates `time : Fin (N+1) → ℝ≥0` and `𝓕`-measurable bounded holdings
@@ -56,7 +56,8 @@ times, and the general stochastic integral `∫ φ dS`). Absent by design:
   integral `∫ φ dS` against a semimartingale;
 * **NFLVR** (no free lunch with vanishing risk) and its distinction from plain no-arbitrage;
 * the **converse** direction `NoArbitrageSimple 𝓕 P S T → ∃ Q, IsEMM 𝓕 P S T Q`, and closedness
-  of the set of claims super-replicable from zero wealth (the Kreps–Yan / Hahn–Banach core DS needs).
+  of the set of claims super-replicable from zero wealth (the Kreps–Yan / Hahn–Banach core DS
+  needs).
 
 `IsEMM` here is stated *on a process* `S`, exactly the object Delbaen–Schachermayer's theorem
 would produce — so this frame is a strict sub-object of the DS one, and extending it to
@@ -102,9 +103,9 @@ theorem martingale_stopped_of_setIntegral_eq {Q : Measure Ω} [IsFiniteMeasure Q
     (hset : ∀ ⦃s t : ℝ≥0⦄, s ≤ t → t ≤ T → ∀ ⦃A : Set Ω⦄, MeasurableSet[𝓕 s] A →
       ∫ ω in A, S t ω ∂Q = ∫ ω in A, S s ω ∂Q) :
     Martingale (fun t ↦ S (min t T)) 𝓕 Q := by
-  refine martingale_of_setIntegral_eq
-    (fun s ↦ (hadapt _ (min_le_right _ _)).mono (𝓕.mono (min_le_left _ _)))
-    (fun s ↦ hint _ (min_le_right _ _)) fun s t hst A hA ↦ ?_
+  refine martingale_iff_setIntegral_eq.2
+    ⟨fun s ↦ (hadapt _ (min_le_right _ _)).mono (𝓕.mono (min_le_left _ _)),
+      fun s ↦ hint _ (min_le_right _ _), fun s t hst A hA ↦ ?_⟩
   by_cases hsT : s ≤ T
   · rw [min_eq_left hsT]
     exact (hset (le_min hst hsT) (min_le_right _ _) hA).symm
@@ -196,7 +197,7 @@ omit [FiniteDimensional ℝ F] in
 theorem toDiscrete_succ (i : Fin ψ.N) : ψ.toDiscrete (i + 1) = ψ.hold i := by
   funext ω
   simp only [toDiscrete]
-  rw [dif_pos ⟨by omega, i.2⟩]
+  rw [dite_eq_left ⟨by omega, i.2⟩]
   rfl
 
 omit [FiniteDimensional ℝ F] in
@@ -247,18 +248,18 @@ theorem of_martingale [IsProbabilityMeasure Q] (hS : Martingale S 𝓕 Q) (hQP :
 /-- Before the horizon the price is `𝓕`-adapted. -/
 theorem adapted (h : IsEMM 𝓕 P S T Q) {t : ℝ≥0} (ht : t ≤ T) :
     StronglyMeasurable[𝓕 t] (S t) :=
-  haveI := h.isProb
+  have := h.isProb
   (martingale_min_iff.mp h.martingale).1 t ht
 
 /-- Before the horizon the price is `Q`-integrable. -/
 theorem integrable (h : IsEMM 𝓕 P S T Q) {t : ℝ≥0} (ht : t ≤ T) : Integrable (S t) Q :=
-  haveI := h.isProb
+  have := h.isProb
   (martingale_min_iff.mp h.martingale).2.1 t ht
 
 /-- **The martingale property before the horizon**: `Q[S t | 𝓕 s] = S s` for `s ≤ t ≤ T`. -/
 theorem condExp_eq (h : IsEMM 𝓕 P S T Q) {s t : ℝ≥0} (hst : s ≤ t)
     (ht : t ≤ T) : Q[S t | 𝓕 s] =ᵐ[Q] S s :=
-  haveI := h.isProb
+  have := h.isProb
   ((martingale_min_iff.mp h.martingale).2.2 hst ht).symm
 
 /-- **A continuous-time EMM, sampled, is a discrete-time EMM.** If `Q` is an equivalent
@@ -270,7 +271,7 @@ three consequences of `IsEMM` before the horizon (`martingale_min_iff`). -/
 theorem sampled (h : IsEMM 𝓕 P S T Q) {t : ℕ → ℝ≥0} (ht : Monotone t) (T' : ℕ)
     (hT' : t T' ≤ T) :
     MathFin.IsEMM (sampledFiltration 𝓕 ht) P (fun n ↦ S (t n)) T' Q :=
-  haveI := h.isProb
+  have := h.isProb
   ⟨h.toIsEquivProbMeasure, martingale_min_iff.mpr
     ⟨fun n hn ↦ h.adapted (t := t n) ((ht hn).trans hT'),
       fun n hn ↦ h.integrable (t := t n) ((ht hn).trans hT'),

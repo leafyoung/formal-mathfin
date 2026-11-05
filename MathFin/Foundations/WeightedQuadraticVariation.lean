@@ -52,15 +52,13 @@ private theorem integral_adapted_mul_centered_sq
     (hBmeas : ∀ t, Measurable (B t)) {t₀ t₁ : ℝ≥0} (ht : t₀ ≤ t₁)
     {χ : Ω → ℝ} (hχ : Measurable[ItoIntegralL2.natFiltration hBmeas t₀] χ) :
     ∫ ω, χ ω * ((B t₁ ω - B t₀ ω) ^ 2 - ((t₁ : ℝ) - t₀)) ∂μ = 0 := by
-  haveI : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
+  have : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
   have hχm : Measurable χ := hχ.mono ((ItoIntegralL2.natFiltration hBmeas).le t₀) le_rfl
-  have hYm : Measurable (fun ω ↦ (B t₁ ω - B t₀ ω) ^ 2 - ((t₁ : ℝ) - t₀)) := by fun_prop
-  have hindep : IndepFun χ (fun ω ↦ (B t₁ ω - B t₀ ω) ^ 2 - ((t₁ : ℝ) - t₀)) μ := by
-    have h := (adapted_indepFun_increment (hB.isFilteredPreBrownian hBmeas) ht hχ).comp
-      measurable_id (by fun_prop : Measurable (fun x : ℝ ↦ x ^ 2 - ((t₁ : ℝ) - t₀)))
-    simpa [Function.comp_def] using h
-  rw [hindep.integral_fun_mul_eq_mul_integral hχm.aestronglyMeasurable hYm.aestronglyMeasurable,
-      integral_increment_centered_mean hB ht, mul_zero]
+  have hΔm : Measurable (fun ω ↦ B t₁ ω - B t₀ ω) := by fun_prop
+  rw [(adapted_indepFun_increment (hB.isFilteredPreBrownian hBmeas) ht hχ).integral_mul_comp
+      (g := fun x ↦ x ^ 2 - ((t₁ : ℝ) - t₀)) (by fun_prop) hχm.aestronglyMeasurable
+      hΔm.aemeasurable,
+    integral_increment_centered_mean hB ht, mul_zero]
 
 /-- **Term I, per-`n` bound.** The `L²` norm² of the weighted fluctuation
 `∑ₖ w_{tₖ}·((ΔBₖ)² − Δtₖ)` is at most `∑ₖ C²·2(Δtₖ)²` for any adapted weight process `w`
@@ -78,7 +76,7 @@ private theorem weighted_fluctuation_integral_le
              - ((unifPart T n (k + 1) : ℝ) - unifPart T n k))) ^ 2 ∂μ
       ≤ ∑ k ∈ Finset.range n,
           C ^ 2 * (2 * ((unifPart T n (k + 1) : ℝ) - unifPart T n k) ^ 2) := by
-  haveI : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
+  have : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
   have hmono : Monotone (unifPart T n) := unifPart_mono T n
   set t : ℕ → ℝ≥0 := unifPart T n
   set Y : ℕ → Ω → ℝ := fun k ω ↦ (B (t (k + 1)) ω - B (t k) ω) ^ 2 - ((t (k + 1) : ℝ) - t k)
@@ -202,7 +200,7 @@ theorem tendsto_riemann_continuous {h : ℝ≥0 → ℝ} (hcont : Continuous h)
       atTop (𝓝 (∫ s in Set.Ioc 0 T, h s ∂ItoIntegralL2.timeMeasure)) := by
   have hC0 : (0 : ℝ) ≤ C := le_trans (abs_nonneg _) (hbdd 0 (by positivity))
   set ν := ItoIntegralL2.timeMeasure with hν
-  haveI hfin : IsFiniteMeasure (ν.restrict (Set.Ioc 0 T)) :=
+  have hfin : IsFiniteMeasure (ν.restrict (Set.Ioc 0 T)) :=
     ⟨by rw [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter, hν,
         ItoIntegralL2.timeMeasure_Ioc]; exact ENNReal.ofReal_lt_top⟩
   -- partition facts
@@ -483,7 +481,7 @@ theorem tendsto_weighted_qv_process_of_ae_continuous
                   * (B (unifPart T n (k + 1)) ω - B (unifPart T n k) ω) ^ 2
               - ∫ s in Set.Ioc 0 T, w s ω ∂ItoIntegralL2.timeMeasure) ^ 2 ∂μ)
       atTop (𝓝 0) := by
-  haveI : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
+  have : IsProbabilityMeasure μ := hB.isGaussianProcess.isProbabilityMeasure
   have hw_meas : ∀ s, Measurable (w s) := fun s ↦
     (hw_adapt s).mono ((ItoIntegralL2.natFiltration hBmeas).le s) le_rfl
   set Ssum : ℕ → Ω → ℝ := fun n ω ↦ ∑ k ∈ Finset.range n,

@@ -67,7 +67,8 @@ market makers, building on the constant-product substrate in
 * `v3PositionValue`: the value, in token Y, of a v3 position at any square-root price `s`:
   all token X below the range, the in-range reserves inside, all token Y above (v3 whitepaper
   §6.4.1, eqs. 6.29–6.30). `v3PositionValue_at_lower`, `v3PositionValue_at_upper`: the two
-  boundary cases, all X at `s = √p_a` and all Y at `s = √p_b`; `v3PositionValue_nonneg`.
+  boundary cases, all X at `s = √p_a` and all Y at `s = √p_b`; `v3PositionValue_nonneg`;
+  `v3PositionValue_const_mul`: linear in the liquidity `L`, for any real `c`.
 * `v3PositionValue_eq_coveredCall_of_le`, `v3PositionValue_eq_coveredCall_of_lt`,
   `coveredCall_sub_v3PositionValue`, `v3PositionValue_le_coveredCall`: **a v3 position is a
   covered call, less a smoothing term.** With `x_max = realReserveX L √p_a √p_b` the position's
@@ -356,14 +357,14 @@ noncomputable def v3PositionValue (L a b s : ℝ) : ℝ :=
 holding `realReserveX L a b` at price `a²`. -/
 theorem v3PositionValue_at_lower (L a b : ℝ) :
     v3PositionValue L a b a = a ^ 2 * realReserveX L a b := by
-  rw [v3PositionValue, if_pos le_rfl]
+  rw [v3PositionValue, ite_eq_left le_rfl]
 
 /-- **All token Y at the upper end** of the range: at `s = b` the in-range X reserve is zero and
 the position is worth its full Y holding `realReserveY L b a`. -/
 theorem v3PositionValue_at_upper (L : ℝ) {a b : ℝ} (hab : a < b) :
     v3PositionValue L a b b = realReserveY L b a := by
-  rw [v3PositionValue, if_neg (not_le.mpr hab), if_pos le_rfl, realReserveX, sub_self, mul_zero,
-    mul_zero, add_zero]
+  rw [v3PositionValue, ite_eq_right (not_le.mpr hab), ite_eq_left le_rfl, realReserveX, sub_self,
+    mul_zero, mul_zero, add_zero]
 
 /-- **A v3 position has nonnegative value** for `L ≥ 0` and `0 < a ≤ b`. -/
 theorem v3PositionValue_nonneg {L a b s : ℝ} (hL : 0 ≤ L) (ha : 0 < a) (hab : a ≤ b) :
@@ -377,13 +378,22 @@ theorem v3PositionValue_nonneg {L a b s : ℝ} (hL : 0 ≤ L) (ha : 0 < a) (hab 
       (mul_nonneg (sq_nonneg s) (mul_nonneg hL (sub_nonneg.mpr (one_div_le_one_div_of_le hs' hsb))))
   · exact mul_nonneg hL (by linarith)
 
+/-- **A v3 position's value is linear in its liquidity.** `realReserveX`/`realReserveY` are
+literally `L` times a function of the price range and current price alone, and the three-way case
+split in `v3PositionValue` does not depend on `L` — so scaling `L` by any real `c` (not just
+`c ≥ 0`) scales the position's value at every square-root price `s` by the same factor. -/
+theorem v3PositionValue_const_mul (c L a b s : ℝ) :
+    v3PositionValue (c * L) a b s = c * v3PositionValue L a b s := by
+  unfold v3PositionValue realReserveX realReserveY
+  split_ifs <;> ring
+
 /-- **Below the range the position is the covered call**: for `0 ≤ s ≤ a`,
 `v3PositionValue L a b s = x_max · (s² − max (s² − ab) 0)` with `x_max = realReserveX L a b`
 (here `s² ≤ ab`, so the call is out of the money). -/
 theorem v3PositionValue_eq_coveredCall_of_le {L a b s : ℝ} (ha : 0 < a) (hab : a ≤ b)
     (hs : 0 ≤ s) (hsa : s ≤ a) :
     v3PositionValue L a b s = realReserveX L a b * (s ^ 2 - max (s ^ 2 - a * b) 0) := by
-  rw [v3PositionValue, if_pos hsa,
+  rw [v3PositionValue, ite_eq_left hsa,
     max_eq_right (by nlinarith [mul_le_mul hsa hsa hs ha.le, mul_le_mul_of_nonneg_left hab ha.le]),
     sub_zero, mul_comm]
 
@@ -394,7 +404,7 @@ theorem v3PositionValue_eq_coveredCall_of_lt {L a b s : ℝ} (ha : 0 < a) (hab :
     (hbs : b < s) :
     v3PositionValue L a b s = realReserveX L a b * (s ^ 2 - max (s ^ 2 - a * b) 0) := by
   have hb : 0 < b := ha.trans_le hab
-  rw [v3PositionValue, if_neg (not_le.mpr (hab.trans_lt hbs)), if_neg (not_le.mpr hbs),
+  rw [v3PositionValue, ite_eq_right (not_le.mpr (hab.trans_lt hbs)), ite_eq_right (not_le.mpr hbs),
     max_eq_left (by nlinarith [mul_le_mul hbs.le hbs.le hb.le (hb.trans hbs).le,
       mul_le_mul_of_nonneg_right hab hb.le]),
     sub_sub_cancel, realReserveX, realReserveY]
@@ -431,7 +441,7 @@ theorem coveredCall_sub_v3PositionValue {L a b s : ℝ} (hL : 0 ≤ L) (ha : 0 <
     mul_nonneg hL (sub_nonneg.mpr (one_div_le_one_div_of_le ha (has.le.trans hsb)))
   have h1 := realReserveX_mul_sq_sub_inRange (L := L) ha.ne' hb.ne' hs.ne'
   have h2 := realReserveX_mul_mul_sub_inRange (L := L) ha.ne' hb.ne' hs.ne'
-  rw [v3PositionValue, if_neg (not_le.mpr has), if_pos hsb]
+  rw [v3PositionValue, ite_eq_right (not_le.mpr has), ite_eq_left hsb]
   rcases le_total (s ^ 2) (a * b) with h | h
   · rw [max_eq_right (sub_nonpos.mpr h), sub_zero, h1, min_eq_left]
     nlinarith [mul_nonneg hX (sub_nonneg.mpr h)]

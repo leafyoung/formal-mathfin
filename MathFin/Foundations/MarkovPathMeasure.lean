@@ -72,9 +72,9 @@ noncomputable def markovPathMeasure (init : PMF ι) (P : ι → PMF ι) :
   Kernel.trajMeasure init.toMeasure (markovTransitionKernel P)
 
 instance (init : PMF ι) (P : ι → PMF ι) :
-    IsProbabilityMeasure (markovPathMeasure init P) := by
-  unfold markovPathMeasure
-  infer_instance
+    IsProbabilityMeasure (markovPathMeasure init P) :=
+  inferInstanceAs (IsProbabilityMeasure
+    (Kernel.trajMeasure (X := fun _ : ℕ ↦ ι) init.toMeasure (markovTransitionKernel P)))
 
 /-- The `n`-cylinder along `path`: trajectories agreeing with `path` up to
 time `n` — the event `{X₀ = path 0, …, X_n = path n}`. -/
@@ -162,7 +162,7 @@ lemma markovPathMeasure_cylinder_succ (init : PMF ι) (P : ι → PMF ι)
     (measurable_frestrictLe n).prodMk (measurable_pi_apply (n + 1))
   have hprob : IsProbabilityMeasure
       ((markovPathMeasure init P).map (frestrictLe (π := fun _ ↦ ι) n)) :=
-    Measure.isProbabilityMeasure_map (measurable_frestrictLe n).aemeasurable
+    inferInstance
   unfold markovPathMeasure at hprob ⊢
   rw [← pairMap_preimage_singleton_prod path n,
     ← Measure.map_apply hpair

@@ -30,7 +30,7 @@ pricing-free base.
 * `setIntegral_gaussianPDFReal_eq_toReal` — the `∫ pdf = N(s).toReal` bridge
   every closed-form Gaussian integral factors through.
 * `gaussianPDFReal_zero_one_neg` — evenness of the standard-normal density
-  `ϕ(-z) = ϕ(z)`.
+  `ϕ(-z) = ϕ(z)`; `continuous_gaussianPDFReal` — a Gaussian density is continuous.
 * `gaussianReal_Ioi_toReal` — the right tail `Q(Ioi a) = Φ(-a)`.
 * `exp_mul_gaussianPDFReal_zero_one` — the completing-the-square shift.
 * `integral_exp_mul_gaussianPDFReal_Ioi` — the shifted Gaussian tail integral
@@ -86,7 +86,7 @@ lemma Phi_neg (x : ℝ) : Phi (-x) = 1 - Phi x := by
     rw [Measure.map_apply measurable_neg measurableSet_Iic, h_preimage]
   -- Ici x and Iio x partition univ; under NullSingletonClass, Q(Iio x) = Q(Iic x)
   have h_one_nz : (1 : ℝ≥0) ≠ 0 := one_ne_zero
-  haveI : NullSingletonClass (gaussianReal (0 : ℝ) 1) :=
+  have : NullSingletonClass (gaussianReal (0 : ℝ) 1) :=
     nullSingletonClass_gaussianReal h_one_nz
   have h_iio_iic : gaussianReal (0 : ℝ) 1 (Set.Iic x) = gaussianReal 0 1 (Set.Iio x) := by
     have h_decomp : Set.Iic x = Set.Iio x ∪ {x} := by
@@ -132,6 +132,11 @@ lemma gaussianPDFReal_zero_one_neg (z : ℝ) :
   unfold gaussianPDFReal
   congr 2
   ring
+
+/-- A Gaussian density is continuous. -/
+lemma continuous_gaussianPDFReal (μ : ℝ) (v : ℝ≥0) : Continuous (gaussianPDFReal μ v) := by
+  rw [gaussianPDFReal_def]
+  fun_prop
 
 /-! ### Tail probabilities of the standard normal -/
 

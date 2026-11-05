@@ -32,7 +32,7 @@ theorem normalized_putReward_eq_logPayoff (k h x : ℝ) (θ : (ℝ≥0 → ℝ) 
       Real.exp (-k*(θ ω : ℝ))*putPayoff
         (x+((k-h-1)*(θ ω : ℝ)+Real.sqrt 2*brownian (θ ω) ω)) := by
   unfold putReward MathFin.gbmValue putPayoff
-  rw [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2),show (2 : ℝ)/2 = 1 by norm_num,
+  rw [Real.sq_sqrt zero_le_two,show (2 : ℝ)/2 = 1 by norm_num,
     Real.exp_add x]
 
 /-- The discounted put slope between `b` and `x`, evaluated at the actual contact time `s` of the
@@ -49,7 +49,7 @@ theorem actualContactSlope_bound {k h : ℝ} (hk : 0 ≤ k) (b x : ℝ) (T : ℝ
 theorem actualContactSlope_measurable {k h : ℝ} (hk : 0 ≤ k) (b x : ℝ) (T : ℝ≥0) :
     @Measurable _ _ (completedMeasurableSpace gaussianLimit) inferInstance
       (actualContactSlope (h := h) hk b x T) := by
-  letI : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
+  let : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
   have hτ : Measurable (brownianUsualActualContactTime (h := h) hk x T) :=
     (brownianUsualActualContactRule (h := h) hk x T).measurable_time
   have hW : Measurable (fun ω => brownian (brownianUsualActualContactTime (h := h) hk x T ω) ω) :=
@@ -62,7 +62,7 @@ theorem actualContactSlope_measurable {k h : ℝ} (hk : 0 ≤ k) (b x : ℝ) (T 
 
 theorem actualContactSlope_integrable {k h : ℝ} (hk : 0 ≤ k) (b x : ℝ) (T : ℝ≥0) :
     Integrable (actualContactSlope (h := h) hk b x T) (completedMeasure gaussianLimit) := by
-  letI : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
+  let : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
   exact (integrable_const (1 : ℝ)).mono'
     (actualContactSlope_measurable hk b x T).aestronglyMeasurable
     (Eventually.of_forall (actualContactSlope_bound hk b x T))
@@ -104,7 +104,7 @@ theorem actualContactSlope_integral_tendsto {k h : ℝ} (hk : 0 < k) (hh : 0 ≤
       (𝓝[>] (canonicalLogBoundary k h (T : ℝ)))
       (𝓝 (-Real.exp (canonicalLogBoundary k h (T : ℝ)))) := by
   let μ := completedMeasure gaussianLimit
-  letI : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
+  let : MeasurableSpace (ℝ≥0 → ℝ) := completedMeasurableSpace gaussianLimit
   have hi := tendsto_integral_filter_of_dominated_convergence (μ := μ)
     (fun _ : (ℝ≥0 → ℝ) => (1 : ℝ))
     (Eventually.of_forall (fun x => (actualContactSlope_measurable (h := h) hk.le

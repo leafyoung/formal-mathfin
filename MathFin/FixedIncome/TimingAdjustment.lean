@@ -10,7 +10,8 @@ public import MathFin.Foundations.BrownianMartingale
 public import MathFin.Foundations.Numeraire
 public import MathFin.Foundations.WienerIntegralExpMoment
 public import MathFin.Foundations.Esscher
-public import MathFin.FixedIncome.ForwardMeasure
+public import MathFin.Foundations.ForwardMeasure
+public import MathFin.Foundations.WienerIntegralForwardMeasure
 public import MathFin.FixedIncome.HullWhiteCalibration
 
 /-!
@@ -52,15 +53,18 @@ or bond. That the futures price is `𝔼^Q[V]` and the forward price is `𝔼^T[
 identifications, not proved here.
 
 **The Hull–White instance.** The numéraire step does not depend on the two-driver form:
-`futuresForwardBasis_of_integral_mul_exp_neg` takes the covariance identity as a hypothesis.
-`futuresForwardBasis_gaussian` is its two-driver instance. The last section supplies a second
-instance in which the short rate and the bond are modelled: the Hull–White short rate `r_S` and
+`futuresForwardBasis_of_integral_mul_exp_neg` (`Foundations/ForwardMeasure`) takes the covariance
+identity as a hypothesis. `futuresForwardBasis_gaussian` is its two-driver instance. The last
+section supplies a second instance in which the short rate and the bond are modelled: the
+Hull–White short rate `r_S` and
 bank account `exp(∫₀ˢ r)` of `FixedIncome/HullWhiteCalibration`, in their Wiener representations
 (that they solve the SDE, and the time-order swap, are cited, not proved there). The covariance
 identity is now `integral_exp_mul_exp_neg_wienerIntegralLp`, with
 `Cov(r_S, ∫₀ˢ r) = σ²⟪e^{−κ(S−·)}, g⟫ = σ²B(S)²/2`. The `S`-forward measure
 is `forwardMeasure μ (exp ∘ bondRate)` — the library's one
-`T`-forward measure (`FixedIncome/ForwardMeasure`) at the bank account `exp(∫₀ˢ r)`.
+`T`-forward measure (`Foundations/ForwardMeasure`) at the bank account `exp(∫₀ˢ r)`; the law of a
+Wiener-represented rate under it is `hasLaw_forwardMeasure_wienerIntegralLp`
+(`Foundations/WienerIntegralForwardMeasure`).
 Under it `r_S ~ N(α(S) − σ²B(S)²/2, var)` (`HullWhite.shortRate_hasLaw_forwardMeasure`), so the
 futures–forward gap of the short rate is `𝔼[r_S] − 𝔼^S[r_S] = σ²B(S)²/2`
 (`HullWhite.integral_shortRate_sub_forwardMeasure`). For the curve-calibrated model
@@ -72,15 +76,12 @@ statements about the instantaneous short rate `r_S`, not about a futures contrac
 * `integral_mul_exp_neg_gaussian` — `𝔼[V·e^{−Y}] = 𝔼[V]·𝔼[e^{−Y}]·exp(−ρ s u)`.
 * `timingAdjustment_gaussian` — the exact lognormal identity underlying Hull's timing
   adjustment.
-* `futuresForwardBasis_of_integral_mul_exp_neg` — the numéraire step, for any law satisfying the
-  covariance identity.
 * `futuresForwardBasis_gaussian` — Bagaria §8.4's covariance identity, exact Gaussian form.
-* `HullWhite.integrable_one_div_exp_bondRate` (the `S`-forward measure is a probability measure),
-  `HullWhite.shortRate_hasLaw_forwardMeasure`,
-  `HullWhite.integral_shortRate_sub_forwardMeasure`,
+* `HullWhite.shortRate_hasLaw_forwardMeasure`, `HullWhite.integral_shortRate_sub_forwardMeasure`,
   `HullWhite.forwardMeasure_shortRate_mean_eq_forwardCurve` — the Hull–White `S`-forward measure,
-  the law of `r_S` under it, the futures–forward gap of the short rate, and the forward curve as
-  the `S`-forward mean of the calibrated short rate.
+  the law of `r_S` under it (an instance of `hasLaw_forwardMeasure_wienerIntegralLp`), the
+  futures–forward gap of the short rate, and the forward curve as the `S`-forward mean of the
+  calibrated short rate.
 
 ## References
 
@@ -168,34 +169,6 @@ theorem timingAdjustment_gaussian (m s n u ρ B₀ N₀ : ℝ)
   rw [hcore] at h
   exact mul_left_cancel₀ hN₀.ne' (h.trans (by ring))
 
-/-- **The numéraire step of the futures–forward basis, for any law.** Let the bank account be
-`e^{Y}` and pass to its `T`-forward measure (`forwardMeasure μ e^{Y}`, the measure of the bond
-that pays `1`, worth `𝔼[e^{−Y}]` today). If a payoff `V` satisfies the covariance identity
-`𝔼[V·e^{−Y}] = 𝔼[V]·𝔼[e^{−Y}]·e^{−c}` (hypothesis `hcov`), then
-
-  `𝔼^Q[V] = 𝔼^{Q^T}[V] · e^{c}`.
-
-`MathFin.forwardMeasure_price` plus `hcov`. The Gaussian content enters only through `hcov`:
-`futuresForwardBasis_gaussian` supplies it from two independent drivers and
-`HullWhite.integral_exp_mul_shortRate_eq_forwardMeasure` from the Wiener representation of a
-short-rate model. -/
-theorem futuresForwardBasis_of_integral_mul_exp_neg {V Y : Ω → ℝ} (c : ℝ)
-    (hY : Measurable Y) (hN₀ : 0 < ∫ ω, Real.exp (-Y ω) ∂μ)
-    (hcov : ∫ ω, V ω * Real.exp (-Y ω) ∂μ
-      = (∫ ω, V ω ∂μ) * (∫ ω, Real.exp (-Y ω) ∂μ) * Real.exp (-c)) :
-    ∫ ω, V ω ∂μ
-      = (∫ ω, V ω ∂(forwardMeasure μ fun ω ↦ Real.exp (Y ω))) * Real.exp c := by
-  have hinv : (fun ω ↦ 1 / Real.exp (Y ω)) = fun ω ↦ Real.exp (-Y ω) := by
-    funext ω; rw [one_div, Real.exp_neg]
-  have h := forwardMeasure_price (Q := μ) V hY.exp (fun ω ↦ Real.exp_pos _) (by rwa [hinv])
-  have hc : (fun ω ↦ V ω / Real.exp (Y ω)) = fun ω ↦ V ω * Real.exp (-Y ω) := by
-    funext ω; rw [Real.exp_neg, div_eq_mul_inv]
-  rw [hc, hcov, hinv] at h
-  have h' : ∫ ω, V ω ∂(forwardMeasure μ fun ω ↦ Real.exp (Y ω))
-      = (∫ ω, V ω ∂μ) * Real.exp (-c) :=
-    mul_left_cancel₀ hN₀.ne' (h.trans (by ring))
-  rw [h', mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero, mul_one]
-
 /-- **Bagaria's futures-forward basis** (Bagaria, §8.4, the unnumbered covariance identity
 preceding Worked case 8.5 — not the Ho–Lee basis approximation of eq. 8.9), exact Gaussian
 form. Read `μ` as the risk-neutral measure `Q` with bank account `e^{Y}`, `Y = ∫₀ᵀ r`, and pass
@@ -275,82 +248,24 @@ lemma inner_vasicekKernelLp_vasicekIntegratedKernelLp {κ : ℝ} (hκ : 0 < κ) 
 
 variable [IsProbabilityMeasure μ] {B : ℝ≥0 → Ω → ℝ}
 
-/-- The Hull–White bank account `exp(∫₀ˢ r)` has integrable inverse, the bond payoff
-`exp(−∫₀ˢ r)`, whose mean is the bond price `P(0,S)` (`bondPrice_eq`). With
-`forwardMeasure_isProbabilityMeasure` this makes the Hull–White `S`-forward measure
-`forwardMeasure μ (fun ω ↦ exp (bondRate … S ω))` a probability measure. -/
-theorem integrable_one_div_exp_bondRate (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
-    (κ σ r₀ : ℝ) (hκ : 0 < κ) (S : ℝ≥0) :
-    Integrable (fun ω ↦ 1 / Real.exp (bondRate hB θ κ σ r₀ hκ S ω)) μ := by
-  refine ((integrable_exp_mul_of_hasLaw (wienerIntegralLp_hasLaw_gaussian hB S
-    (vasicekIntegratedKernelLp hκ S)) (-σ)).const_mul
-    (Real.exp (-integratedMean θ κ r₀ S))).congr (ae_of_all _ fun ω ↦ ?_)
-  simp only [bondRate, one_div, ← Real.exp_neg, ← Real.exp_add]
-  congr 1
-  ring
-
-/-- **Futures = forward × exp(covariance), for the Hull–White short rate.** For every `t`,
-
-  `𝔼[e^{t r_S}] = 𝔼^S[e^{t r_S}] · e^{t σ² B(S)²/2}`,
-
-the instance of `futuresForwardBasis_of_integral_mul_exp_neg` with `V = e^{t r_S}`, bank account
-`exp(∫₀ˢ r)`, and covariance identity `integral_exp_mul_exp_neg_wienerIntegralLp`
-(`Cov(r_S, ∫₀ˢ r) = σ²B(S)²/2`). -/
-theorem integral_exp_mul_shortRate_eq_forwardMeasure (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
-    (κ σ r₀ : ℝ) (hκ : 0 < κ) (S : ℝ≥0) (t : ℝ) :
-    ∫ ω, Real.exp (t * integratedRate hB θ κ σ r₀ hκ S ω) ∂μ
-      = (∫ ω, Real.exp (t * integratedRate hB θ κ σ r₀ hκ S ω)
-          ∂forwardMeasure μ fun ω ↦ Real.exp (bondRate hB θ κ σ r₀ hκ S ω))
-        * Real.exp (t * (σ ^ 2 * vasicekBondB κ S ^ 2 / 2)) := by
-  have hV (ω : Ω) : t * integratedRate hB θ κ σ r₀ hκ S ω
-      = t * deterministic θ κ r₀ S
-        + t * σ * wienerIntegralLp B hB S (vasicekKernelLp κ hκ.le S) ω := by
-    rw [integratedRate]; ring
-  have key := integral_exp_mul_exp_neg_wienerIntegralLp hB S (t * deterministic θ κ r₀ S)
-    (integratedMean θ κ r₀ S) (t * σ) σ (vasicekKernelLp κ hκ.le S)
-    (vasicekIntegratedKernelLp hκ S)
-  rw [inner_vasicekKernelLp_vasicekIntegratedKernelLp hκ S,
-    show t * σ * σ * (vasicekBondB κ S ^ 2 / 2) = t * (σ ^ 2 * vasicekBondB κ S ^ 2 / 2) by ring]
-    at key
-  refine futuresForwardBasis_of_integral_mul_exp_neg (Y := bondRate hB θ κ σ r₀ hκ S)
-    (t * (σ ^ 2 * vasicekBondB κ S ^ 2 / 2)) ?_ ?_ ?_
-  · unfold bondRate
-    exact ((Lp.stronglyMeasurable _).measurable.const_mul σ).const_add _
-  · rw [bondPrice_eq]
-    exact Real.exp_pos _
-  · simp_rw [hV]
-    exact key
-
 /-- **The law of the Hull–White short rate under the `S`-forward measure**:
 
   `r_S ~ N(α(S) − σ²B(S)²/2, σ²(1 − e^{−2κS})/(2κ))`   under `Q^S`.
 
 Under `μ` the law is `N(α(S), var)` (`integratedRate_hasLaw_gaussian`); the change to the
-`S`-forward measure shifts the mean by `−Cov(r_S, ∫₀ˢ r) = −σ²B(S)²/2` and keeps the variance.
-The moment-generating function identity `integral_exp_mul_shortRate_eq_forwardMeasure` determines
-the law (`measure_eq_of_mgf_id_eq`). -/
+`S`-forward measure shifts the mean by `−Cov(r_S, ∫₀ˢ r) = −σ²B(S)²/2` and keeps the variance
+(`hasLaw_forwardMeasure_wienerIntegralLp`, with `Cov = σ²⟪e^{−κ(S−·)}, g⟫`). -/
 theorem shortRate_hasLaw_forwardMeasure (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
     (κ σ r₀ : ℝ) (hκ : 0 < κ) (S : ℝ≥0) :
     HasLaw (integratedRate hB θ κ σ r₀ hκ S)
       (gaussianReal (deterministic θ κ r₀ S - σ ^ 2 * vasicekBondB κ S ^ 2 / 2)
         (vasicekSDEVariance σ κ S).toNNReal)
       (forwardMeasure μ fun ω ↦ Real.exp (bondRate hB θ κ σ r₀ hκ S ω)) := by
-  haveI := forwardMeasure_isProbabilityMeasure (Q := μ) (fun _ ↦ Real.exp_pos _)
-    (integrable_one_div_exp_bondRate hB θ κ σ r₀ hκ S)
-  have hlaw := integratedRate_hasLaw_gaussian hB θ κ σ r₀ hκ S
-  have hae : AEMeasurable (integratedRate hB θ κ σ r₀ hκ S)
-      (forwardMeasure μ fun ω ↦ Real.exp (bondRate hB θ κ σ r₀ hκ S ω)) :=
-    hlaw.aemeasurable.mono_ac (withDensity_absolutelyContinuous _ _)
-  refine ⟨hae, (measure_eq_of_mgf_id_eq integrable_exp_mul_gaussianReal ?_).symm⟩
-  rw [mgf_id_gaussianReal, mgf_id_map hae]
-  funext t
-  have hμ := mgf_gaussianReal hlaw.map_eq t
-  have h := integral_exp_mul_shortRate_eq_forwardMeasure hB θ κ σ r₀ hκ S t
-  simp only [mgf] at hμ ⊢
-  rw [hμ, eq_comm, ← eq_div_iff (Real.exp_pos _).ne', ← Real.exp_sub] at h
-  rw [h]
-  congr 1
-  ring
+  have h := hasLaw_forwardMeasure_wienerIntegralLp hB S (deterministic θ κ r₀ S)
+    (integratedMean θ κ r₀ S) σ σ (deterministic θ κ r₀ S) (vasicekKernelLp κ hκ.le S)
+    (vasicekIntegratedKernelLp hκ S) (integratedRate_hasLaw_gaussian hB θ κ σ r₀ hκ S)
+  rwa [inner_vasicekKernelLp_vasicekIntegratedKernelLp hκ S,
+    show σ * σ * (vasicekBondB κ S ^ 2 / 2) = σ ^ 2 * vasicekBondB κ S ^ 2 / 2 by ring] at h
 
 /-- **The `S`-forward mean of the Hull–White short rate**:
 `𝔼^S[r_S] = α(S) − σ²B(S)²/2`. -/
