@@ -4280,6 +4280,13 @@
       "input_hash": "7c9d4a42c12b2b0c57e604c425e46257bce12576620a99fad33896497db59829",
       "verified_at_commit": "c047ee3"
     },
+    "mf-nelson-siegel-zero-rate-zero-decay-limit": {
+      "benchmark_file": "interest_rates.json",
+      "date": "2026-11-17",
+      "elapsed_s": 1.7,
+      "input_hash": "d76a5fecedc5dfbf6e9705986a726acf1064f928ea3d7a72e550653b5b962838",
+      "verified_at_commit": "5ce8af3"
+    },
     "mf-netting-exposure-subadditivity": {
       "benchmark_file": "credit.json",
       "date": "2026-11-16",

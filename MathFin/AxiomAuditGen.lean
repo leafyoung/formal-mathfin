@@ -3987,6 +3987,10 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.tendsto_mpUpperEdge_zero
 
+/-- info: 'MathFin.tendsto_nelsonSiegelZeroRate_zero_meanReversion' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.tendsto_nelsonSiegelZeroRate_zero_meanReversion
+
 /-- info: 'MathFin.tendsto_oneFactorLossFraction_ae' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.tendsto_oneFactorLossFraction_ae

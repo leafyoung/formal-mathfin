@@ -201,9 +201,9 @@ alignment:
       status: full 26 · wrapper 0 · reduced 1 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: "Several works: each entry's `reference` names its source (textbooks, papers and regulatory texts in mathematical finance)"
-      lean: 71 statements
+      lean: 72 statements
       module: benchmarks/interest_rates.json
-      status: full 69 · wrapper 0 · reduced 2 · placeholder 0
+      status: full 70 · wrapper 0 · reduced 2 · placeholder 0
       note: per-statement map in docs/coverage.md
     - source: "Several works: each entry's `reference` names its source (textbooks, papers and regulatory texts in mathematical finance)"
       lean: 83 statements
