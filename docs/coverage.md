@@ -36,13 +36,13 @@ proved in full; 18 library wrappers and 22 reduced cores unchanged).
   to the affine term structure at **linear loading**: `P(0,T) = A(T)·exp(−T·r₀)`, `B(T) = T`,
   `A(T) = exp(−∫₀ᵀ (T − s)·θ(s) ds + σ²T³/6)` (`hoLeeBondPrice_affine`; the price
   `hoLeeBondPrice_eq` and the Gaussian law `N(M(T), σ²T³/3)`
-  `hoLeeIntegratedRate_hasLaw_gaussian` behind it). The integrated rate is carried in its Wiener
+  `hoLeeBondRate_hasLaw_gaussian` behind it). The integrated rate is carried in its Wiener
   representation `M(T) + σ∫₀ᵀ (T − u) dB_u` with the kernel `T − u` **reused** from
   `VasicekZeroMeanReversionLimit.lean` (`brownianIntegratedKernelLp`,
   `brownianIntegratedKernelLp_integral_sq`) — the drift enters the mean only — so the price is
   one more instance of the Wiener bond-price lemma
-  `integral_exp_neg_add_mul_wienerIntegralLp` (after Vasicek, Hull–White and the two-piece
-  GSR). Constant drift: `M(T) = r₀T + θT²/2`, `A(T) = exp(−θT²/2 + σ²T³/6)`
+  `integral_exp_neg_add_mul_wienerIntegralLp` (after Vasicek, Hull–White, the two-piece
+  GSR and the driftless limit). Constant drift: `M(T) = r₀T + θT²/2`, `A(T) = exp(−θT²/2 + σ²T³/6)`
   (`hoLeeIntegratedMean_const`, `hoLeeBondA_const`); zero drift is the driftless model as
   random variables (`hoLeeBondRate_zero_drift`). The bridge theorem
   `tendsto_vasicekBondPrice_hoLee`: the Vasicek closed form at long-run level `θ/κ` — the

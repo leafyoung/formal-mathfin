@@ -31,8 +31,8 @@ The diffusion kernel `g(u) = T − u` and its variance `∫₀ᵀ g² = T³/3` a
 `Models/Rates/HullWhiteCalibration.lean` reuses `vasicekIntegratedKernelLp`: the drift
 enters the mean only, never the kernel. The price is the centred-Gaussian Laplace transform
 — the Wiener bond-price lemma `integral_exp_neg_add_mul_wienerIntegralLp` at
-`m = M(T)`, `c = σ`, `f = g`, whose Vasicek, Hull–White and two-piece GSR instances the
-library already carries.
+`m = M(T)`, `c = σ`, `f = g`, whose Vasicek, Hull–White, two-piece GSR and driftless-limit
+instances the library already carries.
 
 ## What the formalization forces
 
@@ -63,7 +63,7 @@ library already carries.
 ## Main definitions
 
 * `hoLeeIntegratedMean`: the deterministic mean of the integrated short rate,
-  `M(T) = r₀·T + ∫₀ᵀ (T − s)·θ(s) ds` — the B-form at linear loading `B = id`.
+  `M(T) = r₀·T + ∫₀ᵀ (T − s)·θ(s) ds`.
 * `hoLeeBondRate`: the integrated Ho–Lee short rate in its Wiener representation,
   `∫₀ᵀ r_s ds = M(T) + σ·∫₀ᵀ (T − u) dB_u`.
 * `hoLeeBondA`: the affine coefficient `A(T) = exp(−∫₀ᵀ (T − s)·θ(s) ds + σ²T³/6)`.
@@ -76,7 +76,7 @@ library already carries.
   `M(T) = r₀T + θT²/2`, `A(T) = exp(−θT²/2 + σ²T³/6)`.
 * `hoLeeBondRate_zero_drift` — at zero drift the integrated Ho–Lee rate is the driftless
   `brownianIntegratedRate`.
-* `hoLeeIntegratedRate_hasLaw_gaussian` — `∫₀ᵀ r_s ds ~ N(M(T), σ²T³/3)`.
+* `hoLeeBondRate_hasLaw_gaussian` — `∫₀ᵀ r_s ds ~ N(M(T), σ²T³/3)`.
 * `hoLeeBondPrice_eq` — `𝔼[exp(−∫₀ᵀ r_s ds)] = exp(−M(T) + σ²T³/6)`, the Wiener bond-price
   lemma at the kernel `T − u`.
 * `hoLeeBondPrice_affine` — `P(0,T) = A(T)·exp(−T·r₀)`, the affine term structure with
@@ -113,8 +113,9 @@ variable {Ω : Type*} {mΩ : MeasurableSpace Ω}
 /-! ### The integrated mean and the affine coefficient -/
 
 /-- The deterministic mean of the integrated Ho–Lee short rate,
-`M(T) = ∫₀ᵀ (r₀ + ∫₀ˢ θ) ds = r₀·T + ∫₀ᵀ (T − s)·θ(s) ds` — the B-form of
-`HullWhite.integratedMean` at the linear loading `B = id`. -/
+`M(T) = ∫₀ᵀ (r₀ + ∫₀ˢ θ) ds`, written in its `(T − s)`-weighted form
+`r₀·T + ∫₀ᵀ (T − s)·θ(s) ds` after the deterministic time-order swap (cited, not proved — the
+same modelling bridge as `vasicekIntegratedRate`). -/
 noncomputable def hoLeeIntegratedMean (θ : ℝ → ℝ) (r₀ T : ℝ) : ℝ :=
   r₀ * T + ∫ s in (0 : ℝ)..T, (T - s) * θ s
 
@@ -156,7 +157,7 @@ lemma hoLeeBondRate_zero_drift (hB : IsPreBrownianReal B μ) (σ r₀ : ℝ) (T 
 `∫₀ᵀ r_s ds = M(T) + σ∫₀ᵀ (T − u) dB_u` has law `N(M(T), σ²T³/3)` — the affine map
 `x ↦ M(T) + σx` of the centred Wiener integral of the kernel `T − u`, whose variance
 is the kernel's `L²`-norm-squared `T³/3`. -/
-theorem hoLeeIntegratedRate_hasLaw_gaussian (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
+theorem hoLeeBondRate_hasLaw_gaussian (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
     (σ r₀ : ℝ) (T : ℝ≥0) :
     HasLaw (hoLeeBondRate hB θ σ r₀ T)
       (gaussianReal (hoLeeIntegratedMean θ r₀ (T : ℝ))

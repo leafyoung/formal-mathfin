@@ -3203,9 +3203,9 @@ by the same Wiener bond-price lemma as Vasicek, Hull–White and the two-piece G
 the Vasicek closed form at level `θ/κ` tends to it as `κ → 0⁺` (the drift survives vanishing
 mean reversion; the substitution at `κ = 0` would give `exp(−θT)` instead). -/
 
-/-- info: 'MathFin.hoLeeIntegratedRate_hasLaw_gaussian' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'MathFin.hoLeeBondRate_hasLaw_gaussian' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
-#print axioms MathFin.hoLeeIntegratedRate_hasLaw_gaussian
+#print axioms MathFin.hoLeeBondRate_hasLaw_gaussian
 
 /-- info: 'MathFin.hoLeeBondPrice_affine' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
