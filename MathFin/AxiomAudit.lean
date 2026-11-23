@@ -3192,3 +3192,25 @@ end MathFin.AxiomAudit
 /-- info: 'MathFin.chainPrediction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.chainPrediction
+
+/-! ## The Ho–Lee bond price — the affine term structure at linear loading
+
+`HoLeeBondPrice.lean`: the driftless member of the Gaussian short-rate family, priced by the
+same Wiener bond-price lemma as Vasicek, Hull–White and the two-piece GSR
+(`integral_exp_neg_add_mul_wienerIntegralLp` at the kernel `T − u`, reused from
+`VasicekZeroMeanReversionLimit.lean`). `hoLeeBondPrice_affine` is the affine form
+`A(T)·exp(−T·r₀)` at linear loading `B(T) = T`; `tendsto_vasicekBondPrice_hoLee` is the bridge:
+the Vasicek closed form at level `θ/κ` tends to it as `κ → 0⁺` (the drift survives vanishing
+mean reversion; the substitution at `κ = 0` would give `exp(−θT)` instead). -/
+
+/-- info: 'MathFin.hoLeeIntegratedRate_hasLaw_gaussian' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.hoLeeIntegratedRate_hasLaw_gaussian
+
+/-- info: 'MathFin.hoLeeBondPrice_affine' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.hoLeeBondPrice_affine
+
+/-- info: 'MathFin.tendsto_vasicekBondPrice_hoLee' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.tendsto_vasicekBondPrice_hoLee

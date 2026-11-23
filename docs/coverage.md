@@ -26,6 +26,37 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### The Ho–Lee zero-coupon bond price (2026-11-23)
+
+One `full` entry in `benchmarks/interest_rates.json`. Corpus 906 → 907 on this tree (the full
+count and the reduced-core split recomputed in `README.md` below).
+
+- **`mf-ho-lee-bond-price`** (MathFin/Models/Rates/HoLeeBondPrice.lean): the zero-coupon bond
+  price `P(0,T) = 𝔼[exp(−∫₀ᵀ r_s ds)]` of the Ho–Lee short rate `dr = θ(t)dt + σdW`, collapsing
+  to the affine term structure at **linear loading**: `P(0,T) = A(T)·exp(−T·r₀)`, `B(T) = T`,
+  `A(T) = exp(−∫₀ᵀ (T − s)·θ(s) ds + σ²T³/6)` (`hoLeeBondPrice_affine`; the price
+  `hoLeeBondPrice_eq` and the Gaussian law `N(M(T), σ²T³/3)`
+  `hoLeeIntegratedRate_hasLaw_gaussian` behind it). The integrated rate is carried in its Wiener
+  representation `M(T) + σ∫₀ᵀ (T − u) dB_u` with the kernel `T − u` **reused** from
+  `VasicekZeroMeanReversionLimit.lean` (`brownianIntegratedKernelLp`,
+  `brownianIntegratedKernelLp_integral_sq`) — the drift enters the mean only — so the price is
+  one more instance of the Wiener bond-price lemma
+  `integral_exp_neg_add_mul_wienerIntegralLp` (after Vasicek, Hull–White and the two-piece
+  GSR). Constant drift: `M(T) = r₀T + θT²/2`, `A(T) = exp(−θT²/2 + σ²T³/6)`
+  (`hoLeeIntegratedMean_const`, `hoLeeBondA_const`); zero drift is the driftless model as
+  random variables (`hoLeeBondRate_zero_drift`). The bridge theorem
+  `tendsto_vasicekBondPrice_hoLee`: the Vasicek closed form at long-run level `θ/κ` — the
+  rescaling that lets the drift `κ(θ/κ − r) → θ` survive vanishing mean reversion — tends to
+  the Ho–Lee price as `κ → 0⁺`; at level `0` the limit is the driftless price instead
+  (the level, not the limit, carries the drift). Cited: Ho & Lee (1986) (the model's origin,
+  its binomial precursor), Hull *OFOD* 11th ed. §32.2 (the continuous-time model),
+  Brigo–Mercurio (2006), QuantLib `Vasicek::A` (vasicek.cpp; the `a → 0` branch is this price
+  at `λ = 0`). Disclosed out of scope: the short rate solves its SDE and the time-order swap
+  behind the integrated rate are cited, not proved (the same modelling bridge as the Vasicek
+  and Hull–White entries); no change of measure is built; the limit theorem is a limit of
+  closed forms, not of random variables; the drift integral is Lean's totalized interval
+  integral, mirroring `HullWhite.bondPrice_eq` (honest for integrable drifts). Axioms-clean,
+  `full`.
 ### Marchenko-Pastur support edges (2026-11-08)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 805 → 806 on the merged

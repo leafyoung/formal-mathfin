@@ -643,6 +643,38 @@
       }
     },
     {
+      "id": "mf-ho-lee-bond-price",
+      "name": "Ho–Lee Zero-Coupon Bond Price (Affine Term Structure at Linear Loading)",
+      "domain": "mathematical_finance",
+      "description": "The Ho–Lee zero-coupon bond price P(0,T) = E[exp(-∫₀ᵀ r_s ds)] for the short rate dr = θ(t)dt + σdW, the expectation taken under the probability measure that carries the Brownian driver (read as the pricing measure; no change of measure is built). The short rate is carried in its Wiener-integral representation ∫₀ᵀ r_s ds = M(T) + σ∫₀ᵀ (T − u) dB_u with M(T) = r₀·T + ∫₀ᵀ (T − s)·θ(s) ds; that it solves the short-rate SDE, and the swap of time integrals behind the integrated rate, are cited, not proved (the same modelling bridge as the Vasicek and Hull–White entries). The diffusion kernel T − u is the driftless kernel already used by mf-vasicek-zero-meanreversion-crosscheck (the drift enters the mean only), so the integrated rate is Gaussian with variance σ²T³/3 and the bond price is a Gaussian Laplace transform collapsing to the AFFINE TERM STRUCTURE at linear loading P(0,T) = A(T)·exp(−T·r₀), B(T) = T, A(T) = exp(−∫₀ᵀ (T − s)·θ(s) ds + σ²T³/6); for constant drift θ the closed form is P(0,T) = exp(−r₀T − θT²/2 + σ²T³/6) (hoLeeIntegratedMean_const, hoLeeBondA_const). The entry tendsto_vasicekBondPrice_hoLee in the same module ties this price to the Vasicek family: the Vasicek closed form at long-run level θ/κ tends to it as κ → 0⁺, the level rescaling that lets the drift survive vanishing mean reversion.",
+      "code": {
+        "lean": "import MathFin.Models.Rates.HoLeeBondPrice\n\nopen MeasureTheory ProbabilityTheory\nopen scoped NNReal\nopen MathFin MathFin.WienerIntegralL2\n\n/-- **Ho–Lee zero-coupon bond price — the affine term structure at linear loading.**\nThe expectation `P(0,T) = 𝔼[exp(−∫₀ᵀ r_s ds)]` under the measure carrying `B` (read as the pricing measure) of one unit paid\nat `T` under the Ho–Lee short-rate model `dr = θ(t)dt + σdW` separates the initial rate into the\nexponential-affine form `P(0,T) = A(T)·exp(−T·r₀)`, the linear loading `B(T) = T`.\nRe-exports `MathFin.hoLeeBondPrice_affine`. -/\ntheorem ho_lee_bond_price_affine\n    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]\n    {B : ℝ≥0 → Ω → ℝ} (hB : IsPreBrownianReal B μ)\n    (θ : ℝ → ℝ) (σ r₀ : ℝ) (T : ℝ≥0) :\n    ∫ ω, Real.exp (-(hoLeeBondRate hB θ σ r₀ T ω)) ∂μ\n      = hoLeeBondPrice θ σ (T : ℝ) r₀ :=\n  MathFin.hoLeeBondPrice_affine hB θ σ r₀ T\n"
+      },
+      "metadata": {
+        "chapter": 12,
+        "reference": "Ho and Lee 1986, Term structure movements and pricing interest rate contingent claims, J. Finance 41(5) 1011-1029; the continuous-time model and bond price as in Hull, Options, Futures, and Other Derivatives, 11th ed., §32.2",
+        "citations": [
+          {
+            "key": "HoLee1986"
+          },
+          {
+            "key": "Hull",
+            "locator": "§32.2"
+          },
+          {
+            "key": "BrigoMercurio2006"
+          },
+          {
+            "key": "QuantLib",
+            "locator": "Vasicek::A (vasicek.cpp)"
+          }
+        ],
+        "difficulty": "intermediate",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof. Re-export from MathFin.Models.Rates.HoLeeBondPrice (hoLeeBondPrice_affine). The integrated short rate is carried in its Wiener representation M(T) + sigma*integral_0^T (T-u) dB_u (the time-order swap is the modelling bridge, cited not proved, parity with mf-vasicek-bond-price); the kernel T - u and its variance integral T^3/3 are REUSED from VasicekZeroMeanReversionLimit.lean (brownianIntegratedKernelLp, brownianIntegratedKernelLp_integral_sq) -- the drift enters the mean only. The Gaussian law N(M, sigma^2 T^3/3) (hoLeeIntegratedRate_hasLaw_gaussian) and the price exp(-M + sigma^2 T^3/6) are the centred-Gaussian Laplace transform: the Wiener bond-price lemma integral_exp_neg_add_mul_wienerIntegralLp at m = M(T), c = sigma, f = T - u. Constant drift gives M(T) = r0*T + theta*T^2/2 and A(T) = exp(-theta*T^2/2 + sigma^2*T^3/6) (hoLeeIntegratedMean_const, hoLeeBondA_const). The bridge theorem tendsto_vasicekBondPrice_hoLee: the Vasicek closed form at level theta/kappa tends to this price as kappa -> 0+ (a limit of closed forms; no convergence of random variables claimed). The drift integral int_0^T (T-s)*theta(s) ds is Lean's totalized interval integral, mirroring HullWhite.bondPrice_eq; for an integrable (e.g. continuous) drift it is the model's mean. Axioms-clean: [propext, Classical.choice, Quot.sound]."
+      }
+    },
+    {
       "id": "mf-cir-bond-loading-riccati",
       "name": "CIR Affine Loading B(T) Solves the Riccati Equation",
       "domain": "mathematical_finance",
