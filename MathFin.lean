@@ -411,6 +411,7 @@ public import MathFin.Models.ModelFree.VarianceSwapLimit
 -- Variance-swap drift immunity: realized variance → σ²T in L² for ANY drift
 -- (consumes ItoProcessQV; strengthens phase 34 from expectation-level to L²)
 public import MathFin.Models.ModelFree.VarianceSwapDriftImmunity
+public import MathFin.Models.Rates.HoLeeBondPrice
 public import MathFin.Models.Rates.HullWhiteCalibration
 public import MathFin.Models.Rates.HullWhiteBondPriceAt
 public import MathFin.Models.BlackScholes.MonteCarloPricer

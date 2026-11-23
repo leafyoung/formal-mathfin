@@ -138,6 +138,40 @@ at linear loading: the price of the bond (`hoLeeBondPrice_affine`). -/
 noncomputable def hoLeeBondPrice (θ : ℝ → ℝ) (σ T r : ℝ) : ℝ :=
   hoLeeBondA θ σ T * Real.exp (-(T * r))
 
+/-! ### The integrated rate: zero drift, Gaussian law, and the price -/
+
+omit [IsProbabilityMeasure μ] in
+/-- **Zero drift is the driftless model**: the integrated Ho–Lee rate at `θ ≡ 0` is the
+integrated driftless Gaussian short rate `brownianIntegratedRate` of
+`Models/Rates/VasicekZeroMeanReversionLimit.lean`, as random variables — the kernel
+`T − u` is shared by construction, and the mean reduces to `r₀·T`. -/
+lemma hoLeeBondRate_zero_drift (hB : IsPreBrownianReal B μ) (σ r₀ : ℝ) (T : ℝ≥0) :
+    hoLeeBondRate hB (fun _ ↦ 0) σ r₀ T = brownianIntegratedRate hB r₀ σ T := by
+  funext ω
+  rw [hoLeeBondRate, brownianIntegratedRate, hoLeeIntegratedMean]
+  simp
+
+/-- **The integrated Ho–Lee short rate is Gaussian.** The integrated rate
+`∫₀ᵀ r_s ds = M(T) + σ∫₀ᵀ (T − u) dB_u` has law `N(M(T), σ²T³/3)` — the affine map
+`x ↦ M(T) + σx` of the centred Wiener integral of the kernel `T − u`, whose variance
+is the kernel's `L²`-norm-squared `T³/3`. -/
+theorem hoLeeIntegratedRate_hasLaw_gaussian (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ)
+    (σ r₀ : ℝ) (T : ℝ≥0) :
+    HasLaw (hoLeeBondRate hB θ σ r₀ T)
+      (gaussianReal (hoLeeIntegratedMean θ r₀ (T : ℝ))
+        (σ ^ 2 * ((T : ℝ) ^ 3 / 3)).toNNReal) μ := by
+  have hW := wienerIntegralLp_hasLaw_gaussian_of_integral_sq hB T (brownianIntegratedKernelLp T)
+    (brownianIntegratedKernelLp_integral_sq T)
+  have hV : (0 : ℝ) ≤ (T : ℝ) ^ 3 / 3 := by positivity
+  have hShift := gaussianReal_const_add (gaussianReal_const_mul hW σ)
+    (hoLeeIntegratedMean θ r₀ (T : ℝ))
+  convert hShift using 2
+  · rfl
+  · ring
+  · refine NNReal.coe_injective ?_
+    rw [Real.coe_toNNReal _ (mul_nonneg (sq_nonneg σ) hV), NNReal.coe_mul, NNReal.coe_mk,
+      Real.coe_toNNReal _ hV]
+
 /-! ### The constant drift, in closed form -/
 
 /-- **The drift loading of a constant Ho–Lee drift**: `∫₀ᵀ (T − s)·θ ds = θ·T²/2`, by the FTC
@@ -162,5 +196,63 @@ term `θT²/2` plus the Itô correction `σ²T³/6` of the variance `σ²T³/3`.
 lemma hoLeeBondA_const (θ σ T : ℝ) :
     hoLeeBondA (fun _ ↦ θ) σ T = Real.exp (-(θ * T ^ 2 / 2) + σ ^ 2 * T ^ 3 / 6) := by
   rw [hoLeeBondA, integral_const_sub_mul]
+
+/-- **The Ho–Lee zero-coupon bond price.** The expectation under `μ` (read as the pricing
+measure; no change of measure is built, mirroring `vasicekBondPrice_eq`) of one unit at `T`,
+
+  `P(0, T) = 𝔼[exp(−∫₀ᵀ r_s ds)] = exp(−M(T) + σ²T³/6)`,
+
+is the Gaussian Laplace transform of the integrated short rate: the Wiener bond-price lemma
+`integral_exp_neg_add_mul_wienerIntegralLp` at `m = M(T)`, `c = σ` and the kernel `T − u`,
+whose squared `L²`-norm is `T³/3` (`brownianIntegratedKernelLp_integral_sq`). -/
+theorem hoLeeBondPrice_eq (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ) (σ r₀ : ℝ) (T : ℝ≥0) :
+    ∫ ω, Real.exp (-(hoLeeBondRate hB θ σ r₀ T ω)) ∂μ
+      = Real.exp (-(hoLeeIntegratedMean θ r₀ (T : ℝ)) + σ ^ 2 * (T : ℝ) ^ 3 / 6) := by
+  rw [show (fun ω ↦ Real.exp (-(hoLeeBondRate hB θ σ r₀ T ω))) = fun ω ↦
+      Real.exp (-(hoLeeIntegratedMean θ r₀ (T : ℝ)
+        + σ * wienerIntegralLp B hB T (brownianIntegratedKernelLp T) ω)) from rfl,
+    integral_exp_neg_add_mul_wienerIntegralLp, brownianIntegratedKernelLp_integral_sq]
+  congr 1
+  ring
+
+/-- **The affine term structure at linear loading**: the Ho–Lee bond price separates the
+initial short rate into `P(0,T) = A(T)·exp(−T·r₀)` with `B(T) = T` — the exponential-affine
+dependence on `r₀`, the defining shape of an affine term-structure model, at the linear
+loading that distinguishes Ho–Lee from Vasicek and Hull–White. -/
+theorem hoLeeBondPrice_affine (hB : IsPreBrownianReal B μ) (θ : ℝ → ℝ) (σ r₀ : ℝ)
+    (T : ℝ≥0) :
+    ∫ ω, Real.exp (-(hoLeeBondRate hB θ σ r₀ T ω)) ∂μ
+      = hoLeeBondPrice θ σ (T : ℝ) r₀ := by
+  rw [hoLeeBondPrice_eq hB θ σ r₀ T, hoLeeBondPrice, hoLeeBondA, hoLeeIntegratedMean,
+    ← Real.exp_add]
+  congr 1
+  ring
+
+/-! ### The vanishing-mean-reversion limit -/
+
+/-- **Ho–Lee is the vanishing-mean-reversion limit at rescaled level.** The Vasicek closed
+form `exp(−M(T) + σ²V(T)/2)` (`vasicekBondPrice_eq`, for each `κ > 0` the `μ`-expectation of
+`exp(−∫r)`) at long-run level `θ/κ` — the level that makes the drift `κ·(θ/κ − r) → θ`
+survive vanishing mean reversion — tends as `κ → 0⁺` to the Ho–Lee price of constant drift
+`θ`: the mean splits as `M = r₀·B(T) + θ·(T − B(T))/κ`, whose second loading converges to
+`T²/2` (`tendsto_vasicekBondB_secondOrder_zero_meanReversion`). At level `0` instead, the
+limit is the driftless price `brownianBondPrice_eq`
+(`tendsto_vasicekBondPrice_brownianBondPrice`): the level, not the limit, carries the drift. -/
+theorem tendsto_vasicekBondPrice_hoLee (r₀ θ σ T : ℝ) :
+    Tendsto (fun κ ↦ Real.exp (-(vasicekIntegratedMean r₀ (θ / κ) κ T)
+        + σ ^ 2 * vasicekBondV κ T / 2))
+      (𝓝[>] 0) (𝓝 (hoLeeBondPrice (fun _ ↦ θ) σ T r₀)) := by
+  rw [hoLeeBondPrice, hoLeeBondA_const, ← Real.exp_add]
+  have hB := (tendsto_vasicekBondB_zero_meanReversion T).mono_left (nhdsGT_le_nhdsNE 0)
+  have hmean := ((tendsto_const_nhds (x := r₀)).mul hB).add
+    ((tendsto_const_nhds (x := θ)).mul
+      (tendsto_vasicekBondB_secondOrder_zero_meanReversion T))
+  have h := (hmean.neg.add
+    (((tendsto_const_nhds (x := σ ^ 2)).mul
+      (tendsto_vasicekBondV_zero_meanReversion T)).div_const 2)).rexp
+  convert h using 3
+  · simp only [vasicekIntegratedMean]
+    ring
+  · ring
 
 end MathFin
