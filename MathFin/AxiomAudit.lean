@@ -3195,8 +3195,8 @@ end MathFin.AxiomAudit
 
 /-! ## The Ho–Lee bond price — the affine term structure at linear loading
 
-`HoLeeBondPrice.lean`: the driftless member of the Gaussian short-rate family, priced by the
-same Wiener bond-price lemma as Vasicek, Hull–White and the two-piece GSR
+`HoLeeBondPrice.lean`: the zero-mean-reversion member of the Gaussian short-rate family, priced
+by the same Wiener bond-price lemma as Vasicek, Hull–White and the two-piece GSR
 (`integral_exp_neg_add_mul_wienerIntegralLp` at the kernel `T − u`, reused from
 `VasicekZeroMeanReversionLimit.lean`). `hoLeeBondPrice_affine` is the affine form
 `A(T)·exp(−T·r₀)` at linear loading `B(T) = T`; `tendsto_vasicekBondPrice_hoLee` is the bridge:

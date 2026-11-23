@@ -28,8 +28,8 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### The Ho–Lee zero-coupon bond price (2026-11-23)
 
-One `full` entry in `benchmarks/interest_rates.json`. Corpus 906 → 907 on this tree (the full
-count and the reduced-core split recomputed in `README.md` below).
+One `full` entry in `benchmarks/interest_rates.json`. Corpus 906 → 907 on this tree (866 → 867
+proved in full; 18 library wrappers and 22 reduced cores unchanged).
 
 - **`mf-ho-lee-bond-price`** (MathFin/Models/Rates/HoLeeBondPrice.lean): the zero-coupon bond
   price `P(0,T) = 𝔼[exp(−∫₀ᵀ r_s ds)]` of the Ho–Lee short rate `dr = θ(t)dt + σdW`, collapsing

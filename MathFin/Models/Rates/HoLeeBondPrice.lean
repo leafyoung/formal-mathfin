@@ -71,6 +71,7 @@ library already carries.
 
 ## Main results
 
+* `hoLeeDriftLoading_const` — the drift-loading integral `∫₀ᵀ (T − s)·θ ds = θT²/2`.
 * `hoLeeIntegratedMean_const`, `hoLeeBondA_const` — the constant-drift closed forms
   `M(T) = r₀T + θT²/2`, `A(T) = exp(−θT²/2 + σ²T³/6)`.
 * `hoLeeBondRate_zero_drift` — at zero drift the integrated Ho–Lee rate is the driftless
@@ -177,7 +178,7 @@ theorem hoLeeIntegratedRate_hasLaw_gaussian (hB : IsPreBrownianReal B μ) (θ : 
 /-- **The drift loading of a constant Ho–Lee drift**: `∫₀ᵀ (T − s)·θ ds = θ·T²/2`, by the FTC
 with the antiderivative `θ·(T·s − s²/2)` — the `(T − ·)`-weighted mass of the drift, the
 quantity `A(T)` discounts. -/
-lemma integral_const_sub_mul (θ T : ℝ) :
+lemma hoLeeDriftLoading_const (θ T : ℝ) :
     ∫ s in (0 : ℝ)..T, (T - s) * θ = θ * T ^ 2 / 2 := by
   open intervalIntegral in
   rw [integral_comp_sub_left (f := fun y : ℝ ↦ y * θ), intervalIntegral.integral_mul_const,
@@ -189,13 +190,13 @@ lemma integral_const_sub_mul (θ T : ℝ) :
 `∫₀ᵀ ∫₀ˢ θ du ds` of the short rate `r_s = r₀ + θ·s + σ·B_s`. -/
 lemma hoLeeIntegratedMean_const (θ r₀ T : ℝ) :
     hoLeeIntegratedMean (fun _ ↦ θ) r₀ T = r₀ * T + θ * T ^ 2 / 2 := by
-  rw [hoLeeIntegratedMean, integral_const_sub_mul]
+  rw [hoLeeIntegratedMean, hoLeeDriftLoading_const]
 
 /-- **The constant-drift affine coefficient**: `A(T) = exp(−θT²/2 + σ²T³/6)` — the level
 term `θT²/2` plus the Itô correction `σ²T³/6` of the variance `σ²T³/3`. -/
 lemma hoLeeBondA_const (θ σ T : ℝ) :
     hoLeeBondA (fun _ ↦ θ) σ T = Real.exp (-(θ * T ^ 2 / 2) + σ ^ 2 * T ^ 3 / 6) := by
-  rw [hoLeeBondA, integral_const_sub_mul]
+  rw [hoLeeBondA, hoLeeDriftLoading_const]
 
 /-- **The Ho–Lee zero-coupon bond price.** The expectation under `μ` (read as the pricing
 measure; no change of measure is built, mirroring `vasicekBondPrice_eq`) of one unit at `T`,
