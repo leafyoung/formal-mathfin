@@ -57,6 +57,7 @@ proved in full; 18 library wrappers and 22 reduced cores unchanged).
   closed forms, not of random variables; the drift integral is Lean's totalized interval
   integral, mirroring `HullWhite.bondPrice_eq` (honest for integrable drifts). Axioms-clean,
   `full`.
+
 ### Marchenko-Pastur support edges (2026-11-08)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 805 → 806 on the merged
