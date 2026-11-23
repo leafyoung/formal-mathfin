@@ -3265,6 +3265,13 @@
       "input_hash": "c4b8d396b37c23660f490ca1f28791721ea7e5ffad0c137246f5f2628814a353",
       "verified_at_commit": "9a596c5"
     },
+    "mf-ho-lee-bond-price": {
+      "benchmark_file": "interest_rates.json",
+      "date": "2026-11-23",
+      "elapsed_s": 4.9,
+      "input_hash": "8327c77df9e2f37803a961d43cb618d7d14e5559d9cd712fd5fc9155d99c32d0",
+      "verified_at_commit": "98633d2"
+    },
     "mf-hoeffding-bivariate-normal": {
       "benchmark_file": "stochastic_foundations.json",
       "date": "2026-11-16",
