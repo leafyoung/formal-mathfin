@@ -11,9 +11,9 @@ public import MathFin.Models.Rates.VasicekZeroMeanReversionLimit
 /-!
 # The Ho–Lee zero-coupon bond price — the affine term structure at linear loading
 
-The Ho–Lee short rate `dr = θ(t)dt + σdW` is the driftless member of the Gaussian short-rate
-family: the mean-reversion coefficient is zero, so the exponential kernel of Vasicek and
-Hull–White degenerates to the constant `1` and the affine loading is **linear**, `B(T) = T`.
+The Ho–Lee short rate `dr = θ(t)dt + σdW` is the zero-mean-reversion member of the Gaussian
+short-rate family: the mean-reversion coefficient is zero, so the exponential kernel of Vasicek
+and Hull–White degenerates to the constant `1` and the affine loading is **linear**, `B(T) = T`.
 This file prices the zero-coupon bond under it,
 
   `P(0, T) = 𝔼[exp(−∫₀ᵀ r_s ds)] = A(T)·exp(−T·r₀)`,
