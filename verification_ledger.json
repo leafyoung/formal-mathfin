@@ -3268,9 +3268,9 @@
     "mf-ho-lee-bond-price": {
       "benchmark_file": "interest_rates.json",
       "date": "2026-11-23",
-      "elapsed_s": 4.2,
-      "input_hash": "6dbaf9d5cf363a5000ce9b2e10902950878f2e2a986a9b713c9540b209141d4c",
-      "verified_at_commit": "48202f6"
+      "elapsed_s": 4.1,
+      "input_hash": "5a30960b5748dd4308aaf4037fbe484a1ba8b1de535d853b092073d0ba73d5f1",
+      "verified_at_commit": "4ab002e"
     },
     "mf-hoeffding-bivariate-normal": {
       "benchmark_file": "stochastic_foundations.json",
