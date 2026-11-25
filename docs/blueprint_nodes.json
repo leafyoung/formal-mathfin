@@ -1065,18 +1065,22 @@
   "label": "thm:interest-rate-parity",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Forwards/FxForwardParity.lean"},
- {"uses": [],
-  "title": "Separation theorem for closed convex cones",
+ {"uses":
+  ["def:market",
+   "def:contract",
+   "def:pricing-functional",
+   "def:contract-value"],
+  "title": "Balancer constant-mean AMM",
   "text":
-  "In $\\mathbb{R}^\\iota$ with $\\iota$ finite, if $C$ is a closed convex cone\n  and $x_0 \\notin C$, there is $p$ with $\\langle p, v\\rangle \\le 0$ for all $v \\in C$ and\n  $\\langle p, x_0\\rangle > 0$. The engine of the finite-state representation of coherent risk\n  measures. Finite dimension only.",
-  "name": "MathFin.exists_separating_of_not_mem_cone",
-  "module": "MathFin.Pricing.Duality.ConvexDuality",
-  "line": 135,
+  "In a constant-mean pool with reserves $B_k > 0$ and weights $w_k > 0$, a\n  swap of $\\Delta$ of token $i$ in for the out-amount of token $j$ out preserves the weighted\n  product $\\prod_k B_k^{w_k}$ of the reserves (`swap_preserves_constantMean`), and the spot\n  price of token $i$ in terms of token $j$ is the ratio of reserve-to-weight ratios\n  $(B_j/w_j)/(B_i/w_i)$, derived as the marginal rate of the out-amount at zero trade\n  (`hasDerivAt_swapOut_zero`). At two tokens with equal weights the invariant squared is the\n  constant product $x \\cdot y$, the spot price is the reserve ratio $y/x$ and the out-amount\n  is $y\\Delta/(x+\\Delta)$ (`constantMeanInvariant_two_sq_eq`, `spotPrice_two_eq_internalPrice`,\n  `swapOut_two_eq_swapOutput`). Priced: the two-token position of invariant $V$ and weight $w$\n  on $X$, marked at the price $P$ of $X$ in $Y$, is worth $V P^w/(w^w (1-w)^{1-w})$ in $Y$\n  (`constantMeanPayoff`, `eval_constantMeanPayoff`); at the pool's own spot price the mark is\n  the reserves $xP + y$, the constant value distribution $B_Y/W_Y$\n  (`eval_constantMeanPayoff_eq_reserves`); in any market paying it at $T$ is worth the\n  discounted expectation of the mark (`price_constantMeanPayoff`); and at $w = 1/2$ the\n  position is the constant-product payoff of invariant $V^2$\n  (`constantMeanPayoff_one_half_eq_constantProductPayoff`).",
+  "name": "MathFin.DeFi.price_constantMeanPayoff",
+  "module": "MathFin.Markets.DeFi.ConstantMeanLPContract",
+  "line": 134,
   "leanOk": true,
   "latexEnv": "theorem",
-  "label": "thm:cone-separation",
+  "label": "thm:balancer-invariant",
   "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Pricing/Duality/ConvexDuality.lean"},
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Markets/DeFi/ConstantMeanLPContract.lean"},
  {"uses": [],
   "title": "Expected utility",
   "text":
@@ -1089,6 +1093,18 @@
   "label": "def:expected-utility",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Choice/Utility/VonNeumannMorgenstern.lean"},
+ {"uses": [],
+  "title": "Separation theorem for closed convex cones",
+  "text":
+  "In $\\mathbb{R}^\\iota$ with $\\iota$ finite, if $C$ is a closed convex cone\n  and $x_0 \\notin C$, there is $p$ with $\\langle p, v\\rangle \\le 0$ for all $v \\in C$ and\n  $\\langle p, x_0\\rangle > 0$. The engine of the finite-state representation of coherent risk\n  measures. Finite dimension only.",
+  "name": "MathFin.exists_separating_of_not_mem_cone",
+  "module": "MathFin.Pricing.Duality.ConvexDuality",
+  "line": 135,
+  "leanOk": true,
+  "latexEnv": "theorem",
+  "label": "thm:cone-separation",
+  "file":
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Pricing/Duality/ConvexDuality.lean"},
  {"uses": [],
   "title": "The superhedging price dominates every martingale price",
   "text":
@@ -1705,21 +1721,6 @@
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Markets/DeFi/LPContract.lean"},
  {"uses":
-  ["def:coherent-risk-measure",
-   "thm:superhedging-price-lower-bound",
-   "def:convex-risk-measure"],
-  "title": "The superhedging price is a coherent risk measure",
-  "text":
-  "In the one-period finite-state market with a martingale probability vector, and\n  for a reference measure charging every state, the superhedging price of a claim, read as a\n  loss, is monotone, cash-invariant, positively homogeneous and subadditive. The equality with\n  the supremum of the martingale prices is `thm:superhedging-duality`.",
-  "name": "MathFin.isCoherentRiskMeasure_superhedgingPrice",
-  "module": "MathFin.Risk.Superhedging",
-  "line": 209,
-  "leanOk": true,
-  "latexEnv": "theorem",
-  "label": "thm:superhedging-coherent",
-  "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Risk/Superhedging.lean"},
- {"uses":
   ["def:value-at-risk",
    "def:quantile",
    "def:portfolio-variance",
@@ -1735,6 +1736,21 @@
   "label": "thm:gaussian-portfolio-var",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Risk/GaussianRiskMarkowitz.lean"},
+ {"uses":
+  ["def:coherent-risk-measure",
+   "thm:superhedging-price-lower-bound",
+   "def:convex-risk-measure"],
+  "title": "The superhedging price is a coherent risk measure",
+  "text":
+  "In the one-period finite-state market with a martingale probability vector, and\n  for a reference measure charging every state, the superhedging price of a claim, read as a\n  loss, is monotone, cash-invariant, positively homogeneous and subadditive. The equality with\n  the supremum of the martingale prices is `thm:superhedging-duality`.",
+  "name": "MathFin.isCoherentRiskMeasure_superhedgingPrice",
+  "module": "MathFin.Risk.Superhedging",
+  "line": 209,
+  "leanOk": true,
+  "latexEnv": "theorem",
+  "label": "thm:superhedging-coherent",
+  "file":
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Risk/Superhedging.lean"},
  {"uses":
   ["def:market",
    "def:gbm",
@@ -1773,28 +1789,6 @@
   "label": "thm:margrabe",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/BlackScholes/MargrabeGrounding.lean"},
- {"uses":
-  ["def:market",
-   "def:gbm",
-   "def:brownian-motion",
-   "def:standard-normal-cdf",
-   "def:contract",
-   "def:pricing-functional",
-   "thm:physical-measure-pricing",
-   "thm:girsanov-brownian-characterisation",
-   "def:contract-value"],
-  "title": "The forward-start call in the Black–Scholes market",
-  "text":
-  "In the Black–Scholes market of a pre-Brownian motion $W$ with $S_0, \\alpha,\n  \\sigma > 0$ and a reset date $0 < t_1 < T$, the call whose strike is set at $t_1$ as the\n  multiple $\\alpha$ of the then-observed price, paying $(S_T - \\alpha S_{t_1})^+$ at $T$, is\n  worth $S_0 \\cdot bsV(\\alpha, r, \\sigma, 1, T - t_1)$ under the Girsanov pricing measure of the\n  market price of risk, whatever the physical drift $m$, at any horizon $H \\ge T$: Rubinstein's\n  factorization, at zero dividend yield. The ratio $S_T/S_{t_1}$ is a function of the Brownian\n  increment $B_T - B_{t_1}$, independent of $\\mathcal{F}_{t_1}$, so the expectation of the product\n  splits\n  (`condExp_mul_of_indep`); the frozen leg contributes the martingale mean and the ratio leg is\n  the call price on a unit spot (`bsV`, via `integral_bsCall_payoff_eq_bsV`).",
-  "name":
-  "MathFin.Contracts.BlackScholes.price_forwardStartCall_constGirsanovMeasure",
-  "module": "MathFin.Models.BlackScholes.ForwardStart",
-  "line": 233,
-  "leanOk": true,
-  "latexEnv": "theorem",
-  "label": "thm:forward-start-call",
-  "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/BlackScholes/ForwardStart.lean"},
  {"uses": ["def:brownian-motion"],
   "title": "Quadratic variation of Brownian motion",
   "text":
@@ -1823,18 +1817,6 @@
   "label": "thm:black76-caplet",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Rates/Caplet.lean"},
- {"uses": ["def:coin-flip-measure"],
-  "title": "Binomial barrier prices via reflection",
-  "text":
-  "On the symmetric binomial walk (every path of weight $2^{-n}$, the law\n  `coinFlipMeasure (1/2)` of the flips), for a barrier $a > 0$ and any payoff $g$ of the terminal\n  position $S_n$, the up-and-in price is\n  $E[g(S_n);\\max \\ge a] = E[g(S_n); S_n \\ge a] + E[g(2a - S_n); S_n > a]$: the paths that end\n  at or above $a$ touch it (discrete intermediate value), and those that touch it and end below\n  are reflected at the first hit onto the paths ending above (André's reflection). The up-and-out\n  price is the vanilla price less this, and the running maximum has\n  $P(\\max \\ge a) = 2P(S_n > a) + P(S_n = a)$. The prices are expectations under the symmetric\n  flip law of a payoff of the walk's position; `thm:binomial-knock-in-market` reads them as the\n  binomial market's price of the knock-in contract.",
-  "name": "MathFin.binomial_upAndIn_reflection",
-  "module": "MathFin.Models.Binomial.BarrierReflection",
-  "line": 245,
-  "leanOk": true,
-  "latexEnv": "theorem",
-  "label": "thm:binomial-barrier-reflection",
-  "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Binomial/BarrierReflection.lean"},
  {"uses":
   ["def:market",
    "def:contract",
@@ -1852,6 +1834,18 @@
   "label": "thm:immunization-market-price",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Rates/DeterministicMarket.lean"},
+ {"uses": ["def:coin-flip-measure"],
+  "title": "Binomial barrier prices via reflection",
+  "text":
+  "On the symmetric binomial walk (every path of weight $2^{-n}$, the law\n  `coinFlipMeasure (1/2)` of the flips), for a barrier $a > 0$ and any payoff $g$ of the terminal\n  position $S_n$, the up-and-in price is\n  $E[g(S_n);\\max \\ge a] = E[g(S_n); S_n \\ge a] + E[g(2a - S_n); S_n > a]$: the paths that end\n  at or above $a$ touch it (discrete intermediate value), and those that touch it and end below\n  are reflected at the first hit onto the paths ending above (André's reflection). The up-and-out\n  price is the vanilla price less this, and the running maximum has\n  $P(\\max \\ge a) = 2P(S_n > a) + P(S_n = a)$. The prices are expectations under the symmetric\n  flip law of a payoff of the walk's position; `thm:binomial-knock-in-market` reads them as the\n  binomial market's price of the knock-in contract.",
+  "name": "MathFin.binomial_upAndIn_reflection",
+  "module": "MathFin.Models.Binomial.BarrierReflection",
+  "line": 245,
+  "leanOk": true,
+  "latexEnv": "theorem",
+  "label": "thm:binomial-barrier-reflection",
+  "file":
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Binomial/BarrierReflection.lean"},
  {"uses": ["def:expected-utility"],
   "title": "Expected utility satisfies independence and continuity",
   "text":
@@ -1919,23 +1913,18 @@
   "label": "thm:breeden-litzenberger",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/LocalVol/Dupire.lean"},
- {"uses":
-  ["def:market",
-   "def:contract",
-   "def:pricing-functional",
-   "thm:key-rate-duration",
-   "thm:zero-coupon-bond-price"],
-  "title": "Key-rate durations for market prices",
+ {"uses": ["def:brownian-motion"],
+  "title": "Bracket of the Itô integral",
   "text":
-  "In a family of markets $M_y$ with numéraire $(1+y)^{\\lfloor t\\rfloor}$, at a\n  flat curve $y$ with $1 + y \\ne 0$ the key-rate partials of a coupon bond sum to the derivative\n  in $y$ of the market price of its cash-flow schedule.",
-  "name": "MathFin.Rates.sum_deriv_keyRate_eq_deriv_price",
-  "module": "MathFin.Models.Rates.DeterministicMarket",
+  "$M^2 - \\langle M\\rangle$ is a martingale: $\\mathbb{E}[M_b^2 - \\langle\n  M\\rangle_b \\mid \\mathcal{F}_a] = M_a^2 - \\langle M\\rangle_a$ for $a \\le b \\le T$. Expanding\n  $(M_b-M_a)^2$, the cross term collapses by the martingale property of $M$, and the bracket\n  increment splits off the conditional expectation because $\\langle M\\rangle_a$ is adapted —\n  which holds because the predictable $\\sigma$-algebra, traced onto a band\n  $(a,b]\\times\\Omega$, is $\\mathcal{B}(\\mathbb{R}_{\\ge 0})\\otimes \\mathcal{F}_b$-measurable.\n  The bracket is the pathwise integral $\\int\\varphi^2\\,dt$; that it is the limit of the\n  realized quadratic variation is the frontier node `thm:bracket-quadratic-variation`.",
+  "name": "MathFin.BracketCompensator.condExp_sq_sub_bracket",
+  "module": "MathFin.Probability.Martingales.BracketCompensator",
   "line": 267,
   "leanOk": true,
   "latexEnv": "theorem",
-  "label": "thm:key-rate-market-price",
+  "label": "thm:bracket-compensator",
   "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Rates/DeterministicMarket.lean"},
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Probability/Martingales/BracketCompensator.lean"},
  {"uses":
   ["def:quantile",
    "def:value-at-risk",
@@ -1954,18 +1943,23 @@
   "label": "thm:fissler-ziegel",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Risk/JointElicitability.lean"},
- {"uses": ["def:brownian-motion"],
-  "title": "Bracket of the Itô integral",
+ {"uses":
+  ["def:market",
+   "def:contract",
+   "def:pricing-functional",
+   "thm:key-rate-duration",
+   "thm:zero-coupon-bond-price"],
+  "title": "Key-rate durations for market prices",
   "text":
-  "$M^2 - \\langle M\\rangle$ is a martingale: $\\mathbb{E}[M_b^2 - \\langle\n  M\\rangle_b \\mid \\mathcal{F}_a] = M_a^2 - \\langle M\\rangle_a$ for $a \\le b \\le T$. Expanding\n  $(M_b-M_a)^2$, the cross term collapses by the martingale property of $M$, and the bracket\n  increment splits off the conditional expectation because $\\langle M\\rangle_a$ is adapted —\n  which holds because the predictable $\\sigma$-algebra, traced onto a band\n  $(a,b]\\times\\Omega$, is $\\mathcal{B}(\\mathbb{R}_{\\ge 0})\\otimes \\mathcal{F}_b$-measurable.\n  The bracket is the pathwise integral $\\int\\varphi^2\\,dt$; that it is the limit of the\n  realized quadratic variation is the frontier node `thm:bracket-quadratic-variation`.",
-  "name": "MathFin.BracketCompensator.condExp_sq_sub_bracket",
-  "module": "MathFin.Probability.Martingales.BracketCompensator",
+  "In a family of markets $M_y$ with numéraire $(1+y)^{\\lfloor t\\rfloor}$, at a\n  flat curve $y$ with $1 + y \\ne 0$ the key-rate partials of a coupon bond sum to the derivative\n  in $y$ of the market price of its cash-flow schedule.",
+  "name": "MathFin.Rates.sum_deriv_keyRate_eq_deriv_price",
+  "module": "MathFin.Models.Rates.DeterministicMarket",
   "line": 267,
   "leanOk": true,
   "latexEnv": "theorem",
-  "label": "thm:bracket-compensator",
+  "label": "thm:key-rate-market-price",
   "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Probability/Martingales/BracketCompensator.lean"},
+  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Rates/DeterministicMarket.lean"},
  {"uses":
   ["def:brownian-motion",
    "def:standard-normal-cdf",
@@ -2411,28 +2405,6 @@
   "label": "thm:quotes-market-realisation",
   "file":
   "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/ModelFree/CallPriceInterpolation.lean"},
- {"uses":
-  ["def:market",
-   "def:coin-flip-measure",
-   "def:contract",
-   "def:american-price",
-   "def:pricing-functional",
-   "def:emm",
-   "thm:binomial-american-market",
-   "def:pricing-measure",
-   "def:contract-value"],
-  "title": "American put early-exercise premium",
-  "text":
-  "In the binomial tree under no-arbitrage, if at some node — every node is\n  reached with positive probability, the risk-neutral up-probability lying in $(0, 1)$ —\n  immediate exercise of the put is worth strictly more than the one-period discounted\n  continuation of the American price, then the American put is worth strictly more than the\n  European put of the same strike and expiry at the root: in the binomial market at unit step\n  under the risk-neutral coin flips (a pricing measure), the price of the European put with\n  horizon $N$ is strictly below the market's American price of the put, both being the tree\n  prices, and the premium at the root bounds every path-weighted premium below it. Deep in the\n  money the closed forms hold: the American price $K - S$ (for $r \\ge 0$), the European price\n  $K e^{-rN} - S$, and the strict inequality which with them gives the premium\n  $K (1 - e^{-rN}) > 0$ (for $r > 0$ and $N \\ge 1$).",
-  "name":
-  "MathFin.Contracts.Binomial.price_europeanPut_lt_americanPrice_of_immediate_exercise_gt_continuation",
-  "module": "MathFin.Models.Binomial.AmericanPutPremium",
-  "line": 502,
-  "leanOk": true,
-  "latexEnv": "theorem",
-  "label": "thm:american-put-premium",
-  "file":
-  "/home/runner/work/formal-mathfin/formal-mathfin/MathFin/Models/Binomial/AmericanPutPremium.lean"},
  {"uses": ["def:standard-normal-cdf"],
   "title": "The Black–Scholes formula solves the Black–Scholes equation",
   "text":
