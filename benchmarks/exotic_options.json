@@ -617,6 +617,34 @@
         "formalization_status": "reduced_core",
         "formalization_scope": "Reduced core. MathFin/Models/BlackScholes/DiscreteBarrierCorrection.lean: ptDownOutCall_eq_image and ptDownOutCall_eq_image_printed (ptDownOutCall at carry r, or r − q with a dividend yield q, is the image form; ptMu, ptHSmu1, ptF1, ptF2; bsVDiv from MathFin/Models/BlackScholes/DividendsGreeks.lean), ptDownOutCall_zero_barrier, bgkDownOutCall_zero_barrier and bgkKnockIn_zero_barrier (the junk values at H = 0), tendsto_bgkDownOutCall (continuousAt_ptDownOutCall_barrier and tendsto_bgkDownBarrier; the proofs consume only a nonzero spot and barrier, which keep them off the junk corners, so they hold at every strike, rate, volatility and maturity, including junk values, and read as price statements only for σ > 0, 0 < T, positive S, K, H and 1 ≤ m, with the shifted barrier at most K and below the spot, true for all large m when H < K and S > H), ptDownOutCall_scale (bsd1_scale, bsd2_scale in MathFin/Models/BlackScholes/ScalingInvariance.lean), bgkDownOutCall_timeScale (ptDownOutCall_timeScale, with bsd1_timeScale and bsd2_timeScale from the same file, and the invariance of the shift σ√(T/m)), bsV_scale and bsV_timeScale (the Black–Scholes call price itself, same file), and abs_knockIn_sub_bgkKnockIn_le (knockIn_add_knockOut_eq_bsV). SCOPE: statements about the closed-form expression, with the hypotheses each theorem states, and the definition of the shifted barrier; it reads as the down-and-out price only for σ > 0, 0 < T, 0 < S, K, H, a (shifted) barrier at most K and spot above it (and 1 ≤ m for the BGK expression). The scaling theorems are identities of the closed forms at every input (the time-volatility rescaling for c > 0, the spatial homogeneity for every real c), including the junk corners (division by zero, square root of a negative, logarithm of a nonpositive), because both sides are the same expression of the junk value, up to the factor c for the homogeneity statements; they are not price claims. abs_knockIn_sub_bgkKnockIn_le is a linear rearrangement of in–out parity for an arbitrary event A, not tied to H or the monitoring dates. NOT PROVED: that ptDownOutCall is the discounted expected knock-out payoff (the barrier density), any rate of convergence in m, the value of β, and the accuracy of the BGK shift as an approximation to the discretely monitored price, which enters only as the hypothesis of abs_knockIn_sub_bgkKnockIn_le. No up-and-out closed form is given."
       }
+    },
+    {
+      "id": "mf-forward-start-call",
+      "name": "Forward-Start Call Price (Rubinstein)",
+      "domain": "mathematical_finance",
+      "description": "Rubinstein's forward-start call price, derived: in the Black-Scholes market of a pre-Brownian motion, the call whose strike is set at a future reset date t1 as the multiple alpha of the then-observed price, paying max(S_T - alpha * S_t1, 0) at the maturity T > t1, has price S0 * bsV(alpha, r, sigma, 1, T - t1) under the Girsanov pricing measure of the market price of risk, whatever the physical drift. The derivation factors the payoff as the price at t1 against the ratio S_T/S_t1, a function of the Brownian increment B_T - B_t1 which is independent of the information at t1, so the discounted expectation splits; the frozen leg has the martingale mean e^{-r t1} E[S_t1] = S0 and the ratio leg is the Black-Scholes call price on a unit spot. The market's asset pays no dividends, so the general formula's dividend scaling S0 * e^{-qT} is absent (the q = 0 case); a dividend yield, cliquets and employee stock options are out of scope.",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.ForwardStart\n\nopen MeasureTheory ProbabilityTheory\nopen scoped NNReal\nopen MathFin MathFin.Contracts\n\n/-- **The forward-start call in the Black-Scholes market.** Re-exports\n`BlackScholes.price_forwardStartCall_constGirsanovMeasure`. -/\ntheorem forward_start_call_price {Ω : Type*} [mΩ : MeasurableSpace Ω] {μ : Measure Ω}\n    [IsProbabilityMeasure μ] {W : ℝ≥0 → Ω → ℝ} (hW : IsPreBrownianReal W μ)\n    (hWmeas : ∀ t, Measurable (W t)) {S_0 m r σ α : ℝ} {t₁ T H : ℝ≥0} (hTH : T ≤ H)\n    (hS₀ : 0 < S_0) (hα : 0 < α) (hσ : 0 < σ) (ht₁ : 0 < (t₁ : ℝ))\n    (hτ : (t₁ : ℝ) < (T : ℝ)) :\n    (BlackScholes.market μ hWmeas S_0 m r σ).price\n        (BlackScholes.constGirsanovMeasure hW hWmeas ((m - r) / σ) H)\n        (forwardStartCall α t₁ T)\n      = S_0 * bsV α r σ 1 ((T : ℝ) - (t₁ : ℝ)) :=\n  BlackScholes.price_forwardStartCall_constGirsanovMeasure hW hWmeas hTH hS₀ hα hσ ht₁ hτ\n"
+      },
+      "metadata": {
+        "chapter": 26,
+        "reference": "Rubinstein, Pay now, choose later, Risk 4(2) (1991); Hull, Options, Futures, and Other Derivatives, ch. 26 sec. 5 (11th ed.)",
+        "citations": [
+          {
+            "key": "Rubinstein1991PayNow"
+          },
+          {
+            "key": "Hull",
+            "locator": "ch. 26 sec. 5"
+          },
+          {
+            "key": "QuantLibForwardEngine"
+          }
+        ],
+        "difficulty": "intermediate",
+        "formalization_status": "full",
+        "formalization_scope": "Full derivation of the closed form S0 * bsV(alpha, r, sigma, 1, T - t1) for the reified forwardStartCall contract in the library's Black-Scholes market, under the Girsanov pricing measure, with hypotheses 0 < S0, 0 < alpha, 0 < sigma, 0 < t1 < T and a Girsanov horizon covering the maturity. Rubinstein's general formula carries a dividend yield q through the whole-formula factor e^{-qT} and the ratio leg's rate r - q, this market's single asset pays no dividends, so the delivered statement is the q = 0 case and the dividend extension is not formalized. Cliquets (series of forward starts) and employee stock options are out of scope."
+      }
     }
   ]
 }
