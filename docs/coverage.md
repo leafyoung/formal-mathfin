@@ -232,6 +232,7 @@ entries are reduced cores).
   hypothesis), the Hull-White reconstitution form hR of the bond ratio, the means, variances and
   covariance of the rate deviations and the Hull-White loadings B^n, B^r (free inputs), their
   SDE-level derivation, and the real-rate drift shift.
+
 ### Marchenko-Pastur support edges (2026-11-08)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 805 → 806 on the merged
