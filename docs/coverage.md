@@ -177,14 +177,17 @@ One `full` entry in `benchmarks/defi.json`. Corpus 906 → 907 on the branch (86
   library's constant-product pool: the invariant squared is `x * y`
   (`constantMeanInvariant_two_sq_eq`), the spot price is `internalPrice x y`
   (`spotPrice_two_eq_internalPrice`), and the out-amount is `swapOutput x y Δ`
-  (`swapOut_two_eq_swapOutput`), all three in `Markets/DeFi/ConstantProductAMM.lean`.
+  (`swapOut_two_eq_swapOutput`) — the three reduction theorems in
+  `Markets/DeFi/ConstantMeanAMM.lean`, proved equal to the constant-product side's
+  `internalPrice` and `swapOutput` in `Markets/DeFi/ConstantProductAMM.lean`.
   Cited: Martinelli & Mushegian, *Balancer* whitepaper, v2019-09-19 ("Theory": Value
   Function, Spot Price, Out-Given-In; the spot price there is printed with in/out exchanged,
   `SP^o_i = (Bᵢ/Wᵢ)/(Bₒ/Wₒ)`, the price of `o` in units of `i`, the same ratio
   reciprocated). Disclosed out of scope: fees
   (the fee factor is one); the weights need only be positive — the sum-to-one normalization
-  that makes `V` a portfolio value, the constant-value-share theorem, In-Given-Out,
-  In-Given-Price and liquidity provision are not formalized. Axioms-clean, `full`.
+  that makes `V` the invariant of a constant-value-share portfolio; the
+  constant-value-share theorem, In-Given-Out, In-Given-Price and liquidity provision are
+  not formalized. Axioms-clean, `full`.
 
   **Delivered 2026-11-25 (bridge; the node closes)**: `MathFin/Markets/DeFi/ConstantMeanLPContract.lean`
   reprices the two-token position through the payoff language, the way `LPContract.lean`
