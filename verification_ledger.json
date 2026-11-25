@@ -3331,9 +3331,9 @@
     "mf-holee-bond-price": {
       "benchmark_file": "interest_rates.json",
       "date": "2026-11-25",
-      "elapsed_s": 2.7,
-      "input_hash": "d0d14a967b6046b7df5667cbe9f5de380a8b87f1940bc4984b06d6356bd8dbd6",
-      "verified_at_commit": "d479045"
+      "elapsed_s": 2.8,
+      "input_hash": "ffb8ae6d9e41261e8f533a0df25cf5d5fbed2689b192d7640defac7a317e2dc5",
+      "verified_at_commit": "21ac38b"
     },
     "mf-hull-white-forward-measure-short-rate": {
       "benchmark_file": "interest_rates.json",
