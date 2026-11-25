@@ -26,7 +26,7 @@ pick up `sorryAx` (a `sorry`) or a non-standard axiom without breaking
 
 The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
 narrative); THIS file is its machine-written closure over the benchmark
-corpus (1122 MathFin constants, 29 upstream). Citations
+corpus (1126 MathFin constants, 29 upstream). Citations
 are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
 unqualified under `open`, by dot notation on a hypothesis, or declared
 outside the MathFin namespace is pinned like any other. Statement-position
@@ -304,6 +304,10 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Contracts.BlackScholes.americanPrice_market_europeanPutPayoff_eq_canonicalPrice
 
+/-- info: 'MathFin.Contracts.BlackScholes.constGirsanovMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Contracts.BlackScholes.constGirsanovMeasure
+
 /-- info: 'MathFin.Contracts.BlackScholes.europeanCall_deltaHedge' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Contracts.BlackScholes.europeanCall_deltaHedge
@@ -315,6 +319,10 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.Contracts.BlackScholes.isPricingMeasure_constGirsanovMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Contracts.BlackScholes.isPricingMeasure_constGirsanovMeasure
+
+/-- info: 'MathFin.Contracts.BlackScholes.market' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Contracts.BlackScholes.market
 
 /-- info: 'MathFin.Contracts.BlackScholes.pathAssets_solves_sde' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -467,6 +475,10 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.Contracts.cappedCall_payoff_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Contracts.cappedCall_payoff_eq
+
+/-- info: 'MathFin.Contracts.europeanCall' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Contracts.europeanCall
 
 /-- info: 'MathFin.Contracts.expectedShortfall_loss_both_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -660,21 +672,9 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.clHistoricalVaR_le_value
 
-/-- info: 'MathFin.DeFi.constantMeanInvariant_two_sq_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.constantMeanInvariant_two_sq_eq
-
-/-- info: 'MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff
-
 /-- info: 'MathFin.DeFi.coveredCall_sub_v3PositionValue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.coveredCall_sub_v3PositionValue
-
-/-- info: 'MathFin.DeFi.hasDerivAt_swapOut_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.hasDerivAt_swapOut_zero
 
 /-- info: 'MathFin.DeFi.impermanentLoss_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -692,25 +692,9 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.impermanentLoss_nonpos
 
-/-- info: 'MathFin.DeFi.price_constantMeanPayoff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.price_constantMeanPayoff
-
 /-- info: 'MathFin.DeFi.price_lpPayoff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.price_lpPayoff
-
-/-- info: 'MathFin.DeFi.spotPrice_two_eq_internalPrice' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.spotPrice_two_eq_internalPrice
-
-/-- info: 'MathFin.DeFi.swapOut_two_eq_swapOutput' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.swapOut_two_eq_swapOutput
-
-/-- info: 'MathFin.DeFi.swap_preserves_constantMean' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.DeFi.swap_preserves_constantMean
 
 /-- info: 'MathFin.DeFi.v3PositionValue_at_lower' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -839,6 +823,14 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.Inflation.Convexity.integral_exp_hwD_forwardMeasure' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Inflation.Convexity.integral_exp_hwD_forwardMeasure
+
+/-- info: 'MathFin.Inflation.JarrowYildirim.jyYoyPayment_price' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Inflation.JarrowYildirim.jyYoyPayment_price
+
+/-- info: 'MathFin.Inflation.JarrowYildirim.jyZcCaplet_price' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Inflation.JarrowYildirim.jyZcCaplet_price
 
 /-- info: 'MathFin.IsBLPosteriorMean.blLoss_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -1976,6 +1968,18 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.compoundPoisson_mgf_of_indepFun
 
+/-- info: 'MathFin.condBoundCall' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.condBoundCall
+
+/-- info: 'MathFin.condBoundCall_le_integral_max' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.condBoundCall_le_integral_max
+
+/-- info: 'MathFin.condBoundCall_one_fixing_eq_marketPrice' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.condBoundCall_one_fixing_eq_marketPrice
+
 /-- info: 'MathFin.condDefault_eq_oneFactorPD' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.condDefault_eq_oneFactorPD
@@ -1995,6 +1999,14 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.condExp_stoppedValue_le_snellEnvelope' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.condExp_stoppedValue_le_snellEnvelope
+
+/-- info: 'MathFin.condRate' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.condRate
+
+/-- info: 'MathFin.condShift' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.condShift
 
 /-- info: 'MathFin.continuous_jumpDiffusionDensity' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -2971,6 +2983,10 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.integral_lpValue_eq_exp_mul_integral_hodlValue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.integral_lpValue_eq_exp_mul_integral_hodlValue
+
+/-- info: 'MathFin.integral_max_expSum_hasLaw' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.integral_max_expSum_hasLaw
 
 /-- info: 'MathFin.integral_max_sub_compoundPoisson' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
