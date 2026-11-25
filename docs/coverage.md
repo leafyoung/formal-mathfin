@@ -872,7 +872,7 @@ split by area. What each bridge proves, by area:
   `ptDownOutCall` as a discounted expected payoff, the value of `β`, any rate of convergence in
   `m`, and the accuracy of the shift as an approximation to the discretely monitored price.
 
-The average-strike batch delivers three further reduced cores on the
+  The average-strike batch delivers three further reduced cores on the
   discrete arithmetic average-strike Asian call: the Gaussian positive part of a single-crossing
   exponential sum,
   the Jensen conditioning lower bound for an integrable payoff given the conditional-mean
