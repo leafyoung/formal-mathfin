@@ -17,9 +17,9 @@ machine has checked, to build on them in other Lean projects, and to see what is
 stated and open, and where a new result would fit. It is written for mathematicians and for AI
 agents alike.
 
-The [corpus](docs/glossary.md#corpus) records 911 results from the literature in
-[`benchmarks/`](benchmarks), each with a Lean statement and proof. Of these, 866 are proved in
-full, 18 restate a lemma from Mathlib or BrownianMotion, and 27 are
+The [corpus](docs/glossary.md#corpus) records 917 results from the literature in
+[`benchmarks/`](benchmarks), each with a Lean statement and proof. Of these, 871 are proved in
+full, 18 restate a lemma from Mathlib or BrownianMotion, and 28 are
 [reduced cores](docs/glossary.md#status) that prove less than the result they are named after.
 Each entry records its status and what it leaves out. The library contains no `sorry`, and a
 build-time audit checks that every library theorem the benchmark's proofs cite depends only on the
@@ -166,7 +166,7 @@ from one file, [`docs/taxonomy.toml`](docs/taxonomy.toml), and the site's
 
 ## Limitations
 
-- **Reduced cores.** Twenty-seven of the results prove less than the theorem they are named after.
+- **Reduced cores.** Twenty-eight of the results prove less than the theorem they are named after.
   - Eleven assume a structure whose fields include the textbook conclusion: the reflection
     principle, nowhere differentiability and the law of the iterated logarithm for Brownian motion,
     Novikov's condition, the general Girsanov theorem, the two-dimensional Itô formula, and five
@@ -311,6 +311,8 @@ Raphael Coelho maintains the library, with contributions from:
 - [Aleksey Salkutsan](https://github.com/kernelpanic888): forward rate agreements and downside
   performance metrics.
 - [Mert Unsal](https://github.com/mertunsall): the Black–Scholes charm.
+- [WorldianAI](https://github.com/WorldianAI): the Ho–Lee zero-coupon bond price and the
+  zero-drift identification of its drift.
 - [Yang Ye](https://github.com/leafyoung): the integrated Itô–drift identity, Hull–White
   calibration, a Monte Carlo pricer, Cox credit, CMS rates and curve bootstrapping; the bivariate
   normal CDF, the Schwartz futures price, CVA, inflation, the LHP tranche loss, calendar arbitrage,
