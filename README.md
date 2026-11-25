@@ -312,8 +312,7 @@ Raphael Coelho maintains the library, with contributions from:
 - [Aleksey Salkutsan](https://github.com/kernelpanic888): forward rate agreements and downside
   performance metrics.
 - [Mert Unsal](https://github.com/mertunsall): the Black–Scholes charm.
-- [WorldianAI](https://github.com/WorldianAI): the Ho–Lee zero-coupon bond price and the
-  zero-drift identification of its drift.
+- [WorldianAI](https://github.com/WorldianAI): the Ho–Lee zero-coupon bond price.
 - [Yang Ye](https://github.com/leafyoung): the integrated Itô–drift identity, Hull–White
   calibration, a Monte Carlo pricer, Cox credit, CMS rates and curve bootstrapping; the bivariate
   normal CDF, the Schwartz futures price, CVA, inflation, the LHP tranche loss, calendar arbitrage,
@@ -323,7 +322,11 @@ Raphael Coelho maintains the library, with contributions from:
   floor, Marchenko–Pastur edges and historical VaR for concentrated liquidity; the Bachelier spread
   call, the Nelson–Siegel–Svensson decay limit, the backward-looking caplet, the lognormal
   volatility swap, the Jarrow–Yildirim inflation caplet and year-on-year forward, the
-  average-strike Asian conditioning bound and the Heston transform at maturity.
+  average-strike Asian conditioning bound, the Heston transform at maturity, the Broadie–
+  Glasserman–Kou barrier shift for discrete monitoring, the contango–basis convergence, the
+  strict American put early-exercise premium, the forward-start call factorization, the Balancer
+  constant-mean invariant, the numéraire-density Radon–Nikodym lemmas, and the Ho–Lee zero-drift
+  identification with its vanishing-mean-reversion bridge.
 - [Adam Kiezun](https://github.com/akiezun): whole-life insurance on the survival function, the
   life table, two-life annuities, Thiele's reserve equation, Bühlmann credibility, sampled stopping
   rules, CDS recovery timing, the stop-loss recursion, discrete Almgren–Chriss liquidation, and
