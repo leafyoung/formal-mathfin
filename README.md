@@ -181,13 +181,14 @@ from one file, [`docs/taxonomy.toml`](docs/taxonomy.toml), and the site's
     property of the forward index and the Hull–White reconstitution form of the bond ratio. The
     average-strike conditioning lower bound assumes the conditional-mean identification of the
     terminal payoff with its Gaussian conditional mean.
-  - Ten prove a special case or check transcribed closed forms against each other: the first
+  - Eleven prove a special case or check transcribed closed forms against each other: the first
     arrival of a Poisson process, the Ornstein–Uhlenbeck Hermite modes up to degree 2, Stulz's call
     on the maximum at zero strike, the Heynen–Kat barrier at zero correlation, Haug's and
-    Rubinstein–Reiner's barrier formulas, a piecewise-linear interpolation of call quotes weaker
-    than Kahalé's, the transcribed Goldman–Sosin–Gatto lookback bounded below by the call, the
-    Gaussian positive part of a signed exponential sum, and the one-fixing average-strike
-    conditioning bound as the Black–Scholes forward-start call.
+    Rubinstein–Reiner's barrier formulas, the Broadie–Glasserman–Kou shifted discrete-monitoring
+    barrier, a piecewise-linear interpolation of call quotes weaker than Kahalé's, the transcribed
+    Goldman–Sosin–Gatto lookback bounded below by the call, the Gaussian positive part of a signed
+    exponential sum, and the one-fixing average-strike conditioning bound as the Black–Scholes
+    forward-start call.
 - **Girsanov.** Only bounded θ. Novikov's condition is not proved.
 - **Completeness.** In the Brownian market only completeness ⇒ uniqueness of the pricing measure is
   proved, and the hedge is not identified (Clark–Ocone,
