@@ -26,56 +26,6 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
-### The numéraire density is the Radon–Nikodym derivative (2026-11-23)
-
-Three additive lemmas on `MathFin/Pricing/Numeraire.lean`. No corpus entry: the issue asks for
-the lemmas, and `mf-change-of-numeraire` already covers the node. Corpus 906 → 906.
-
-- **`numeraireMeasure_rnDeriv`** — for σ-finite `Q` and measurable numéraire terminals,
-  `(numeraireMeasure Q BT NT B0 N0).rnDeriv Q =ᵐ[Q] numeraireDensity BT NT B0 N0`: the
-  docstring's `dQ^N/dQ` reading, proved by Mathlib's `Measure.rnDeriv_withDensity`.
-- **`numeraireMeasure_absolutelyContinuous`** — `Q^N ≪ Q`, with no hypothesis beyond the
-  definition (`withDensity_absolutelyContinuous`).
-- **`numeraireMeasure_absolutelyContinuous'`** — with measurable, positive numéraires
-  (`B0 > 0`, `N0 > 0`) also `Q ≪ Q^N`: the density is then strictly positive at every state
-  (the library's `absolutelyContinuous_withDensity_ofReal`, which wraps Mathlib's
-  `withDensity_absolutelyContinuous'`).
-
-The `## Honest scope` note of `MathFin/Pricing/ForwardMeasure.lean` now cites the stochastic-rate
-instance, the Hull–White `S`-forward measure of `Models/Rates/TimingAdjustment`
-(`HullWhite.shortRate_hasLaw_forwardMeasure`,
-`HullWhite.forwardMeasure_shortRate_mean_eq_forwardCurve`). Not delivered here: a change of
-numéraire between two numéraire measures; the lemmas are named for that reuse.
-
-### Contango, backwardation and basis convergence (2026-11-23)
-
-One `full` entry in `benchmarks/commodities.json`. Corpus 906 → 907 on the merged tree
-(866 full before, 867 after; 884 → 885 delivery-ready).
-
-- **`mf-contango-basis-convergence`** (MathFin/Models/Forwards/ContangoBackwardation.lean): the
-  qualitative market structure of the cost-of-carry forward
-  `fxForward S r δ T = S·e^{(r−δ)T}` — the covered-parity forward of `FxForwardParity.lean`
-  read with the commodity convenience yield `δ` in the foreign-rate slot (the same reading
-  `BlackScholes/Dividends.lean` gives its dividend yield `q`; the curve is derived there from
-  `forward_price_from_no_arbitrage` and `expected_terminal_eq_forward`, not re-posited here).
-  For spot `S > 0` and maturity `T > 0`: contango `S < F(T) ↔ δ < r`
-  (`fxForward_contango_iff`), backwardation `F(T) < S ↔ r < δ`
-  (`fxForward_backwardation_iff`), the forward meets the spot iff `r = δ`
-  (`fxForward_eq_spot_iff`); the term-structure trichotomy — strictly increasing iff
-  `δ < r` (`fxForward_strictMono_iff`), strictly decreasing iff `r < δ`
-  (`fxForward_strictAnti_iff`), flat iff `r = δ` (`fxForward_const_iff`) — and the
-  spot-minus-forward basis `S − F(T)` (Hull ch. 3's sign convention; #88's
-  `b(T) = S − F(T)`; `TheoryOfStorage.lean`'s carry identity `F − S = C − Y` is the same gap
-  negated) vanishing at `T = 0` (`fxForward_basis_zero`) and tending to `0` as `T → 0⁺`
-  (`fxForward_basis_tendsto_zero`). Pure `Real.exp` monotonicity; no new definitions, and
-  nothing probabilistic. Hull's cost of carry is read as the financing rate alone (zero
-  storage cost), and ch. 18's normal/inverted terminology, stated there for futures
-  prices, is applied to this forward curve; neither identification is a proved claim. Not proved: normal backwardation (futures below the expected spot
-  under the physical measure) — a different statement about a different object; and the
-  second-maturity basis-risk decomposition of hedging, which needs a contract object the
-  library does not have. Cited: Hull ch. 3, ch. 5 and ch. 18 (11th ed. slide decks, slides 5, 23 and 26
-  of the respective chapter files), Kaldor (1939), Working (1949).
-
 ### The Ho–Lee bond price (2026-11-24)
 
 One `full` entry in `benchmarks/interest_rates.json`. Corpus 906 → 907 on the merged tree
@@ -160,6 +110,56 @@ One `full` entry in `benchmarks/exotic_options.json`, delivering the frontier no
   column's page numbers could not be verified from this machine; the delivered closed form at
   `q = 0` coincides with what the reference implementation `ql/pricingengines/forward/forwardengine.hpp`
   computes.
+
+### The numéraire density is the Radon–Nikodym derivative (2026-11-23)
+
+Three additive lemmas on `MathFin/Pricing/Numeraire.lean`. No corpus entry: the issue asks for
+the lemmas, and `mf-change-of-numeraire` already covers the node. Corpus 906 → 906.
+
+- **`numeraireMeasure_rnDeriv`** — for σ-finite `Q` and measurable numéraire terminals,
+  `(numeraireMeasure Q BT NT B0 N0).rnDeriv Q =ᵐ[Q] numeraireDensity BT NT B0 N0`: the
+  docstring's `dQ^N/dQ` reading, proved by Mathlib's `Measure.rnDeriv_withDensity`.
+- **`numeraireMeasure_absolutelyContinuous`** — `Q^N ≪ Q`, with no hypothesis beyond the
+  definition (`withDensity_absolutelyContinuous`).
+- **`numeraireMeasure_absolutelyContinuous'`** — with measurable, positive numéraires
+  (`B0 > 0`, `N0 > 0`) also `Q ≪ Q^N`: the density is then strictly positive at every state
+  (the library's `absolutelyContinuous_withDensity_ofReal`, which wraps Mathlib's
+  `withDensity_absolutelyContinuous'`).
+
+The `## Honest scope` note of `MathFin/Pricing/ForwardMeasure.lean` now cites the stochastic-rate
+instance, the Hull–White `S`-forward measure of `Models/Rates/TimingAdjustment`
+(`HullWhite.shortRate_hasLaw_forwardMeasure`,
+`HullWhite.forwardMeasure_shortRate_mean_eq_forwardCurve`). Not delivered here: a change of
+numéraire between two numéraire measures; the lemmas are named for that reuse.
+
+### Contango, backwardation and basis convergence (2026-11-23)
+
+One `full` entry in `benchmarks/commodities.json`. Corpus 906 → 907 on the merged tree
+(866 full before, 867 after; 884 → 885 delivery-ready).
+
+- **`mf-contango-basis-convergence`** (MathFin/Models/Forwards/ContangoBackwardation.lean): the
+  qualitative market structure of the cost-of-carry forward
+  `fxForward S r δ T = S·e^{(r−δ)T}` — the covered-parity forward of `FxForwardParity.lean`
+  read with the commodity convenience yield `δ` in the foreign-rate slot (the same reading
+  `BlackScholes/Dividends.lean` gives its dividend yield `q`; the curve is derived there from
+  `forward_price_from_no_arbitrage` and `expected_terminal_eq_forward`, not re-posited here).
+  For spot `S > 0` and maturity `T > 0`: contango `S < F(T) ↔ δ < r`
+  (`fxForward_contango_iff`), backwardation `F(T) < S ↔ r < δ`
+  (`fxForward_backwardation_iff`), the forward meets the spot iff `r = δ`
+  (`fxForward_eq_spot_iff`); the term-structure trichotomy — strictly increasing iff
+  `δ < r` (`fxForward_strictMono_iff`), strictly decreasing iff `r < δ`
+  (`fxForward_strictAnti_iff`), flat iff `r = δ` (`fxForward_const_iff`) — and the
+  spot-minus-forward basis `S − F(T)` (Hull ch. 3's sign convention; #88's
+  `b(T) = S − F(T)`; `TheoryOfStorage.lean`'s carry identity `F − S = C − Y` is the same gap
+  negated) vanishing at `T = 0` (`fxForward_basis_zero`) and tending to `0` as `T → 0⁺`
+  (`fxForward_basis_tendsto_zero`). Pure `Real.exp` monotonicity; no new definitions, and
+  nothing probabilistic. Hull's cost of carry is read as the financing rate alone (zero
+  storage cost), and ch. 18's normal/inverted terminology, stated there for futures
+  prices, is applied to this forward curve; neither identification is a proved claim. Not proved: normal backwardation (futures below the expected spot
+  under the physical measure) — a different statement about a different object; and the
+  second-maturity basis-risk decomposition of hedging, which needs a contract object the
+  library does not have. Cited: Hull ch. 3, ch. 5 and ch. 18 (11th ed. slide decks, slides 5, 23 and 26
+  of the respective chapter files), Kaldor (1939), Working (1949).
 
 ### Balancer constant-mean invariant and spot price (2026-11-23)
 
@@ -872,14 +872,15 @@ split by area. What each bridge proves, by area:
   `ptDownOutCall` as a discounted expected payoff, the value of `β`, any rate of convergence in
   `m`, and the accuracy of the shift as an approximation to the discretely monitored price.
 
-(`mf-continuous-lookback-floating-strike`, `reduced_core`). For the discrete arithmetic
+For the discrete arithmetic
   average-strike Asian call, the Gaussian positive part of a single-crossing exponential sum,
   the Jensen conditioning lower bound for an integrable payoff given the conditional-mean
   property, and the one-fixing case as the forward-start call at the Black–Scholes price
   (`mf-asian-avgstrike-expsum-gaussian-positive-part`,
   `mf-asian-avgstrike-conditioning-lower-bound`, `mf-asian-avgstrike-one-fixing-market-price`,
   all `reduced_core`: the conditional-mean identification under Brownian motion and the
-  closeness of the bound to the price are not proved).- **Structural** (`black_scholes.json`, `binomial.json`). The American put is at least the
+  closeness of the bound to the price are not proved).
+- **Structural** (`black_scholes.json`, `binomial.json`). The American put is at least the
   Black–Scholes(–Merton) put (`mf-american-put-ge-bsm-european-put`; the early-exercise premium's
   positivity is not proved); its value is unchanged by null-set horizon changes
   (`mf-american-put-ae-horizon-invariance`); Monte Carlo on Mathlib's infinite product
