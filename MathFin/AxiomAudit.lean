@@ -3,7 +3,9 @@ Copyright (c) 2026 Raphael Coelho. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Raphael Coelho, Yang Ye
 -/
-import MathFin
+module
+
+public import MathFin
 
 /-!
 # Axiom audit — the "axioms-clean" claim, build-enforced
@@ -29,6 +31,8 @@ depend on a *subset* of the three (or none); those are pinned to their
 actual set below. The invariant we enforce is "no `sorryAx`, no axiom
 outside the standard three", which the pinned messages capture exactly.
 -/
+
+@[expose] public section
 
 -- The `#guard_msgs` docstrings below are Lean's own output, matched as printed.
 set_option linter.style.longLine false
@@ -2810,6 +2814,14 @@ The landmarks of `docs/blueprint.md` that no section above pins: one `#print axi
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.lifeAnnuityDue_eq_value
 
+/-- info: 'MathFin.wholeLife_epv_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.wholeLife_epv_eq
+
+/-- info: 'MathFin.hasDerivAt_thieleReserve' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.hasDerivAt_thieleReserve
+
 /-- info: 'MathFin.esscherPremium_eq_price' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.esscherPremium_eq_price
@@ -3168,3 +3180,15 @@ end MathFin.AxiomAudit
 /-- info: 'MathFin.Execution.gmQuote_one_ae_eq_quote' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Execution.gmQuote_one_ae_eq_quote
+
+/-- info: 'MathFin.buhlmann_mse_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.buhlmann_mse_le
+
+/-- info: 'MathFin.IsMackRow.isEMM_chainPrediction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.IsMackRow.isEMM_chainPrediction
+
+/-- info: 'MathFin.chainPrediction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.chainPrediction
