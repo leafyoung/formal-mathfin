@@ -26,7 +26,7 @@ pick up `sorryAx` (a `sorry`) or a non-standard axiom without breaking
 
 The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
 narrative); THIS file is its machine-written closure over the benchmark
-corpus (1123 MathFin constants, 29 upstream). Citations
+corpus (1116 MathFin constants, 29 upstream). Citations
 are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
 unqualified under `open`, by dot notation on a hypothesis, or declared
 outside the MathFin namespace is pinned like any other. Statement-position
@@ -791,6 +791,10 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.Heston.tendsto_hestonProfile_smallVolOfVol_blackScholes' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Heston.tendsto_hestonProfile_smallVolOfVol_blackScholes
+
+/-- info: 'MathFin.HoLee.bondPrice_affine' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.HoLee.bondPrice_affine
 
 /-- info: 'MathFin.HullWhite.bondRate_condExp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -2355,38 +2359,6 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.fxForwardPoint_delta_gt_half' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.fxForwardPoint_delta_gt_half
-
-/-- info: 'MathFin.fxForward_backwardation_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_backwardation_iff
-
-/-- info: 'MathFin.fxForward_basis_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_basis_tendsto_zero
-
-/-- info: 'MathFin.fxForward_basis_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_basis_zero
-
-/-- info: 'MathFin.fxForward_const_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_const_iff
-
-/-- info: 'MathFin.fxForward_contango_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_contango_iff
-
-/-- info: 'MathFin.fxForward_eq_spot_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_eq_spot_iff
-
-/-- info: 'MathFin.fxForward_strictAnti_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_strictAnti_iff
-
-/-- info: 'MathFin.fxForward_strictMono_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs (whitespace := lax) in
-#print axioms MathFin.fxForward_strictMono_iff
 
 /-- info: 'MathFin.fxPutWingVol_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

@@ -304,6 +304,7 @@ Raphael Coelho maintains the library, with contributions from:
 - [Aleksey Salkutsan](https://github.com/kernelpanic888): forward rate agreements and downside
   performance metrics.
 - [Mert Unsal](https://github.com/mertunsall): the Black–Scholes charm.
+- [WorldianAI](https://github.com/WorldianAI): the Ho–Lee bond price.
 - [Yang Ye](https://github.com/leafyoung): the integrated Itô–drift identity, Hull–White
   calibration, a Monte Carlo pricer, Cox credit, CMS rates and curve bootstrapping; the bivariate
   normal CDF, the Schwartz futures price, CVA, inflation, the LHP tranche loss, calendar arbitrage,

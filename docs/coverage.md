@@ -75,6 +75,39 @@ One `full` entry in `benchmarks/commodities.json`. Corpus 906 → 907 on the mer
   second-maturity basis-risk decomposition of hedging, which needs a contract object the
   library does not have. Cited: Hull ch. 3, ch. 5 and ch. 18 (11th ed. slide decks, slides 5, 23 and 26
   of the respective chapter files), Kaldor (1939), Working (1949).
+
+### The Ho–Lee bond price (2026-11-24)
+
+One `full` entry in `benchmarks/interest_rates.json`. Corpus 906 → 907 on the merged tree
+(866 full before, 867 after; 884 → 885 delivery-ready).
+
+- **`mf-holee-bond-price`** (MathFin/Models/Rates/HoLeeBondPrice.lean): the zero-coupon bond price
+  `P(0,T) = 𝔼[exp(−∫₀ᵀ r_s ds)]` of the Ho–Lee short rate `dr = θ(t) dt + σ dB` (continuous `θ`,
+  no mean reversion, the `κ = 0` case that `HullWhiteCalibration` excludes), equal to
+  `A(T)·exp(−T·r₀)` with the linear loading `B(T) = T` and
+  `A(T) = exp(−∫₀ᵀ θ(s)(T−s) ds + σ²T³/6)` (`bondPrice_affine`). It is the instance
+  `m = M(T)`, `c = σ`, `f = (T−u)` of `integral_exp_neg_add_mul_wienerIntegralLp`
+  (`bondPrice_eq`), with the kernel variance `∫₀ᵀ (T−u)² du = T³/3`
+  (`integral_integratedKernel_sq`) and the mean identity `∫₀ᵀ (r₀ + ∫₀ˢ θ) ds =
+  r₀T + ∫₀ᵀ θ(s)(T−s) ds` by integration by parts (`integratedMean_eq`). Cited: Ho & Lee (1986),
+  Brigo & Mercurio 2nd ed. §3.3.1. Disclosed out of scope: the integrated short rate is carried
+  in its Wiener representation, as in the Vasicek and Hull–White files, so the Ho–Lee SDE and
+  the swap of time integrals behind that representation are cited, not proved; the bond price at
+  `t > 0`, calibration of `θ` to an initial curve and a change of measure are not treated.
+  Axioms-clean, `full`.
+
+  Follow-up additions in the same module: the constant-drift coefficient
+  `A(T) = exp(−θ·T²/2 + σ²T³/6)` (`bondA_const`, with the drift loading
+  `∫₀ᵀ θ·(T−s) ds = θ·T²/2`, by the reflection substitution
+  (`integral_const_driftLoading`)); the
+  zero-drift identification `bondPrice_zero_drift` (at `θ ≡ 0` the Ho–Lee price is the driftless
+  price `brownianBondPrice_eq` of `VasicekZeroMeanReversionLimit.lean`); and the bridge
+  `tendsto_vasicekBondPrice_hoLee`: the Vasicek closed form at long-run level `θ/κ` — the level
+  rescaling that lets the drift `κ(θ/κ − r) → θ` survive vanishing mean reversion — tends to the
+  constant-drift Ho–Lee price as `κ → 0⁺`. A limit of the closed forms, not of random variables;
+  at level `0` the limit is the driftless price instead (`tendsto_vasicekBondPrice_brownianBondPrice`),
+  so the level, not the limit, carries the drift. The two added theorems carry curated
+  `#print axioms` guards in `MathFin/AxiomAudit.lean`.
 ### Marchenko-Pastur support edges (2026-11-08)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 805 → 806 on the merged
