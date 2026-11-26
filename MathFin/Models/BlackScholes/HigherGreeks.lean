@@ -398,8 +398,8 @@ theorem hasDerivAt_tau_deriv_bsV_sigma {K r : ℝ} (hK : 0 < K)
 `S ϕ(d₁) √τ d₁ d₂ / σ` is `-S ϕ(d₁) √τ (d₁ d₂ (1 - d₁ d₂) + d₁² + d₂²) / σ²`. The third
 σ-derivative of the price itself is `hasDerivAt_deriv_deriv_bsV_sigma`.
 
-Strategy: one product rule on the volga formula with the clean shortcuts
-`∂_σ d₁ = -d₂ / σ` (`hasDerivAt_bsd1_sigma_clean`) and `∂_σ d₂ = -d₂ / σ - √τ`. -/
+Strategy: one product rule plus the quotient by σ on the volga formula, with the clean
+shortcuts `∂_σ d₁ = -d₂ / σ` (`hasDerivAt_bsd1_sigma_clean`) and `∂_σ d₂ = -d₂ / σ - √τ`. -/
 private lemma hasDerivAt_bsV_ultima {K r : ℝ} {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ)
     (hτ : 0 < τ) :
     HasDerivAt (fun s ↦ S * gaussianPDFReal 0 1 (bsd1 S K r s τ) * Real.sqrt τ *

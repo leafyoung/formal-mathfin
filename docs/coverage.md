@@ -47,8 +47,9 @@ four `full` (881 full, 18 library wrappers, 29 reduced cores).
   rule on the vega formula `S·ϕ(d₁)·√τ` (`hasDerivAt_bsV_sigma`) through the clean `∂_τ d₁`.
 - **`mf-higher-greeks-ultima`**: the sensitivity of volga to volatility, `∂/∂σ (∂²V/∂σ²) =
   −S·ϕ(d₁)·√τ·(d₁d₂(1 − d₁d₂) + d₁² + d₂²)/σ²` (`hasDerivAt_deriv_deriv_bsV_sigma`), one product
-  rule on the volga formula (`hasDerivAt_bsV_volga`) through `∂_σ d₁ = −d₂/σ` and its companion
-  `∂_σ d₂ = −d₂/σ − √τ`; `hasDerivAt_deriv_of_eventually` transports it to the price, the volga
+  rule plus the quotient by σ on the volga formula (`hasDerivAt_bsV_volga`) through `∂_σ d₁ = −d₂/σ`
+  and its companion `∂_σ d₂ = −d₂/σ − √τ`; `hasDerivAt_deriv_of_eventually` transports it to the
+  price, the volga
   formula being the second σ-derivative at every `σ > 0` (`hasDerivAt_deriv_bsV_sigma`).
 
 Color, zomma, veta and ultima are market-convention names, not carried by Hull's Greek-letters
