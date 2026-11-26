@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Raphael Coelho. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Raphael Coelho
+Authors: Raphael Coelho, Yang Ye
 -/
 module
 
@@ -19,17 +19,31 @@ second- and third-order Greeks, each stated for the price itself:
 * **Charm**: `∂/∂τ (∂V/∂S) = ϕ(d₁) · ((r + σ²/2)τ − log(S/K)) / (2στ√τ)`
   (`hasDerivAt_tau_deriv_bsV_S`).
 * **Speed**: `∂³V/∂S³ = -ϕ(d₁) (d₁ + σ√τ) / (S² σ² τ)` (`hasDerivAt_deriv_deriv_bsV_S`).
+* **Color**: `∂/∂τ (∂²V/∂S²) = -ϕ(d₁) (1 + (2rτ − d₂σ√τ) d₁ / (σ√τ)) / (2Sτσ√τ)`
+  (`hasDerivAt_tau_deriv_deriv_bsV_S`).
+* **Zomma**: `∂/∂σ (∂²V/∂S²) = ϕ(d₁) (d₁ d₂ − 1) / (S σ² √τ)`
+  (`hasDerivAt_sigma_deriv_deriv_bsV_S`).
+* **Veta**: `∂/∂τ (∂V/∂σ) = -S ϕ(d₁) √τ (r d₁ / (σ√τ) − (1 + d₁ d₂) / (2τ))`
+  (`hasDerivAt_tau_deriv_bsV_sigma`).
+* **Ultima**: `∂/∂σ (∂²V/∂σ²) = -S ϕ(d₁) √τ (d₁ d₂ (1 − d₁ d₂) + d₁² + d₂²) / σ²`
+  (`hasDerivAt_deriv_deriv_bsV_sigma`).
+
+Color, zomma, veta and ultima are market-convention names, not carried by Hull's
+Greek-letters chapter; each closed form is derived here from the module's own lower-order
+formula and matches Haug's printed form as reproduced on the standard Greeks reference
+page, which is the opened secondary source for the printed bracket.
 
 Each comes in two steps. A formula lemma (`hasDerivAt_bsV_vanna`, …) differentiates
-the closed form of the lower-order Greek. `hasDerivAt_deriv_of_eventually` (volga, speed)
-or its mixed-partial form `hasDerivAt_deriv_param_of_eventually` (vanna, charm) then makes
-it a statement about the price, since that closed form is the lower-order derivative near
-the point.
+the closed form of the lower-order Greek. `hasDerivAt_deriv_of_eventually` (volga, speed,
+ultima) or its mixed-partial form `hasDerivAt_deriv_param_of_eventually` (vanna, charm,
+color, zomma, veta) then makes it a statement about the price, since that closed form is
+the lower-order derivative near the point.
 
 With `ϕ'(z) = -z · ϕ(z)`, each formula is one chain rule plus one product, quotient or
-scalar rule. Volga's uses the shortcut `∂_σ d₁ = -d₂/σ` (`hasDerivAt_bsd1_sigma_clean`
-below), which compresses an otherwise messy quotient-rule expression; vanna's uses
-`∂_S d₁` and collapses via `σ√τ − d₁ = -d₂`.
+scalar rule. Volga's, zomma's and ultima's use the shortcut `∂_σ d₁ = -d₂/σ`
+(`hasDerivAt_bsd1_sigma_clean` below), which compresses an otherwise messy quotient-rule
+expression; vanna's uses `∂_S d₁` and collapses via `σ√τ − d₁ = -d₂`; color's and veta's
+use the clean closed form of `∂_τ d₁` (`hasDerivAt_bsd1_tau`).
 
 ## Main results
 
@@ -39,6 +53,13 @@ All for `K, σ, S, τ > 0`.
 * `hasDerivAt_deriv_bsV_sigma`: volga, `∂²V/∂σ² = S ϕ(d₁) √τ d₁ d₂ / σ`.
 * `hasDerivAt_tau_deriv_bsV_S`: charm, `∂/∂τ (∂V/∂S) = ϕ(d₁) ((r + σ²/2)τ − log(S/K)) / (2στ√τ)`.
 * `hasDerivAt_deriv_deriv_bsV_S`: speed, `∂³V/∂S³ = −ϕ(d₁) (d₁ + σ√τ) / (S² σ² τ)`.
+* `hasDerivAt_tau_deriv_deriv_bsV_S`: color, `∂/∂τ (∂²V/∂S²) =
+  −ϕ(d₁) (1 + (2rτ − d₂σ√τ) d₁ / (σ√τ)) / (2Sτσ√τ)`.
+* `hasDerivAt_sigma_deriv_deriv_bsV_S`: zomma, `∂/∂σ (∂²V/∂S²) = ϕ(d₁) (d₁ d₂ − 1) / (S σ² √τ)`.
+* `hasDerivAt_tau_deriv_bsV_sigma`: veta, `∂/∂τ (∂V/∂σ) =
+  −S ϕ(d₁) √τ (r d₁ / (σ√τ) − (1 + d₁ d₂) / (2τ))`.
+* `hasDerivAt_deriv_deriv_bsV_sigma`: ultima, `∂/∂σ (∂²V/∂σ²) =
+  −S ϕ(d₁) √τ (d₁ d₂ (1 − d₁ d₂) + d₁² + d₂²) / σ²`.
 * `hasDerivAt_bsV_SSS`: the `S`-derivative of the gamma formula `ϕ(d₁) / (S σ √τ)`, which is
   the speed formula.
 * `hasDerivAt_bsV_S_chainRule`, `hasDerivAt_bsV_param_chainRule`: when the volatility is itself
@@ -51,10 +72,12 @@ All for `K, σ, S, τ > 0`.
 
 * [J. C. Hull, *Options, Futures, and Other Derivatives*][Hull], 19.4
 * [Wystup (2002)][Wystup2002]
+* [E. G. Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed.][Haug2007]
 
 ## Tags
 
-vanna, volga, vomma, speed, third-order Greeks, higher-order sensitivities, MSC 91G20, JEL G13
+vanna, volga, vomma, speed, color, zomma, veta, ultima, third-order Greeks, higher-order
+sensitivities, MSC 91G20, JEL G13
 -/
 
 @[expose] public section
@@ -349,7 +372,7 @@ private lemma hasDerivAt_bsV_veta {K r σ : ℝ} (hσ : 0 < σ)
     Real.hasDerivAt_sqrt hτ.ne'
   have h_full := (h_num.const_mul S).mul h_sqrt_deriv
   simp only [Function.comp_apply] at h_full
-  convert h_full using 1 <;> try rfl
+  convert h_full using 1
   rw [show bsd2 S K r σ τ = bsd1 S K r σ τ - σ * Real.sqrt τ from by rw [bsd2]]
   field_simp
   have hpow : Real.sqrt τ ^ 3 = Real.sqrt τ * τ := by
@@ -371,6 +394,57 @@ theorem hasDerivAt_tau_deriv_bsV_sigma {K r : ℝ} (hK : 0 < K)
   hasDerivAt_deriv_param_of_eventually
     ((eventually_gt_nhds hτ).mono fun _ ht ↦ hasDerivAt_bsV_sigma hK hS hσ ht)
     (hasDerivAt_bsV_veta hσ hS hτ)
+
+/-- **The ultima formula**: the σ-derivative of the volga formula
+`S ϕ(d₁) √τ d₁ d₂ / σ` is `-S ϕ(d₁) √τ (d₁ d₂ (1 - d₁ d₂) + d₁² + d₂²) / σ²`. The third
+σ-derivative of the price itself is `hasDerivAt_deriv_deriv_bsV_sigma`.
+
+Strategy: one product rule on the volga formula with the clean shortcuts
+`∂_σ d₁ = -d₂ / σ` (`hasDerivAt_bsd1_sigma_clean`) and `∂_σ d₂ = -d₂ / σ - √τ`. -/
+private lemma hasDerivAt_bsV_ultima {K r : ℝ} {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ)
+    (hτ : 0 < τ) :
+    HasDerivAt (fun s ↦ S * gaussianPDFReal 0 1 (bsd1 S K r s τ) * Real.sqrt τ *
+        bsd1 S K r s τ * bsd2 S K r s τ / s)
+      (-(S * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * Real.sqrt τ *
+        (bsd1 S K r σ τ * bsd2 S K r σ τ * (1 - bsd1 S K r σ τ * bsd2 S K r σ τ) +
+          bsd1 S K r σ τ ^ 2 + bsd2 S K r σ τ ^ 2) / σ ^ 2)) σ := by
+  have hσ_ne : σ ≠ 0 := hσ.ne'
+  have h_d1 := hasDerivAt_bsd1_sigma_clean S K r hσ hτ
+  have h_sqrt : HasDerivAt (fun s : ℝ ↦ s * Real.sqrt τ) (Real.sqrt τ) σ := by
+    simpa using (hasDerivAt_id σ).mul_const (Real.sqrt τ)
+  have hd2 : HasDerivAt (fun s : ℝ ↦ bsd1 S K r s τ - s * Real.sqrt τ)
+      (-(bsd2 S K r σ τ) / σ - Real.sqrt τ) σ :=
+    h_d1.sub h_sqrt
+  have h_d2 : HasDerivAt (fun s ↦ bsd2 S K r s τ) (-(bsd2 S K r σ τ) / σ - Real.sqrt τ) σ := by
+    rw [← show (fun s : ℝ ↦ bsd1 S K r s τ - s * Real.sqrt τ) = fun s ↦ bsd2 S K r s τ from by
+      funext s; rw [bsd2]]
+    exact hd2
+  have h_pdf := (hasDerivAt_gaussianPDFReal_zero_one (bsd1 S K r σ τ)).comp σ h_d1
+  have h_chain := (((h_pdf.mul h_d1).mul h_d2).div (hasDerivAt_id σ)
+    (show σ ≠ 0 from hσ.ne')).const_mul (S * Real.sqrt τ)
+  simp only [Function.comp_apply, Pi.mul_apply, Pi.div_apply] at h_chain
+  convert h_chain using 1
+  · funext s
+    simp only [id_eq]
+    ring
+  · rw [show bsd2 S K r σ τ = bsd1 S K r σ τ - σ * Real.sqrt τ from by rw [bsd2]]
+    simp only [id_eq]
+    field_simp
+    ring
+
+/-- **Ultima**: `∂/∂σ (∂²V/∂σ²) = -S ϕ(d₁) √τ (d₁ d₂ (1 - d₁ d₂) + d₁² + d₂²) / σ²`, the
+market-convention name for the sensitivity of volga to volatility, for the call price itself:
+the volga formula is `∂²V/∂σ²` at every volatility `σ > 0` (`hasDerivAt_deriv_bsV_sigma`),
+and its σ-derivative is the ultima formula (`hasDerivAt_bsV_ultima`). -/
+theorem hasDerivAt_deriv_deriv_bsV_sigma {K r : ℝ} (hK : 0 < K)
+    {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ) (hτ : 0 < τ) :
+    HasDerivAt (deriv (deriv fun v ↦ bsV K r v S τ))
+      (-(S * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * Real.sqrt τ *
+        (bsd1 S K r σ τ * bsd2 S K r σ τ * (1 - bsd1 S K r σ τ * bsd2 S K r σ τ) +
+          bsd1 S K r σ τ ^ 2 + bsd2 S K r σ τ ^ 2) / σ ^ 2)) σ :=
+  hasDerivAt_deriv_of_eventually
+    ((eventually_gt_nhds hσ).mono fun _ hv ↦ hasDerivAt_deriv_bsV_sigma hK hS hv hτ)
+    (hasDerivAt_bsV_ultima hS hσ hτ)
 
 
 /-! ### Chain rule when the volatility is itself a function
