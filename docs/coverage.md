@@ -28,7 +28,7 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### The compound-option reduction (2026-11-26)
 
-One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 919 to 920
+One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 922 to 923
 entries; 29 are reduced cores.
 
 - **`mf-compound-option-reduction`** (MathFin/Models/BlackScholes/CompoundOption.lean): for
