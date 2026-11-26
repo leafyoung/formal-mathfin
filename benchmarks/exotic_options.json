@@ -728,11 +728,11 @@
       },
       "metadata": {
         "chapter": 14,
-        "reference": "Haug, The Complete Guide to Option Pricing Formulas, 2nd ed., McGraw-Hill, section 4.13",
+        "reference": "Haug, The Complete Guide to Option Pricing Formulas, 2nd ed. (2007), ch. 4, \"Options on Options\"",
         "citations": [
           {
             "key": "Haug2007",
-            "locator": "section 4.13"
+            "locator": "ch. 4, Options on Options"
           }
         ],
         "difficulty": "intermediate",

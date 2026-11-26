@@ -26,6 +26,23 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### The compound-option reduction (2026-11-26)
+
+One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 917 to 920
+entries with the entries merged since; 29 are reduced cores.
+
+- **`mf-compound-option-reduction`** (MathFin/Models/BlackScholes/CompoundOption.lean): the
+  nested-horizon drivers `√V(Tm)·Z` and `√V(Tm)·Z + √(V(Td)−V(Tm))·Z'` of independent standard
+  normals have correlation `ρ = √(V(Tm)/V(Td))` (`compoundCorrelation_eq`, with `0 < ρ < 1` and
+  `ρ = √(Tm/Td)` for flat volatility); the daughter put value at `Tm` is a Black–Scholes
+  expectation (`daughterPut_eq_integral`, reusing `bs_put_formula`) and lies strictly below
+  `Kd·DrF` (`daughterPut_lt_strike`), so for `Km ≥ Kd·DrF` the call-on-put payoff is zero and the
+  put-on-put payoff is `Km − daughterPut` pointwise, with time-0 value
+  `Km·Dr(Tm) − price₀` under the stated tower hypothesis (`compound_put_value`). Cited: Haug,
+  2nd ed. (2007), ch. 4, "Options on Options". Not derived: Geske's bivariate-normal closed form,
+  the critical spot for `Km < Kd·DrF`, strict monotonicity of the daughter put in spot, the
+  tower property (a hypothesis). Axioms-clean, `reduced_core`.
+
 ### The 2026-11-25 merge
 
 Eleven contributed pull requests (#558, #577–#586) landed together. The corpus goes from 906 to

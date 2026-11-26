@@ -16,8 +16,8 @@ An option on an option (compound maturity `Tm`, underlying-option maturity `Td >
 deterministic rate, dividend and total-variance curves. Write `Dr`, `Dq` for the discount and
 dividend factors and `V` for the total variance. The reduction needs only the forward
 quantities `DrF = Dr(Td)/Dr(Tm)`, `DqF = Dq(Td)/Dq(Tm)` and `VF = V(Td) - V(Tm) > 0`.
-Source: Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed., McGraw-Hill,
-section 4.13.
+Source: Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), ch. 4,
+"Options on Options".
 
 ## Main definitions
 
@@ -49,8 +49,8 @@ the tower property itself (assumed in `compound_put_value`).
 
 ## References
 
-* Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed., McGraw-Hill, section 4.13
-  (printed pp. 132-136).
+* Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), ch. 4,
+  "Options on Options".
 
 ## Tags
 
@@ -134,7 +134,7 @@ theorem compoundCorrelation_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 
     rw [this, compoundCorrelation, Real.sqrt_div hm]
 
 omit [IsProbabilityMeasure P] in
-/-- **H1: shape of `ρ`.** `0 < ρ < 1` for `0 < Vm < Vd`, and `ρ² = Vm/Vd`. -/
+/-- **H1: shape of `ρ`.** `0 < ρ < 1` for `0 < Vm < Vd`. -/
 theorem compoundCorrelation_mem_Ioo {Vm Vd : ℝ} (hm : 0 < Vm) (hd : Vm < Vd) :
     0 < compoundCorrelation Vm Vd ∧ compoundCorrelation Vm Vd < 1 := by
   have hVd : 0 < Vd := hm.trans hd
