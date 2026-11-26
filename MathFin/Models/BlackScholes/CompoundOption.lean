@@ -8,6 +8,8 @@ module
 public import MathFin.Probability.Gaussian.GaussianPairLinearLaw
 public import MathFin.Probability.Gaussian.NormalQuantile
 public import MathFin.Models.BlackScholes.Put
+public import MathFin.Models.BlackScholes.PutGreeks
+public import MathFin.Probability.Gaussian.BivariateNormalCDF
 
 /-!
 # Compound options on non-flat curves: the reduction behind Geske's formula
@@ -27,25 +29,32 @@ Source: Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), c
 
 ## Main results
 
-* `compoundCovariance_eq` and `compoundCorrelation_eq` (H1) — for independent standard normals
+* `compoundCovariance_eq` and `compoundCorrelation_eq` — for independent standard normals
   `Z, Z'`, the nested-horizon drivers `G_m = √V(Tm)·Z` and `G_d = G_m + √(V(Td)-V(Tm))·Z'` have
   `Var G_m = V(Tm)`, `Var G_d = V(Td)`, `cov(G_m, G_d) = V(Tm)`, so their correlation is `ρ`;
-  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1`, `ρ² = V(Tm)/V(Td)`, and
-  `V(t) = σ²t` gives `√(Tm/Td)`.
-* `daughterPut_eq_integral` — the closed form `daughterPut` is the discounted expectation of the
-  put payoff over a lognormal forward step (via `bs_put_formula`).
-* `daughterPut_lt_strike` and `compound_put_payoff_eq` (H2) — the daughter put value is below
-  `Kd·DrF` for every `S > 0`; hence for `Km ≥ Kd·DrF` the call-on-put payoff is identically `0`
-  and the put-on-put payoff is `Km - daughterPut` pointwise.
-* `compound_put_value` — the time-0 put-on-put value is `Km·Dr(Tm)` minus the daughter put's
-  time-0 price, with the tower property `price₀ = Dr(Tm)·𝔼[daughterPut(S_Tm)]` and integrability
-  of `daughterPut(S_Tm)` as hypotheses.
+  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1`, `ρ² = V(Tm)/V(Td)`.
+  Haug prints the flat-parameter case `ρ = √(t₁/T₂)`, which is `compoundCorrelation_flat`; the
+  curve version `ρ = √(V(Tm)/V(Td))` is its generalisation.
+* `compound_joint` — the joint law of `(Z, G_d/√V(Td))` is bivariate normal: the probability of
+  `{Z ≤ a, G_d/√V(Td) ≤ b}` is `bivariateNormalCDF a b ρ`.
+* `daughterPut_eq_bsP` — `daughterPut` is the library's `bsP` at spot `S·DqF`, rate `-log DrF`,
+  volatility `√VF` and unit time; `daughterPut_eq_integral` — it is the discounted expectation of
+  the put payoff over a lognormal forward step.
+* `daughterPut_lt_strike` — the daughter put value is below `Kd·DrF` for every `S > 0`;
+  `daughterPut_strictAntiOn` — it is strictly decreasing in the spot on `(0, ∞)` for `VF > 0`;
+  `daughterPut_integrable` — it is integrable along any measurable positive spot.
+* `compound_put_payoff_eq`, `compound_call_payoff_eq_zero` — for `Km ≥ Kd·DrF` the call-on-put
+  payoff is identically `0` and the put-on-put payoff is `Km - daughterPut` pointwise.
+* `compound_put_value` — for `Km ≥ Kd·DrF` the time-0 put-on-put value is `Km·Dr(Tm)` minus the
+  daughter put's time-0 price, with the tower property `price₀ = Dr(Tm)·𝔼[daughterPut(S_Tm)]`
+  as the only hypothesis (integrability is proved); `compound_call_value_eq_zero` — the
+  call-on-put has value zero in that case.
 
 ## Not derived
 
-The Geske closed form (bivariate-normal CDF with correlation `ρ`) is not derived here, nor is the
-critical-spot existence for `Km < Kd·DrF`, nor strict monotonicity of `daughterPut` in `S`, nor
-the tower property itself (assumed in `compound_put_value`).
+Geske's closed form (the integral of the daughter value over the critical-spot region, giving
+bivariate-normal CDFs), the existence and uniqueness of the critical spot for `Km < Kd·DrF`, and
+the tower property itself (a hypothesis of `compound_put_value`).
 
 ## References
 
@@ -77,7 +86,7 @@ noncomputable def daughterD1 (S K DrF DqF VF : ℝ) : ℝ :=
 noncomputable def daughterPut (S K DrF DqF VF : ℝ) : ℝ :=
   K * DrF * Phi (-(daughterD1 S K DrF DqF VF - √VF)) - S * DqF * Phi (-daughterD1 S K DrF DqF VF)
 
-section H1
+section CorrelationMoments
 
 variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} [IsProbabilityMeasure P]
 
@@ -85,7 +94,7 @@ omit [IsProbabilityMeasure P] in
 private lemma var_one {Z : Ω → ℝ} (h : HasLaw Z (gaussianReal 0 1) P) : Var[Z; P] = 1 := by
   rw [h.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
 
-/-- **H1: moments of the nested drivers.** For independent standard normals `Z, Z'` and
+/-- **moments of the nested drivers.** For independent standard normals `Z, Z'` and
 `0 ≤ Vm ≤ Vd`, with `G_m = √Vm·Z` and `G_d = √Vm·Z + √(Vd-Vm)·Z'`:
 `Var G_m = Vm`, `Var G_d = Vd`, `cov(G_m, G_d) = Vm`. -/
 theorem compoundCovariance_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0 1) P)
@@ -109,7 +118,7 @@ theorem compoundCovariance_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0
       var_one hZ, hc]
     nlinarith
 
-/-- **H1: the correlation of the standardized variables is `ρ = √(Vm/Vd)`.** With `Vd > 0`,
+/-- **the correlation of the standardized variables is `ρ = √(Vm/Vd)`.** With `Vd > 0`,
 `cov(Z, G_d/√Vd) = ρ` and `Var(G_d/√Vd) = 1`. -/
 theorem compoundCorrelation_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0 1) P)
     (hZ' : HasLaw Z' (gaussianReal 0 1) P) (hind : IndepFun Z Z' P) {Vm Vd : ℝ}
@@ -134,7 +143,7 @@ theorem compoundCorrelation_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 
     rw [this, compoundCorrelation, Real.sqrt_div hm]
 
 omit [IsProbabilityMeasure P] in
-/-- **H1: shape of `ρ`.** `0 < ρ < 1` for `0 < Vm < Vd`. -/
+/-- **shape of `ρ`.** `0 < ρ < 1` for `0 < Vm < Vd`. -/
 theorem compoundCorrelation_mem_Ioo {Vm Vd : ℝ} (hm : 0 < Vm) (hd : Vm < Vd) :
     0 < compoundCorrelation Vm Vd ∧ compoundCorrelation Vm Vd < 1 := by
   have hVd : 0 < Vd := hm.trans hd
@@ -144,19 +153,54 @@ theorem compoundCorrelation_mem_Ioo {Vm Vd : ℝ} (hm : 0 < Vm) (hd : Vm < Vd) :
   exact (div_lt_one hVd).2 hd
 
 omit [IsProbabilityMeasure P] in
-/-- **H1: `ρ² = V(Tm)/V(Td)`.** -/
+/-- **`ρ² = V(Tm)/V(Td)`.** -/
 theorem compoundCorrelation_sq {Vm Vd : ℝ} (hm : 0 ≤ Vm) (hd : 0 < Vd) :
     compoundCorrelation Vm Vd ^ 2 = Vm / Vd :=
   Real.sq_sqrt (div_nonneg hm hd.le)
 
 omit [IsProbabilityMeasure P] in
-/-- **H1: flat volatility.** `V(t) = σ²t` gives `ρ = √(Tm/Td)`. -/
+/-- **flat volatility.** `V(t) = σ²t` gives `ρ = √(Tm/Td)`, the flat-parameter case Haug prints. -/
 theorem compoundCorrelation_flat {σ Tm Td : ℝ} (hσ : σ ≠ 0) :
     compoundCorrelation (σ ^ 2 * Tm) (σ ^ 2 * Td) = √(Tm / Td) := by
   unfold compoundCorrelation
   rw [mul_div_mul_left _ _ (pow_ne_zero 2 hσ)]
 
-end H1
+/-- **Joint law of the standardized drivers.** For independent standard normals `Z, Z'` and
+`0 ≤ Vm < Vd`, `P{Z ≤ a, (√Vm/√Vd)·Z + (√(Vd-Vm)/√Vd)·Z' ≤ b} = N₂(a, b; ρ)` with
+`ρ = compoundCorrelation Vm Vd`. -/
+theorem compound_joint {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
+    [IsProbabilityMeasure P] {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0 1) P)
+    (hZ' : HasLaw Z' (gaussianReal 0 1) P) (hind : IndepFun Z Z' P) {Vm Vd : ℝ}
+    (hm : 0 ≤ Vm) (hd : Vm < Vd) (a b : ℝ) :
+    P.real {ω | Z ω ≤ a ∧ (√Vm / √Vd) * Z ω + (√(Vd - Vm) / √Vd) * Z' ω ≤ b}
+      = bivariateNormalCDF a b (compoundCorrelation Vm Vd) := by
+  have hj : HasGaussianLaw (fun ω ↦ (Z ω, Z' ω)) P :=
+    hind.hasGaussianLaw hZ.hasGaussianLaw hZ'.hasGaussianLaw
+  have hc : cov[Z, Z'; P] = 0 :=
+    hind.covariance_eq_zero hZ.hasGaussianLaw.memLp_two hZ'.hasGaussianLaw.memLp_two
+  obtain ⟨hvar, hcov⟩ := compoundCorrelation_eq hZ hZ' hind hm hd
+  set G := fun ω ↦ (√Vm / √Vd) * Z ω + (√(Vd - Vm) / √Vd) * Z' ω with hG
+  have hGlaw : HasLaw G (gaussianReal 0 1) P := by
+    have h := hasLaw_linear_gaussianPair hj hZ hZ' hc (√Vm / √Vd) (√(Vd - Vm) / √Vd)
+    have hv := variance_linear_of_unit hZ.hasGaussianLaw.memLp_two hZ'.hasGaussianLaw.memLp_two
+      (by rw [hZ.variance_eq, variance_id_gaussianReal, NNReal.coe_one])
+      (by rw [hZ'.variance_eq, variance_id_gaussianReal, NNReal.coe_one]) hc
+      (√Vm / √Vd) (√(Vd - Vm) / √Vd)
+    rw [← hv, hvar, Real.toNNReal_one] at h
+    exact h
+  have hpair : HasGaussianLaw (fun ω ↦ (Z ω, G ω)) P := by
+    simpa only [ContinuousLinearMap.prod_apply, add_apply,
+      smul_apply, ContinuousLinearMap.coe_fst',
+      ContinuousLinearMap.coe_snd', smul_eq_mul] using
+      hj.map_fun ((ContinuousLinearMap.fst ℝ ℝ ℝ).prod
+        ((√Vm / √Vd) • ContinuousLinearMap.fst ℝ ℝ ℝ
+          + (√(Vd - Vm) / √Vd) • ContinuousLinearMap.snd ℝ ℝ ℝ))
+  have hlaw := hasLaw_bivariateNormalLaw_of_gaussianPair hpair hZ hGlaw hcov
+  rw [bivariateNormalCDF_eq_law, ← hlaw.map_eq, Measure.real, Measure.real,
+    Measure.map_apply_of_aemeasurable hlaw.aemeasurable (measurableSet_Iic.prod measurableSet_Iic)]
+  rfl
+
+end CorrelationMoments
 
 /-- Daughter underlying at `Td` given the spot `S` at `Tm`: forward `S·DqF/DrF` times a
 lognormal step with variance `VF`. -/
@@ -173,9 +217,18 @@ private lemma daughterD1_eq {S K DrF DqF VF : ℝ} (hSq : 0 < S * DqF) (hK : 0 <
   · rw [Real.sq_sqrt hV]; simp only [Real.sqrt_one, mul_one]; ring_nf
   · simp [Real.sqrt_eq_zero_of_nonpos (not_le.1 hV).le]
 
+/-- **The daughter put is the library's Black-Scholes put.** `daughterPut` equals `bsP` at spot
+`S·DqF`, rate `-log DrF`, volatility `√VF` and unit time. -/
+theorem daughterPut_eq_bsP {S K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < K) (hDr : 0 < DrF)
+    (hDq : 0 < DqF) :
+    daughterPut S K DrF DqF VF = bsP K (-Real.log DrF) (√VF) (S * DqF) 1 := by
+  unfold daughterPut bsP bsd2
+  rw [← daughterD1_eq (mul_pos hS hDq) hK hDr, Real.sqrt_one, mul_one, mul_one, neg_neg,
+    Real.exp_log hDr]
+
 /-- **The daughter put value is a Black-Scholes expectation.** For `S, K, DrF, DqF, VF > 0` and
 `Z ~ N(0,1)`, `DrF·𝔼[(K - S_Td)⁺] = daughterPut`, with `S_Td` the lognormal forward step
-`daughterTerminal`. Reuses `bs_put_formula` with spot `S·DqF`, rate `-log DrF`, volatility `√VF`
+`daughterTerminal`. Via `bs_put_formula` with spot `S·DqF`, rate `-log DrF`, volatility `√VF`
 and unit time. -/
 theorem daughterPut_eq_integral {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
     [IsProbabilityMeasure P] {Z : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0 1) P)
@@ -202,7 +255,7 @@ theorem daughterPut_eq_integral {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Mea
   simp only [e1, e2] at h
   rw [h, bsd2, daughterD1_eq hSq hK hDr, Real.sqrt_one, mul_one, daughterPut]
 
-/-- **H2: no-root bound.** The daughter put is strictly below `Kd·DrF` at every spot `S > 0`:
+/-- **No-root bound.** The daughter put is strictly below `Kd·DrF` at every spot `S > 0`:
 `Kd·DrF·Φ(-d₂) < Kd·DrF` (as `Φ < 1`) and `S·DqF·Φ(-d₁) > 0`. -/
 theorem daughterPut_lt_strike {S K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < K) (hDr : 0 < DrF)
     (hDq : 0 < DqF) : daughterPut S K DrF DqF VF < K * DrF := by
@@ -213,39 +266,80 @@ theorem daughterPut_lt_strike {S K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < K) (
   have : 0 < S * DqF * Phi (-daughterD1 S K DrF DqF VF) := mul_pos (mul_pos hS hDq) h2
   nlinarith [mul_lt_mul_of_pos_left h1 hKD]
 
-/-- **H2: compound call payoff vanishes.** For mother strike `Km ≥ Kd·DrF` the call-on-put payoff
+/-- **Strict monotonicity in spot.** For `VF > 0` the daughter put value is strictly decreasing
+in the spot on `(0, ∞)`; its derivative is the put delta `(Φ(d₁) - 1)·DqF < 0`. -/
+theorem daughterPut_strictAntiOn {K DrF DqF VF : ℝ} (hK : 0 < K) (hDr : 0 < DrF)
+    (hDq : 0 < DqF) (hV : 0 < VF) :
+    StrictAntiOn (fun S ↦ daughterPut S K DrF DqF VF) (Set.Ioi 0) := by
+  have hσ : 0 < √VF := Real.sqrt_pos.2 hV
+  have hd : ∀ S ∈ Set.Ioi (0:ℝ), HasDerivAt (fun s ↦ daughterPut s K DrF DqF VF)
+      ((Phi (bsd1 (S * DqF) K (-Real.log DrF) (√VF) 1) - 1) * DqF) S := by
+    intro S hS
+    have h1 := hasDerivAt_bsP_S (r := -Real.log DrF) hK hσ (mul_pos hS hDq) one_pos
+    have h2 : HasDerivAt (fun s : ℝ ↦ s * DqF) DqF S := by
+      simpa using (hasDerivAt_id S).mul_const DqF
+    refine (HasDerivAt.comp S h1 h2).congr_of_eventuallyEq ?_
+    filter_upwards [eventually_gt_nhds hS] with s hs
+    exact daughterPut_eq_bsP hs hK hDr hDq
+  apply strictAntiOn_of_deriv_neg (convex_Ioi 0)
+  · exact fun S hS ↦ (hd S hS).continuousAt.continuousWithinAt
+  · intro S hS
+    rw [interior_Ioi] at hS
+    rw [(hd S hS).deriv]
+    exact mul_neg_of_neg_of_pos (sub_neg.2 (Phi_mem_Ioo _).2) hDq
+
+/-- **Integrability.** For a measurable positive spot `Sm` and `VF > 0`, `daughterPut(Sm)` is
+integrable: it is measurable and lies in `[0, Kd·DrF)`. -/
+theorem daughterPut_integrable {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
+    [IsProbabilityMeasure P] {Sm : Ω → ℝ} {K DrF DqF VF : ℝ}
+    (hSm : ∀ ω, 0 < Sm ω) (hmeas : Measurable Sm) (hK : 0 < K) (hDr : 0 < DrF) (hDq : 0 < DqF)
+    (hV : 0 < VF) : Integrable (fun ω ↦ daughterPut (Sm ω) K DrF DqF VF) P := by
+  have hPhi : Measurable Phi := continuous_Phi.measurable
+  have hm : Measurable (fun ω ↦ daughterPut (Sm ω) K DrF DqF VF) := by
+    unfold daughterPut daughterD1; fun_prop
+  refine Integrable.mono' (integrable_const (K * DrF)) hm.aestronglyMeasurable
+    (ae_of_all _ fun ω ↦ ?_)
+  have hZ : HasLaw (id : ℝ → ℝ) (gaussianReal 0 1) (gaussianReal 0 1) :=
+    ⟨aemeasurable_id, Measure.map_id⟩
+  have h0 : 0 ≤ daughterPut (Sm ω) K DrF DqF VF := by
+    rw [← daughterPut_eq_integral hZ (hSm ω) hK hDr hDq hV]
+    exact integral_nonneg fun _ ↦ mul_nonneg hDr.le (le_max_right _ _)
+  rw [Real.norm_eq_abs, abs_of_nonneg h0]
+  exact (daughterPut_lt_strike (VF := VF) (hSm ω) hK hDr hDq).le
+
+/-- **Compound call payoff vanishes.** For mother strike `Km ≥ Kd·DrF` the call-on-put payoff
 `(daughterPut(S) - Km)⁺` is `0` at every spot `S > 0`. -/
 theorem compound_call_payoff_eq_zero {S Km K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < K)
     (hDr : 0 < DrF) (hDq : 0 < DqF) (hKm : K * DrF ≤ Km) :
     max (daughterPut S K DrF DqF VF - Km) 0 = 0 :=
   max_eq_right (by linarith [daughterPut_lt_strike (VF := VF) hS hK hDr hDq])
 
-/-- **H2: compound put payoff is linear.** For `Km ≥ Kd·DrF` the put-on-put payoff
+/-- **Compound put payoff is linear.** For `Km ≥ Kd·DrF` the put-on-put payoff
 `(Km - daughterPut(S))⁺` equals `Km - daughterPut(S)` at every spot `S > 0`. -/
 theorem compound_put_payoff_eq {S Km K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < K)
     (hDr : 0 < DrF) (hDq : 0 < DqF) (hKm : K * DrF ≤ Km) :
     max (Km - daughterPut S K DrF DqF VF) 0 = Km - daughterPut S K DrF DqF VF :=
   max_eq_left (by linarith [daughterPut_lt_strike (VF := VF) hS hK hDr hDq])
 
-/-- **H2: time-0 value of the put-on-put when no critical spot exists.** Let `Sm` be the
-(positive) spot at `Tm`, `DrTm = Dr(Tm)`, and `price0` the daughter put's time-0 price. Assuming
-the tower property `price0 = DrTm·𝔼[daughterPut(Sm)]` (hypothesis `htower`) and integrability
-of `daughterPut(Sm)`, for `Km ≥ Kd·DrF`:
-`DrTm·𝔼[(Km - daughterPut(Sm))⁺] = Km·DrTm - price0`. -/
+/-- **Time-0 value of the put-on-put when no critical spot exists.** Let `Sm` be the (measurable,
+positive) spot at `Tm`, `DrTm = Dr(Tm)`, and `price0` the daughter put's time-0 price. Assuming
+the tower property `price0 = DrTm·𝔼[daughterPut(Sm)]` (hypothesis `htower`), for `Km ≥ Kd·DrF`
+and `VF > 0`: `DrTm·𝔼[(Km - daughterPut(Sm))⁺] = Km·DrTm - price0`. Integrability of
+`daughterPut(Sm)` is proved (`daughterPut_integrable`). -/
 theorem compound_put_value {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
     [IsProbabilityMeasure P] {Sm : Ω → ℝ} {Km K DrF DqF VF DrTm price0 : ℝ}
-    (hSm : ∀ ω, 0 < Sm ω) (hK : 0 < K) (hDr : 0 < DrF) (hDq : 0 < DqF)
-    (hKm : K * DrF ≤ Km)
-    (hint : Integrable (fun ω ↦ daughterPut (Sm ω) K DrF DqF VF) P)
+    (hSm : ∀ ω, 0 < Sm ω) (hmeas : Measurable Sm) (hK : 0 < K) (hDr : 0 < DrF)
+    (hDq : 0 < DqF) (hV : 0 < VF) (hKm : K * DrF ≤ Km)
     (htower : price0 = DrTm * ∫ ω, daughterPut (Sm ω) K DrF DqF VF ∂P) :
     DrTm * ∫ ω, max (Km - daughterPut (Sm ω) K DrF DqF VF) 0 ∂P = Km * DrTm - price0 := by
   have : (fun ω ↦ max (Km - daughterPut (Sm ω) K DrF DqF VF) 0)
       = fun ω ↦ Km - daughterPut (Sm ω) K DrF DqF VF :=
     funext fun ω ↦ compound_put_payoff_eq (hSm ω) hK hDr hDq hKm
-  rw [this, integral_sub (integrable_const _) hint, htower]
+  rw [this, integral_sub (integrable_const _)
+    (daughterPut_integrable hSm hmeas hK hDr hDq hV), htower]
   simp; ring
 
-/-- **H2: the call-on-put has value zero when no critical spot exists.** -/
+/-- **The call-on-put has value zero when no critical spot exists.** -/
 theorem compound_call_value_eq_zero {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
     {Sm : Ω → ℝ} {Km K DrF DqF VF DrTm : ℝ} (hSm : ∀ ω, 0 < Sm ω) (hK : 0 < K)
     (hDr : 0 < DrF) (hDq : 0 < DqF) (hKm : K * DrF ≤ Km) :

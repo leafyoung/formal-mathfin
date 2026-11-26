@@ -31,17 +31,23 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 919 to 920
 entries; 29 are reduced cores.
 
-- **`mf-compound-option-reduction`** (MathFin/Models/BlackScholes/CompoundOption.lean): the
-  nested-horizon drivers `√V(Tm)·Z` and `√V(Tm)·Z + √(V(Td)−V(Tm))·Z'` of independent standard
-  normals have correlation `ρ = √(V(Tm)/V(Td))` (`compoundCorrelation_eq`, with `0 < ρ < 1` and
-  `ρ = √(Tm/Td)` for flat volatility); the daughter put value at `Tm` is a Black–Scholes
-  expectation (`daughterPut_eq_integral`, reusing `bs_put_formula`) and lies strictly below
-  `Kd·DrF` (`daughterPut_lt_strike`), so for `Km ≥ Kd·DrF` the call-on-put payoff is zero and the
-  put-on-put payoff is `Km − daughterPut` pointwise, with time-0 value
-  `Km·Dr(Tm) − price₀` under the stated tower hypothesis (`compound_put_value`). Cited: Haug,
-  2nd ed. (2007), ch. 4, "Options on Options". Not derived: Geske's bivariate-normal closed form,
-  the critical spot for `Km < Kd·DrF`, strict monotonicity of the daughter put in spot, the
-  tower property (a hypothesis). Axioms-clean, `reduced_core`.
+- **`mf-compound-option-reduction`** (MathFin/Models/BlackScholes/CompoundOption.lean): for
+  independent standard normals `Z, Z'`, the nested-horizon drivers `√V(Tm)·Z` and
+  `√V(Tm)·Z + √(V(Td)−V(Tm))·Z'` have `cov = V(Tm)`, and the standardized variables `Z` and
+  `(√V(Tm)/√V(Td))·Z + (√(V(Td)−V(Tm))/√V(Td))·Z'` have correlation `ρ = √(V(Tm)/V(Td))`
+  (`compoundCorrelation_eq`, with `0 < ρ < 1`); their joint law is bivariate normal with that
+  correlation (`compound_joint`). Haug prints the flat-parameter case `ρ = √(Tm/Td)`
+  (`compoundCorrelation_flat`); the curve version is its generalisation. The daughter put value at
+  `Tm` is the library's `bsP` (`daughterPut_eq_bsP`) and a Black–Scholes expectation
+  (`daughterPut_eq_integral`, reusing `bs_put_formula`); it lies below `Kd·DrF`
+  (`daughterPut_lt_strike`), is strictly decreasing in spot for `VF > 0`
+  (`daughterPut_strictAntiOn`) and integrable along a measurable positive spot
+  (`daughterPut_integrable`). So for `Km ≥ Kd·DrF` the call-on-put payoff is zero and the
+  put-on-put payoff is `Km − daughterPut` pointwise, with time-0 value `Km·Dr(Tm) − price₀` under
+  the tower-property hypothesis (`compound_put_value`). Cited: Haug, 2nd ed. (2007), ch. 4,
+  "Options on Options". Not derived: Geske's closed form (the integral of the daughter value over
+  the critical-spot region), the existence and uniqueness of the critical spot for `Km < Kd·DrF`,
+  and the tower property (a hypothesis). Axioms-clean, `reduced_core`.
 
 ### The 2026-11-25 merge
 

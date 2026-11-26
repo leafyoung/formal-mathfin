@@ -181,7 +181,7 @@ from one file, [`docs/taxonomy.toml`](docs/taxonomy.toml), and the site's
     property of the forward index and the Hull–White reconstitution form of the bond ratio. The
     average-strike conditioning lower bound assumes the conditional-mean identification of the
     terminal payoff with its Gaussian conditional mean. The compound-option put value assumes the
-    tower property of the daughter put and its integrability.
+    tower property of the daughter put.
   - Eleven prove a special case or check transcribed closed forms against each other: the first
     arrival of a Poisson process, the Ornstein–Uhlenbeck Hermite modes up to degree 2, Stulz's call
     on the maximum at zero strike, the Heynen–Kat barrier at zero correlation, Haug's and
