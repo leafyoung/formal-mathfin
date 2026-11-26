@@ -717,6 +717,28 @@
         "formalization_status": "reduced_core",
         "formalization_scope": "Reduced core. Re-export of MathFin.condBoundCall_one_fixing_eq_marketPrice (MathFin/Models/BlackScholes/AsianArithmeticAverageStrike.lean): condBoundCall_one_fixing (the crossing and the Black-Scholes form for N = 1) composed with price_europeanCall_constGirsanovMeasure. SCOPE: an identity between closed forms for N = 1. NOT PROVED: that the closed form is the discounted expected payoff (it needs the conditional-mean identification), and the N > 1 sign pattern of the rates."
       }
+    },
+    {
+      "id": "mf-compound-option-reduction",
+      "name": "Compound Option: Time-Dependent Correlation and the No-Critical-Spot Reduction",
+      "domain": "mathematical_finance",
+      "description": "Reduced core: Haug's compound (option-on-option) setting with deterministic curves. Proved: for independent standard normals the nested-horizon drivers sqrt(V(Tm)) Z and sqrt(V(Tm)) Z + sqrt(V(Td)-V(Tm)) Z' have correlation rho = sqrt(V(Tm)/V(Td)) (variance one for the standardized variable), 0 < rho < 1, and rho = sqrt(Tm/Td) for flat volatility; the daughter put value at Tm is a Black-Scholes expectation (reusing bs_put_formula) and lies strictly below Kd times the forward discount for every spot, so for mother strike Km at least Kd DrF the call-on-put payoff is zero and the put-on-put payoff is Km minus the daughter value, whose time-0 price is Km Dr(Tm) minus the daughter put's time-0 price under the stated tower-property hypothesis. Not derived: the Geske bivariate-normal closed form, the critical spot for Km below Kd DrF, strict monotonicity of the daughter put in spot, and the tower property itself (a hypothesis).",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.CompoundOption\n\nopen MathFin MeasureTheory ProbabilityTheory\n\n/-- **Time-dependent correlation of the nested drivers.** Re-exports\n`MathFin.compoundCorrelation_eq`. -/\ntheorem compound_option_correlation {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}\n    [IsProbabilityMeasure P] {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0 1) P)\n    (hZ' : HasLaw Z' (gaussianReal 0 1) P) (hind : IndepFun Z Z' P) {Vm Vd : ℝ}\n    (hm : 0 ≤ Vm) (hd : Vm < Vd) :\n    Var[fun ω ↦ (√Vm / √Vd) * Z ω + (√(Vd - Vm) / √Vd) * Z' ω; P] = 1 ∧\n    cov[Z, fun ω ↦ (√Vm / √Vd) * Z ω + (√(Vd - Vm) / √Vd) * Z' ω; P]\n      = compoundCorrelation Vm Vd :=\n  MathFin.compoundCorrelation_eq hZ hZ' hind hm hd\n\n/-- **Put-on-put value without a critical spot.** Re-exports `MathFin.compound_put_value`. -/\ntheorem compound_option_put_value {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}\n    [IsProbabilityMeasure P] {Sm : Ω → ℝ} {Km K DrF DqF VF DrTm price0 : ℝ}\n    (hSm : ∀ ω, 0 < Sm ω) (hK : 0 < K) (hDr : 0 < DrF) (hDq : 0 < DqF)\n    (hKm : K * DrF ≤ Km)\n    (hint : Integrable (fun ω ↦ daughterPut (Sm ω) K DrF DqF VF) P)\n    (htower : price0 = DrTm * ∫ ω, daughterPut (Sm ω) K DrF DqF VF ∂P) :\n    DrTm * ∫ ω, max (Km - daughterPut (Sm ω) K DrF DqF VF) 0 ∂P = Km * DrTm - price0 :=\n  MathFin.compound_put_value hSm hK hDr hDq hKm hint htower\n"
+      },
+      "metadata": {
+        "chapter": 14,
+        "reference": "Haug, The Complete Guide to Option Pricing Formulas, 2nd ed., McGraw-Hill, section 4.13",
+        "citations": [
+          {
+            "key": "Haug2007",
+            "locator": "section 4.13"
+          }
+        ],
+        "difficulty": "intermediate",
+        "formalization_status": "reduced_core",
+        "formalization_scope": "Reduced core. Re-export of MathFin.compoundCorrelation_eq and MathFin.compound_put_value (MathFin/Models/BlackScholes/CompoundOption.lean). Derived: the nested-driver covariance and correlation rho = sqrt(V(Tm)/V(Td)) from independence (reusing covariance_linear_of_unit), the identification of the daughter put closed form with a discounted Black-Scholes expectation (bs_put_formula), and the pointwise no-critical-spot bound daughterPut < Kd DrF with its consequences for the compound call and put payoffs. Hypotheses, not derived: the tower property price0 = Dr(Tm) E[daughterPut(S_Tm)] and integrability of daughterPut(S_Tm). Not derived: Geske's bivariate-normal closed form, the critical spot when Km < Kd DrF, strict monotonicity of the daughter put in spot. Axioms-clean."
+      }
     }
   ]
 }

@@ -17,9 +17,9 @@ machine has checked, to build on them in other Lean projects, and to see what is
 stated and open, and where a new result would fit. It is written for mathematicians and for AI
 agents alike.
 
-The [corpus](docs/glossary.md#corpus) records 919 results from the literature in
+The [corpus](docs/glossary.md#corpus) records 920 results from the literature in
 [`benchmarks/`](benchmarks), each with a Lean statement and proof. Of these, 873 are proved in
-full, 18 restate a lemma from Mathlib or BrownianMotion, and 28 are
+full, 18 restate a lemma from Mathlib or BrownianMotion, and 29 are
 [reduced cores](docs/glossary.md#status) that prove less than the result they are named after.
 Each entry records its status and what it leaves out. The library contains no `sorry`, and a
 build-time audit checks that every library theorem the benchmark's proofs cite depends only on the
@@ -166,12 +166,12 @@ from one file, [`docs/taxonomy.toml`](docs/taxonomy.toml), and the site's
 
 ## Limitations
 
-- **Reduced cores.** Twenty-eight of the results prove less than the theorem they are named after.
+- **Reduced cores.** Twenty-nine of the results prove less than the theorem they are named after.
   - Eleven assume a structure whose fields include the textbook conclusion: the reflection
     principle, nowhere differentiability and the law of the iterated logarithm for Brownian motion,
     Novikov's condition, the general Girsanov theorem, the two-dimensional Itô formula, and five
     theorems on Markov chains.
-  - Six rest on a named hypothesis that is not proved. The Dalang–Morton–Willinger theorem for
+  - Seven rest on a named hypothesis that is not proved. The Dalang–Morton–Willinger theorem for
     several assets assumes a conditional one-period fundamental theorem (for one asset the theorem
     is proved without it). Fixed cash flows in a Heath–Jarrow–Morton model assume the bond-pricing
     identity that the drift condition would deliver. The backward-looking caplet assumes the
@@ -180,7 +180,8 @@ from one file, [`docs/taxonomy.toml`](docs/taxonomy.toml), and the site's
     index under the nominal forward measure, and the year-on-year payment assumes the martingale
     property of the forward index and the Hull–White reconstitution form of the bond ratio. The
     average-strike conditioning lower bound assumes the conditional-mean identification of the
-    terminal payoff with its Gaussian conditional mean.
+    terminal payoff with its Gaussian conditional mean. The compound-option put value assumes the
+    tower property of the daughter put and its integrability.
   - Eleven prove a special case or check transcribed closed forms against each other: the first
     arrival of a Poisson process, the Ornstein–Uhlenbeck Hermite modes up to degree 2, Stulz's call
     on the maximum at zero strike, the Heynen–Kat barrier at zero correlation, Haug's and
