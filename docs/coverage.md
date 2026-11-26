@@ -28,8 +28,8 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ### The compound-option reduction (2026-11-26)
 
-One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 917 to 920
-entries with the entries merged since; 29 are reduced cores.
+One `reduced_core` entry in `benchmarks/exotic_options.json`. The corpus goes from 919 to 920
+entries; 29 are reduced cores.
 
 - **`mf-compound-option-reduction`** (MathFin/Models/BlackScholes/CompoundOption.lean): the
   nested-horizon drivers `√V(Tm)·Z` and `√V(Tm)·Z + √(V(Td)−V(Tm))·Z'` of independent standard
