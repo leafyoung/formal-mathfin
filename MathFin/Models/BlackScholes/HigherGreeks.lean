@@ -219,6 +219,159 @@ theorem hasDerivAt_deriv_deriv_bsV_S {K r σ : ℝ} (hK : 0 < K) (hσ : 0 < σ)
     ((eventually_gt_nhds hS).mono fun _ hs ↦ hasDerivAt_deriv_bsV_S hK hσ hs hτ)
     (hasDerivAt_bsV_SSS hK hσ hS hτ)
 
+/-- **The color formula**: the τ-derivative of the gamma formula `ϕ(d₁) / (S σ √τ)` is
+`-ϕ(d₁) · (1 + (2 r τ - d₂ σ √τ) · d₁ / (σ √τ)) / (2 S τ σ √τ)`. The mixed partial of the
+price itself is `hasDerivAt_tau_deriv_deriv_bsV_S`.
+
+Strategy: one quotient rule on the gamma formula. The numerator derivative is
+`ϕ'(d₁) ∂_τ d₁ = -d₁ ϕ(d₁) ∂_τ d₁` with the clean closed form of `∂_τ d₁`
+(`hasDerivAt_bsd1_tau`); the denominator `S σ √τ` contributes `S σ / (2 √τ)`. -/
+private lemma hasDerivAt_bsV_color {K r σ : ℝ} (hσ : 0 < σ)
+    {S τ : ℝ} (hS : 0 < S) (hτ : 0 < τ) :
+    HasDerivAt (fun t ↦ gaussianPDFReal 0 1 (bsd1 S K r σ t) / (S * σ * Real.sqrt t))
+      (-(gaussianPDFReal 0 1 (bsd1 S K r σ τ) *
+        (1 + (2 * r * τ - bsd2 S K r σ τ * σ * Real.sqrt τ) *
+          (bsd1 S K r σ τ / (σ * Real.sqrt τ))) / (2 * S * τ * σ * Real.sqrt τ))) τ := by
+  have h_sqrt_pos : 0 < Real.sqrt τ := Real.sqrt_pos.mpr hτ
+  have h_sqrt_ne : Real.sqrt τ ≠ 0 := h_sqrt_pos.ne'
+  have hσ_ne : σ ≠ 0 := hσ.ne'
+  have hS_ne : S ≠ 0 := hS.ne'
+  have h_d1 := hasDerivAt_bsd1_tau S K r σ hσ hτ
+  have h_num := (hasDerivAt_gaussianPDFReal_zero_one (bsd1 S K r σ τ)).comp τ h_d1
+  have h_sqrt_deriv : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt τ)) τ :=
+    Real.hasDerivAt_sqrt hτ.ne'
+  have h_den : HasDerivAt (fun t : ℝ ↦ S * σ * Real.sqrt t)
+      (S * σ * (1 / (2 * Real.sqrt τ))) τ :=
+    h_sqrt_deriv.const_mul (S * σ)
+  have h : HasDerivAt (fun t ↦ gaussianPDFReal 0 1 (bsd1 S K r σ t) / (S * σ * Real.sqrt t))
+      ((-(bsd1 S K r σ τ * gaussianPDFReal 0 1 (bsd1 S K r σ τ)) *
+            (((r + σ ^ 2 / 2) * τ - Real.log (S / K)) / (2 * σ * τ * Real.sqrt τ)) *
+          (S * σ * Real.sqrt τ)
+        - gaussianPDFReal 0 1 (bsd1 S K r σ τ) * (S * σ * (1 / (2 * Real.sqrt τ))))
+        / (S * σ * Real.sqrt τ) ^ 2) τ :=
+    h_num.div h_den (by positivity)
+  have hsplit : bsd1 S K r σ τ * (σ * Real.sqrt τ)
+      = Real.log (S / K) + (r + σ ^ 2 / 2) * τ := by
+    rw [bsd1]
+    field_simp
+  convert h using 1
+  rw [show bsd2 S K r σ τ = bsd1 S K r σ τ - σ * Real.sqrt τ from by rw [bsd2]]
+  field_simp
+  have hpow : Real.sqrt τ ^ 3 = τ * Real.sqrt τ := by
+    rw [pow_succ, Real.sq_sqrt hτ.le, mul_comm]
+  linear_combination hsplit * (2 * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * Real.sqrt τ *
+      bsd1 S K r σ τ)
+    + Real.sq_sqrt hτ.le * (-(2 * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * σ))
+    + hpow * (-(2 * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * σ ^ 2 * bsd1 S K r σ τ))
+
+/-- **Color**: `∂/∂τ (∂²V/∂S²) = -ϕ(d₁) · (1 + (2 r τ - d₂ σ √τ) · d₁ / (σ √τ)) / (2 S τ σ √τ)`,
+the market-convention name for the τ-decay of gamma, for the call price itself: the gamma
+formula `ϕ(d₁) / (S σ √τ)` is the second S-derivative of the price at every maturity `τ > 0`
+(`hasDerivAt_deriv_bsV_S`), and its τ-derivative is the color formula (`hasDerivAt_bsV_color`). -/
+theorem hasDerivAt_tau_deriv_deriv_bsV_S {K r σ : ℝ} (hK : 0 < K) (hσ : 0 < σ)
+    {S τ : ℝ} (hS : 0 < S) (hτ : 0 < τ) :
+    HasDerivAt (fun t ↦ deriv (deriv fun s ↦ bsV K r σ s t) S)
+      (-(gaussianPDFReal 0 1 (bsd1 S K r σ τ) *
+        (1 + (2 * r * τ - bsd2 S K r σ τ * σ * Real.sqrt τ) *
+          (bsd1 S K r σ τ / (σ * Real.sqrt τ))) / (2 * S * τ * σ * Real.sqrt τ))) τ :=
+  hasDerivAt_deriv_param_of_eventually
+    ((eventually_gt_nhds hτ).mono fun _ ht ↦ hasDerivAt_deriv_bsV_S hK hσ hS ht)
+    (hasDerivAt_bsV_color hσ hS hτ)
+
+/-- **The zomma formula**: the σ-derivative of the gamma formula `ϕ(d₁) / (S σ √τ)` is
+`ϕ(d₁) (d₁ d₂ - 1) / (S σ² √τ)`. The mixed partial of the price itself is
+`hasDerivAt_sigma_deriv_deriv_bsV_S`.
+
+Strategy: one quotient rule with the clean shortcut `∂_σ d₁ = -d₂ / σ`
+(`hasDerivAt_bsd1_sigma_clean`): the numerator derivative is `-d₁ ϕ(d₁) · (-d₂ / σ)`, the
+denominator `S σ √τ` contributes `S √τ`. -/
+private lemma hasDerivAt_bsV_zomma {K r : ℝ} {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ)
+    (hτ : 0 < τ) :
+    HasDerivAt (fun s ↦ gaussianPDFReal 0 1 (bsd1 S K r s τ) / (S * s * Real.sqrt τ))
+      (gaussianPDFReal 0 1 (bsd1 S K r σ τ) * (bsd1 S K r σ τ * bsd2 S K r σ τ - 1) /
+        (S * σ ^ 2 * Real.sqrt τ)) σ := by
+  have h_sqrt_pos : 0 < Real.sqrt τ := Real.sqrt_pos.mpr hτ
+  have hσ_ne : σ ≠ 0 := hσ.ne'
+  have hS_ne : S ≠ 0 := hS.ne'
+  have h_d1 := hasDerivAt_bsd1_sigma_clean S K r hσ hτ
+  have h_num := (hasDerivAt_gaussianPDFReal_zero_one (bsd1 S K r σ τ)).comp σ h_d1
+  have h_den : HasDerivAt (fun s : ℝ ↦ S * s * Real.sqrt τ) (S * Real.sqrt τ) σ := by
+    simpa using ((hasDerivAt_id σ).const_mul S).mul_const (Real.sqrt τ)
+  have h : HasDerivAt (fun s ↦ gaussianPDFReal 0 1 (bsd1 S K r s τ) / (S * s * Real.sqrt τ))
+      ((-(bsd1 S K r σ τ * gaussianPDFReal 0 1 (bsd1 S K r σ τ)) * (-(bsd2 S K r σ τ) / σ) *
+          (S * σ * Real.sqrt τ)
+        - gaussianPDFReal 0 1 (bsd1 S K r σ τ) * (S * Real.sqrt τ)) /
+        (S * σ * Real.sqrt τ) ^ 2) σ :=
+    h_num.div h_den (by positivity)
+  convert h using 1
+  field_simp
+
+/-- **Zomma**: `∂/∂σ (∂²V/∂S²) = ϕ(d₁) (d₁ d₂ - 1) / (S σ² √τ)`, the market-convention name
+for the sensitivity of gamma to volatility, for the call price itself: the gamma formula
+`ϕ(d₁) / (S σ √τ)` is the second S-derivative of the price at every volatility `σ > 0`
+(`hasDerivAt_deriv_bsV_S`), and its σ-derivative is the zomma formula (`hasDerivAt_bsV_zomma`). -/
+theorem hasDerivAt_sigma_deriv_deriv_bsV_S {K r : ℝ} (hK : 0 < K)
+    {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ) (hτ : 0 < τ) :
+    HasDerivAt (fun v ↦ deriv (deriv fun s ↦ bsV K r v s τ) S)
+      (gaussianPDFReal 0 1 (bsd1 S K r σ τ) * (bsd1 S K r σ τ * bsd2 S K r σ τ - 1) /
+        (S * σ ^ 2 * Real.sqrt τ)) σ :=
+  hasDerivAt_deriv_param_of_eventually
+    ((eventually_gt_nhds hσ).mono fun _ hv ↦ hasDerivAt_deriv_bsV_S hK hv hS hτ)
+    (hasDerivAt_bsV_zomma hS hσ hτ)
+
+/-- **The veta formula**: the τ-derivative of the vega formula `S ϕ(d₁) √τ` is
+`-S ϕ(d₁) √τ · (r d₁ / (σ √τ) - (1 + d₁ d₂) / (2 τ))`. The mixed partial of the price
+itself is `hasDerivAt_tau_deriv_bsV_sigma`.
+
+Strategy: one product rule on `S ϕ(d₁(τ)) √τ`: the pdf derivative is `-d₁ ϕ(d₁) ∂_τ d₁`
+with the clean closed form of `∂_τ d₁` (`hasDerivAt_bsd1_tau`), and `√τ` contributes
+`1 / (2 √τ)`. -/
+private lemma hasDerivAt_bsV_veta {K r σ : ℝ} (hσ : 0 < σ)
+    {S τ : ℝ} (hS : 0 < S) (hτ : 0 < τ) :
+    HasDerivAt (fun t ↦ S * gaussianPDFReal 0 1 (bsd1 S K r σ t) * Real.sqrt t)
+      (-(S * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * Real.sqrt τ *
+        (r * bsd1 S K r σ τ / (σ * Real.sqrt τ)
+          - (1 + bsd1 S K r σ τ * bsd2 S K r σ τ) / (2 * τ)))) τ := by
+  have hτ_ne : τ ≠ 0 := hτ.ne'
+  have hσ_ne : σ ≠ 0 := hσ.ne'
+  have h_sqrt_pos : 0 < Real.sqrt τ := Real.sqrt_pos.mpr hτ
+  have h_sqrt_ne : Real.sqrt τ ≠ 0 := h_sqrt_pos.ne'
+  -- the clean L-free form of `∂_τ d₁`
+  have hd1 : HasDerivAt (fun t ↦ bsd1 S K r σ t)
+      ((r + σ ^ 2 / 2) / (σ * Real.sqrt τ) - bsd1 S K r σ τ / (2 * τ)) τ := by
+    have h := hasDerivAt_bsd1_tau S K r σ hσ hτ
+    convert h using 1
+    rw [bsd1]
+    field_simp
+    ring
+  have h_num := (hasDerivAt_gaussianPDFReal_zero_one (bsd1 S K r σ τ)).comp τ hd1
+  have h_sqrt_deriv : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt τ)) τ :=
+    Real.hasDerivAt_sqrt hτ.ne'
+  have h_full := (h_num.const_mul S).mul h_sqrt_deriv
+  simp only [Function.comp_apply] at h_full
+  convert h_full using 1 <;> try rfl
+  rw [show bsd2 S K r σ τ = bsd1 S K r σ τ - σ * Real.sqrt τ from by rw [bsd2]]
+  field_simp
+  have hpow : Real.sqrt τ ^ 3 = Real.sqrt τ * τ := by
+    rw [pow_succ, Real.sq_sqrt hτ.le, mul_comm]
+  linear_combination Real.sq_sqrt hτ.le *
+      (gaussianPDFReal 0 1 (bsd1 S K r σ τ) * σ)
+    + hpow * (-(gaussianPDFReal 0 1 (bsd1 S K r σ τ) * σ ^ 2 * bsd1 S K r σ τ))
+
+/-- **Veta**: `∂/∂τ (∂V/∂σ) = -S ϕ(d₁) √τ · (r d₁ / (σ √τ) - (1 + d₁ d₂) / (2 τ))`, the
+market-convention name for the time decay of vega, for the call price itself: the vega
+formula `S ϕ(d₁) √τ` is `∂V/∂σ` at every maturity `τ > 0` (`hasDerivAt_bsV_sigma`), and its
+τ-derivative is the veta formula (`hasDerivAt_bsV_veta`). -/
+theorem hasDerivAt_tau_deriv_bsV_sigma {K r : ℝ} (hK : 0 < K)
+    {S σ τ : ℝ} (hS : 0 < S) (hσ : 0 < σ) (hτ : 0 < τ) :
+    HasDerivAt (fun t ↦ deriv (fun v ↦ bsV K r v S t) σ)
+      (-(S * gaussianPDFReal 0 1 (bsd1 S K r σ τ) * Real.sqrt τ *
+        (r * bsd1 S K r σ τ / (σ * Real.sqrt τ)
+          - (1 + bsd1 S K r σ τ * bsd2 S K r σ τ) / (2 * τ)))) τ :=
+  hasDerivAt_deriv_param_of_eventually
+    ((eventually_gt_nhds hτ).mono fun _ ht ↦ hasDerivAt_bsV_sigma hK hS hσ ht)
+    (hasDerivAt_bsV_veta hσ hS hτ)
+
 
 /-! ### Chain rule when the volatility is itself a function
 
