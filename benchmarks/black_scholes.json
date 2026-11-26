@@ -576,6 +576,90 @@
       }
     },
     {
+      "id": "mf-higher-greeks-color",
+      "name": "BS Color (∂Γ/∂τ)",
+      "description": "In the Black-Scholes market the European call is priced by the Black-Scholes closed form, and that closed form has time decay of gamma ∂/∂τ (∂²V/∂S²) = −ϕ(d₁)·(1 + (2rτ − d₂σ√τ)·d₁/(σ√τ))/(2Sτσ√τ), the market-convention color.",
+      "domain": "mathematical_finance",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.HigherGreeks\nimport MathFin.Models.BlackScholes.Market\n\nopen MeasureTheory ProbabilityTheory MathFin MathFin.Contracts\nopen MathFin.Contracts.BlackScholes\nopen scoped NNReal\n/-- In the Black-Scholes market the European call is priced by the closed form, and the\nclosed form's time decay of gamma is the color formula. -/\ntheorem bs_color_thm {Ω : Type*} [MeasurableSpace Ω] {W : ℝ≥0 → Ω → ℝ}\n    {μ : Measure Ω} [IsProbabilityMeasure μ] (hW : IsPreBrownianReal W μ)\n    (hWmeas : ∀ t, Measurable (W t)) {S₀ K m r σ : ℝ} {T H : ℝ≥0} (hTH : T ≤ H)\n    (hS₀ : 0 < S₀) (hK : 0 < K) (hσ : 0 < σ) (hT : 0 < (T : ℝ)) :\n    (market μ hWmeas S₀ m r σ).price (constGirsanovMeasure hW hWmeas ((m - r) / σ) H)\n        (europeanCall K T)\n      = S₀ * Phi (bsd1 S₀ K r σ T) - K * Real.exp (-r * T) * Phi (bsd2 S₀ K r σ T) ∧\n    HasDerivAt (fun t => deriv (deriv fun s => MathFin.bsV K r σ s t) S₀)\n      (-(gaussianPDFReal 0 1 (bsd1 S₀ K r σ T) *\n        (1 + (2 * r * T - bsd2 S₀ K r σ T * σ * Real.sqrt T) *\n          (bsd1 S₀ K r σ T / (σ * Real.sqrt T))) / (2 * S₀ * T * σ * Real.sqrt T))) T :=\n  ⟨  price_europeanCall_constGirsanovMeasure hW hWmeas hTH hS₀ hK hσ hT,\n    MathFin.hasDerivAt_tau_deriv_deriv_bsV_S hK hσ hS₀ hT⟩\n"
+      },
+      "metadata": {
+        "chapter": 9,
+        "reference": "BS color (Haug 2007)",
+        "citations": [
+          {
+            "key": "Haug2007"
+          }
+        ],
+        "difficulty": "advanced",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof, stated for the price itself and grounded in the market: the snippet pairs the market grounding (price_europeanCall_constGirsanovMeasure: under the Girsanov pricing measure of risk-price (m - r)/σ the call's market price is the Black-Scholes closed form) with the color identity hasDerivAt_tau_deriv_deriv_bsV_S (the private formula lemma hasDerivAt_bsV_color is one quotient rule on the gamma formula ϕ(d₁)/(Sσ√τ) through the clean closed form of ∂_τ d₁, hasDerivAt_bsd1_tau; hasDerivAt_deriv_param_of_eventually transports it to `t ↦ ∂²V/∂S²(t)`, the gamma formula being ∂²V/∂S² at every τ > 0, hasDerivAt_deriv_bsV_S). Lives in MathFin/Models/BlackScholes/HigherGreeks.lean. Color is a market-convention name; the closed form is derived in Lean and matches Haug's (2007) printed bracket as reproduced on the standard Greeks reference page, which is the opened secondary source. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-higher-greeks-zomma",
+      "name": "BS Zomma (∂Γ/∂σ)",
+      "description": "In the Black-Scholes market the European call is priced by the Black-Scholes closed form, and that closed form has sensitivity of gamma to volatility ∂/∂σ (∂²V/∂S²) = ϕ(d₁)·(d₁d₂ − 1)/(Sσ²√τ), the market-convention zomma.",
+      "domain": "mathematical_finance",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.HigherGreeks\nimport MathFin.Models.BlackScholes.Market\n\nopen MeasureTheory ProbabilityTheory MathFin MathFin.Contracts\nopen MathFin.Contracts.BlackScholes\nopen scoped NNReal\n/-- In the Black-Scholes market the European call is priced by the closed form, and the\nclosed form's sensitivity of gamma to volatility is the zomma formula. -/\ntheorem bs_zomma_thm {Ω : Type*} [MeasurableSpace Ω] {W : ℝ≥0 → Ω → ℝ}\n    {μ : Measure Ω} [IsProbabilityMeasure μ] (hW : IsPreBrownianReal W μ)\n    (hWmeas : ∀ t, Measurable (W t)) {S₀ K m r σ : ℝ} {T H : ℝ≥0} (hTH : T ≤ H)\n    (hS₀ : 0 < S₀) (hK : 0 < K) (hσ : 0 < σ) (hT : 0 < (T : ℝ)) :\n    (market μ hWmeas S₀ m r σ).price (constGirsanovMeasure hW hWmeas ((m - r) / σ) H)\n        (europeanCall K T)\n      = S₀ * Phi (bsd1 S₀ K r σ T) - K * Real.exp (-r * T) * Phi (bsd2 S₀ K r σ T) ∧\n    HasDerivAt (fun v => deriv (deriv fun s => MathFin.bsV K r v s T) S₀)\n      (gaussianPDFReal 0 1 (bsd1 S₀ K r σ T) *\n        (bsd1 S₀ K r σ T * bsd2 S₀ K r σ T - 1) / (S₀ * σ ^ 2 * Real.sqrt T)) σ :=\n  ⟨  price_europeanCall_constGirsanovMeasure hW hWmeas hTH hS₀ hK hσ hT,\n    MathFin.hasDerivAt_sigma_deriv_deriv_bsV_S hK hS₀ hσ hT⟩\n"
+      },
+      "metadata": {
+        "chapter": 9,
+        "reference": "BS zomma (Haug 2007)",
+        "citations": [
+          {
+            "key": "Haug2007"
+          }
+        ],
+        "difficulty": "advanced",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof, stated for the price itself and grounded in the market: the snippet pairs the market grounding (price_europeanCall_constGirsanovMeasure, as in the color entry) with the zomma identity hasDerivAt_sigma_deriv_deriv_bsV_S (the private formula lemma hasDerivAt_bsV_zomma is one quotient rule on the gamma formula ϕ(d₁)/(Sσ√τ) through the clean shortcut ∂_σ d₁ = −d₂/σ, hasDerivAt_bsd1_sigma_clean; hasDerivAt_deriv_param_of_eventually transports it to `v ↦ ∂²V/∂S²(v)`, the gamma formula being ∂²V/∂S² at every σ > 0, hasDerivAt_deriv_bsV_S). Lives in MathFin/Models/BlackScholes/HigherGreeks.lean. Zomma is a market-convention name; the closed form is derived in Lean and matches Haug's (2007) printed form as reproduced on the standard Greeks reference page, which is the opened secondary source. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-higher-greeks-veta",
+      "name": "BS Veta (∂vega/∂τ)",
+      "description": "In the Black-Scholes market the European call is priced by the Black-Scholes closed form, and that closed form has time decay of vega ∂/∂τ (∂V/∂σ) = −S·ϕ(d₁)·√τ·(r·d₁/(σ√τ) − (1 + d₁d₂)/(2τ)), the market-convention veta.",
+      "domain": "mathematical_finance",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.HigherGreeks\nimport MathFin.Models.BlackScholes.Market\n\nopen MeasureTheory ProbabilityTheory MathFin MathFin.Contracts\nopen MathFin.Contracts.BlackScholes\nopen scoped NNReal\n/-- In the Black-Scholes market the European call is priced by the closed form, and the\nclosed form's time decay of vega is the veta formula. -/\ntheorem bs_veta_thm {Ω : Type*} [MeasurableSpace Ω] {W : ℝ≥0 → Ω → ℝ}\n    {μ : Measure Ω} [IsProbabilityMeasure μ] (hW : IsPreBrownianReal W μ)\n    (hWmeas : ∀ t, Measurable (W t)) {S₀ K m r σ : ℝ} {T H : ℝ≥0} (hTH : T ≤ H)\n    (hS₀ : 0 < S₀) (hK : 0 < K) (hσ : 0 < σ) (hT : 0 < (T : ℝ)) :\n    (market μ hWmeas S₀ m r σ).price (constGirsanovMeasure hW hWmeas ((m - r) / σ) H)\n        (europeanCall K T)\n      = S₀ * Phi (bsd1 S₀ K r σ T) - K * Real.exp (-r * T) * Phi (bsd2 S₀ K r σ T) ∧\n    HasDerivAt (fun t => deriv (fun v => MathFin.bsV K r v S₀ t) σ)\n      (-(S₀ * gaussianPDFReal 0 1 (bsd1 S₀ K r σ T) * Real.sqrt T *\n        (r * bsd1 S₀ K r σ T / (σ * Real.sqrt T)\n          - (1 + bsd1 S₀ K r σ T * bsd2 S₀ K r σ T) / (2 * T)))) T :=\n  ⟨  price_europeanCall_constGirsanovMeasure hW hWmeas hTH hS₀ hK hσ hT,\n    MathFin.hasDerivAt_tau_deriv_bsV_sigma hK hS₀ hσ hT⟩\n"
+      },
+      "metadata": {
+        "chapter": 9,
+        "reference": "BS veta (Haug 2007)",
+        "citations": [
+          {
+            "key": "Haug2007"
+          }
+        ],
+        "difficulty": "advanced",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof, stated for the price itself and grounded in the market: the snippet pairs the market grounding (price_europeanCall_constGirsanovMeasure, as in the color entry) with the veta identity hasDerivAt_tau_deriv_bsV_sigma (the private formula lemma hasDerivAt_bsV_veta is one product rule on the vega formula S·ϕ(d₁)·√τ through the clean closed form of ∂_τ d₁; hasDerivAt_deriv_param_of_eventually transports it to `t ↦ ∂V/∂σ(t)`, the vega formula being ∂V/∂σ at every τ > 0, hasDerivAt_bsV_sigma). Lives in MathFin/Models/BlackScholes/HigherGreeks.lean. Veta is a market-convention name; the closed form is derived in Lean and matches Haug's (2007) printed bracket as reproduced on the standard Greeks reference page, which is the opened secondary source. Axioms-clean."
+      }
+    },
+    {
+      "id": "mf-higher-greeks-ultima",
+      "name": "BS Ultima (∂volga/∂σ)",
+      "description": "In the Black-Scholes market the European call is priced by the Black-Scholes closed form, and that closed form has sensitivity of volga to volatility ∂/∂σ (∂²V/∂σ²) = −S·ϕ(d₁)·√τ·(d₁d₂(1 − d₁d₂) + d₁² + d₂²)/σ², the market-convention ultima.",
+      "domain": "mathematical_finance",
+      "code": {
+        "lean": "import MathFin.Models.BlackScholes.HigherGreeks\nimport MathFin.Models.BlackScholes.Market\n\nopen MeasureTheory ProbabilityTheory MathFin MathFin.Contracts\nopen MathFin.Contracts.BlackScholes\nopen scoped NNReal\n/-- In the Black-Scholes market the European call is priced by the closed form, and the\nclosed form's sensitivity of volga to volatility is the ultima formula. -/\ntheorem bs_ultima_thm {Ω : Type*} [MeasurableSpace Ω] {W : ℝ≥0 → Ω → ℝ}\n    {μ : Measure Ω} [IsProbabilityMeasure μ] (hW : IsPreBrownianReal W μ)\n    (hWmeas : ∀ t, Measurable (W t)) {S₀ K m r σ : ℝ} {T H : ℝ≥0} (hTH : T ≤ H)\n    (hS₀ : 0 < S₀) (hK : 0 < K) (hσ : 0 < σ) (hT : 0 < (T : ℝ)) :\n    (market μ hWmeas S₀ m r σ).price (constGirsanovMeasure hW hWmeas ((m - r) / σ) H)\n        (europeanCall K T)\n      = S₀ * Phi (bsd1 S₀ K r σ T) - K * Real.exp (-r * T) * Phi (bsd2 S₀ K r σ T) ∧\n    HasDerivAt (deriv (deriv fun v => MathFin.bsV K r v S₀ T))\n      (-(S₀ * gaussianPDFReal 0 1 (bsd1 S₀ K r σ T) * Real.sqrt T *\n        (bsd1 S₀ K r σ T * bsd2 S₀ K r σ T * (1 - bsd1 S₀ K r σ T * bsd2 S₀ K r σ T) +\n          bsd1 S₀ K r σ T ^ 2 + bsd2 S₀ K r σ T ^ 2) / σ ^ 2)) σ :=\n  ⟨  price_europeanCall_constGirsanovMeasure hW hWmeas hTH hS₀ hK hσ hT,\n    MathFin.hasDerivAt_deriv_deriv_bsV_sigma hK hS₀ hσ hT⟩\n"
+      },
+      "metadata": {
+        "chapter": 9,
+        "reference": "BS ultima (Haug 2007)",
+        "citations": [
+          {
+            "key": "Haug2007"
+          }
+        ],
+        "difficulty": "advanced",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof, stated for the price itself and grounded in the market: the snippet pairs the market grounding (price_europeanCall_constGirsanovMeasure, as in the color entry) with the ultima identity hasDerivAt_deriv_deriv_bsV_sigma (the private formula lemma hasDerivAt_bsV_ultima is one product rule on the volga formula S·ϕ(d₁)·√τ·d₁·d₂/σ through the clean shortcut ∂_σ d₁ = −d₂/σ and its companion ∂_σ d₂ = −d₂/σ − √τ; hasDerivAt_deriv_of_eventually transports it to the second σ-derivative of the price, the volga formula being ∂²V/∂σ² at every σ > 0, hasDerivAt_deriv_bsV_sigma). Lives in MathFin/Models/BlackScholes/HigherGreeks.lean. Ultima is a market-convention name; the closed form is derived in Lean and matches Haug's (2007) printed bracket as reproduced on the standard Greeks reference page, which is the opened secondary source. Axioms-clean."
+      }
+    },
+    {
       "id": "mf-bachelier-delta",
       "name": "Bachelier Delta",
       "description": "Bachelier delta: ∂V/∂S = Φ(d) where d = (S-K)/(σ√T). Chain-rule contributions through d cancel via the identity (S-K)/(σ√T) = d.",

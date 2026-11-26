@@ -26,6 +26,38 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### Higher-order Greeks: color, zomma, veta, ultima (2026-11-26)
+
+Four `full` entries in `benchmarks/black_scholes.json`, all stated for the Black–Scholes call
+price `bsV K r σ S τ` with `K, σ, S, τ > 0`, in
+`MathFin/Models/BlackScholes/HigherGreeks.lean`. The corpus goes from 924 to 928 entries, all
+four `full` (881 full, 18 library wrappers, 29 reduced cores).
+
+- **`mf-higher-greeks-color`**: the τ-decay of gamma, `∂/∂τ (∂²V/∂S²) =
+  −ϕ(d₁)(1 + (2rτ − d₂σ√τ)·d₁/(σ√τ))/(2Sτσ√τ)` (`hasDerivAt_tau_deriv_deriv_bsV_S`). The private
+  formula lemma `hasDerivAt_bsV_color` is one quotient rule on the gamma formula
+  `ϕ(d₁)/(Sσ√τ)` (`hasDerivAt_Phi_bsd1_S`) through the clean `∂_τ d₁` (`hasDerivAt_bsd1_tau`);
+  `hasDerivAt_deriv_param_of_eventually` transports it to the price, the gamma formula being
+  the second S-derivative at every `τ > 0` (`hasDerivAt_deriv_bsV_S`).
+- **`mf-higher-greeks-zomma`**: the sensitivity of gamma to volatility, `∂/∂σ (∂²V/∂S²) =
+  ϕ(d₁)(d₁d₂ − 1)/(Sσ²√τ)` (`hasDerivAt_sigma_deriv_deriv_bsV_S`), one quotient rule through the
+  clean shortcut `∂_σ d₁ = −d₂/σ` (`hasDerivAt_bsd1_sigma_clean`).
+- **`mf-higher-greeks-veta`**: the time-decay of vega, `∂/∂τ (∂V/∂σ) =
+  −S·ϕ(d₁)·√τ·(r·d₁/(σ√τ) − (1 + d₁d₂)/(2τ))` (`hasDerivAt_tau_deriv_bsV_sigma`), one product
+  rule on the vega formula `S·ϕ(d₁)·√τ` (`hasDerivAt_bsV_sigma`) through the clean `∂_τ d₁`.
+- **`mf-higher-greeks-ultima`**: the sensitivity of volga to volatility, `∂/∂σ (∂²V/∂σ²) =
+  −S·ϕ(d₁)·√τ·(d₁d₂(1 − d₁d₂) + d₁² + d₂²)/σ²` (`hasDerivAt_deriv_deriv_bsV_sigma`), one product
+  rule on the volga formula (`hasDerivAt_bsV_volga`) through `∂_σ d₁ = −d₂/σ` and its companion
+  `∂_σ d₂ = −d₂/σ − √τ`; `hasDerivAt_deriv_of_eventually` transports it to the price, the volga
+  formula being the second σ-derivative at every `σ > 0` (`hasDerivAt_deriv_bsV_sigma`).
+
+Color, zomma, veta and ultima are market-convention names, not carried by Hull's Greek-letters
+chapter; the closed forms are derived in Lean and match Haug's (2007) printed brackets as
+reproduced on the standard Greeks reference page, the opened secondary source. Central-difference
+and printed-form checks at four points (one with `r = 0`, one with `τ < 1`) agree to 1e-10 or
+better. Not proved: the corresponding Greeks of the put, dividends (`q`), and the sensitivity of
+delta or charm to `σ`. Axioms-clean, `full`.
+
 ### The 2026-11-25 merge
 
 Eleven contributed pull requests (#558, #577–#586) landed together. The corpus goes from 906 to

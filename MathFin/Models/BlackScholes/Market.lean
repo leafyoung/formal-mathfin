@@ -70,6 +70,7 @@ The Black–Scholes market has no arbitrage on any grid of dates inside the Girs
 * [F. Black and M. Scholes, *The pricing of options and corporate liabilities*][BlackScholes1973]
 * [S. E. Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models*][ShreveSCFII], 5.2
 * [Y. F. Saporito, *Stochastic Processes*][Saporito], Theorem 9.1.8
+* [E. G. Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed.][Haug2007]
 
 ## Tags
 

@@ -53,6 +53,22 @@ namespace MathFin.AxiomAudit
 #guard_msgs in
 #print axioms MathFin.hasDerivAt_bsV_S
 
+/-- info: 'MathFin.hasDerivAt_tau_deriv_deriv_bsV_S' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms MathFin.hasDerivAt_tau_deriv_deriv_bsV_S
+
+/-- info: 'MathFin.hasDerivAt_sigma_deriv_deriv_bsV_S' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms MathFin.hasDerivAt_sigma_deriv_deriv_bsV_S
+
+/-- info: 'MathFin.hasDerivAt_tau_deriv_bsV_sigma' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms MathFin.hasDerivAt_tau_deriv_bsV_sigma
+
+/-- info: 'MathFin.hasDerivAt_deriv_deriv_bsV_sigma' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms MathFin.hasDerivAt_deriv_deriv_bsV_sigma
+
 /-- info: 'MathFin.bs_pde_holds' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms MathFin.bs_pde_holds
