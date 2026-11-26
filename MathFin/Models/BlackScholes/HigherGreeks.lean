@@ -29,9 +29,9 @@ second- and third-order Greeks, each stated for the price itself:
   (`hasDerivAt_deriv_deriv_bsV_sigma`).
 
 Color, zomma, veta and ultima are market-convention names, not carried by Hull's
-Greek-letters chapter; each closed form is derived here from the module's own lower-order
-formula and matches Haug's printed form as reproduced on the standard Greeks reference
-page, which is the opened secondary source for the printed bracket.
+Greek-letters chapter; each closed form is derived here from the lower-order Greek formulas
+(gamma, vega, volga) and matches Haug's printed form as reproduced on Wikipedia's
+"Greeks (finance)" page, which is the opened secondary source for the printed bracket.
 
 Each comes in two steps. A formula lemma (`hasDerivAt_bsV_vanna`, …) differentiates
 the closed form of the lower-order Greek. `hasDerivAt_deriv_of_eventually` (volga, speed,

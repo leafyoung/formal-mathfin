@@ -53,7 +53,7 @@ four `full` (881 full, 18 library wrappers, 29 reduced cores).
 
 Color, zomma, veta and ultima are market-convention names, not carried by Hull's Greek-letters
 chapter; the closed forms are derived in Lean and match Haug's (2007) printed brackets as
-reproduced on the standard Greeks reference page, the opened secondary source. Central-difference
+reproduced on Wikipedia's "Greeks (finance)" page, the opened secondary source. Central-difference
 checks at four points (one with `r = 0`, one with `τ < 1`) agree with the derivations to 3e-10 or
 better, and the printed-form comparisons to 1e-15. Not proved: the corresponding Greeks of the put, dividends (`q`), and the σ-sensitivities
 beyond zomma (of vanna, of charm). Axioms-clean, `full`.
