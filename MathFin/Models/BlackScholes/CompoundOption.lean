@@ -18,7 +18,7 @@ An option on an option (compound maturity `Tm`, underlying-option maturity `Td >
 deterministic rate, dividend and total-variance curves. Write `Dr`, `Dq` for the discount and
 dividend factors and `V` for the total variance. The reduction needs only the forward
 quantities `DrF = Dr(Td)/Dr(Tm)`, `DqF = Dq(Td)/Dq(Tm)` and `VF = V(Td) - V(Tm) > 0`.
-Source: Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), ch. 4,
+Source: after Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), ch. 4,
 "Options on Options".
 
 ## Main definitions
@@ -32,7 +32,7 @@ Source: Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), c
 * `compoundCovariance_eq` and `compoundCorrelation_eq` — for independent standard normals
   `Z, Z'`, the nested-horizon drivers `G_m = √V(Tm)·Z` and `G_d = G_m + √(V(Td)-V(Tm))·Z'` have
   `Var G_m = V(Tm)`, `Var G_d = V(Td)`, `cov(G_m, G_d) = V(Tm)`, so their correlation is `ρ`;
-  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1`, `ρ² = V(Tm)/V(Td)`.
+  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1` for `V(Tm) > 0`, `ρ² = V(Tm)/V(Td)`.
   Haug prints the flat-parameter case `ρ = √(t₁/T₂)`, which is `compoundCorrelation_flat`; the
   curve version `ρ = √(V(Tm)/V(Td))` is its generalisation.
 * `compound_joint` — the joint law of `(Z, G_d/√V(Td))` is bivariate normal: the probability of
@@ -322,7 +322,7 @@ theorem compound_put_payoff_eq {S Km K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < 
   max_eq_left (by linarith [daughterPut_lt_strike (VF := VF) hS hK hDr hDq])
 
 /-- **Time-0 value of the put-on-put when no critical spot exists.** Let `Sm` be the (measurable,
-positive) spot at `Tm`, `DrTm = Dr(Tm)`, and `price0` the daughter put's time-0 price. Assuming
+positive) spot at `Tm`, `DrTm` the discount factor to `Tm` (a free real here, tied to no curve), and `price0` the daughter put's time-0 price. Assuming
 the tower property `price0 = DrTm·𝔼[daughterPut(Sm)]` (hypothesis `htower`), for `Km ≥ Kd·DrF`
 and `VF > 0`: `DrTm·𝔼[(Km - daughterPut(Sm))⁺] = Km·DrTm - price0`. Integrability of
 `daughterPut(Sm)` is proved (`daughterPut_integrable`). -/

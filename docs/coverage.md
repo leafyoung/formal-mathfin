@@ -35,7 +35,7 @@ entries; 29 are reduced cores.
   independent standard normals `Z, Z'`, the nested-horizon drivers `√V(Tm)·Z` and
   `√V(Tm)·Z + √(V(Td)−V(Tm))·Z'` have `cov = V(Tm)`, and the standardized variables `Z` and
   `(√V(Tm)/√V(Td))·Z + (√(V(Td)−V(Tm))/√V(Td))·Z'` have correlation `ρ = √(V(Tm)/V(Td))`
-  (`compoundCorrelation_eq`, with `0 < ρ < 1`); their joint law is bivariate normal with that
+  (`compoundCorrelation_eq`, with `0 < ρ < 1` for `V(Tm) > 0`); their joint law is bivariate normal with that
   correlation (`compound_joint`). Haug prints the flat-parameter case `ρ = √(Tm/Td)`
   (`compoundCorrelation_flat`); the curve version is its generalisation. The daughter put value at
   `Tm` is the library's `bsP` (`daughterPut_eq_bsP`) and a Black–Scholes expectation
