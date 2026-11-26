@@ -32,7 +32,8 @@ Source: after Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (20
 * `compoundCovariance_eq` and `compoundCorrelation_eq` — for independent standard normals
   `Z, Z'`, the nested-horizon drivers `G_m = √V(Tm)·Z` and `G_d = G_m + √(V(Td)-V(Tm))·Z'` have
   `Var G_m = V(Tm)`, `Var G_d = V(Td)`, `cov(G_m, G_d) = V(Tm)`, so their correlation is `ρ`;
-  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1` for `V(Tm) > 0`, `ρ² = V(Tm)/V(Td)`.
+  `cov(Z, G_d/√V(Td)) = ρ` for the standardized variables; `0 < ρ < 1` for `V(Tm) > 0`,
+  `ρ² = V(Tm)/V(Td)`.
   Haug prints the flat-parameter case `ρ = √(t₁/T₂)`, which is `compoundCorrelation_flat`; the
   curve version `ρ = √(V(Tm)/V(Td))` is its generalisation.
 * `compound_joint` — the joint law of `(Z, G_d/√V(Td))` is bivariate normal: the probability of
@@ -90,10 +91,6 @@ section CorrelationMoments
 
 variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} [IsProbabilityMeasure P]
 
-omit [IsProbabilityMeasure P] in
-private lemma var_one {Z : Ω → ℝ} (h : HasLaw Z (gaussianReal 0 1) P) : Var[Z; P] = 1 := by
-  rw [h.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
-
 /-- **moments of the nested drivers.** For independent standard normals `Z, Z'` and
 `0 ≤ Vm ≤ Vd`, with `G_m = √Vm·Z` and `G_d = √Vm·Z + √(Vd-Vm)·Z'`:
 `Var G_m = Vm`, `Var G_d = Vd`, `cov(G_m, G_d) = Vm`. -/
@@ -106,16 +103,20 @@ theorem compoundCovariance_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 0
   have h2 := hZ.hasGaussianLaw.memLp_two
   have h2' := hZ'.hasGaussianLaw.memLp_two
   have hc : cov[Z, Z'; P] = 0 := hind.covariance_eq_zero h2 h2'
+  have vZ : Var[Z; P] = 1 := by
+    rw [hZ.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
+  have vZ' : Var[Z'; P] = 1 := by
+    rw [hZ'.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
   have s1 := Real.sq_sqrt hm
   have s2 := Real.sq_sqrt (sub_nonneg.2 hd)
   refine ⟨?_, ?_, ?_⟩
-  · rw [variance_const_mul, var_one hZ]; nlinarith
-  · rw [variance_linear_of_unit h2 h2' (var_one hZ) (var_one hZ') hc]; nlinarith
+  · rw [variance_const_mul, vZ]; nlinarith
+  · rw [variance_linear_of_unit h2 h2' (vZ) (vZ') hc]; nlinarith
   · rw [covariance_const_mul_left]
     change √Vm * cov[Z, (fun ω ↦ √Vm * Z ω) + fun ω ↦ √(Vd - Vm) * Z' ω; P] = Vm
     rw [covariance_add_right h2 (h2.const_mul _) (h2'.const_mul _),
       covariance_const_mul_right, covariance_const_mul_right, covariance_self h2.aemeasurable,
-      var_one hZ, hc]
+      vZ, hc]
     nlinarith
 
 /-- **the correlation of the standardized variables is `ρ = √(Vm/Vd)`.** With `Vd > 0`,
@@ -129,15 +130,19 @@ theorem compoundCorrelation_eq {Z Z' : Ω → ℝ} (hZ : HasLaw Z (gaussianReal 
   have h2 := hZ.hasGaussianLaw.memLp_two
   have h2' := hZ'.hasGaussianLaw.memLp_two
   have hc : cov[Z, Z'; P] = 0 := hind.covariance_eq_zero h2 h2'
+  have vZ : Var[Z; P] = 1 := by
+    rw [hZ.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
+  have vZ' : Var[Z'; P] = 1 := by
+    rw [hZ'.variance_eq, variance_id_gaussianReal, NNReal.coe_one]
   have hVd : 0 < Vd := lt_of_le_of_lt hm hd
   have s1 := Real.sq_sqrt hm
   have s2 := Real.sq_sqrt (sub_nonneg.2 hd.le)
   have s3 := Real.sq_sqrt hVd.le
   have hs3 : 0 < √Vd := Real.sqrt_pos.2 hVd
   refine ⟨?_, ?_⟩
-  · rw [variance_linear_of_unit h2 h2' (var_one hZ) (var_one hZ') hc, div_pow, div_pow, s1, s2, s3]
+  · rw [variance_linear_of_unit h2 h2' (vZ) (vZ') hc, div_pow, div_pow, s1, s2, s3]
     field_simp; ring
-  · have := covariance_linear_of_unit h2 h2' (var_one hZ) (var_one hZ') hc 1 0 (√Vm / √Vd)
+  · have := covariance_linear_of_unit h2 h2' (vZ) (vZ') hc 1 0 (√Vm / √Vd)
       (√(Vd - Vm) / √Vd)
     simp only [one_mul, zero_mul, add_zero, mul_zero] at this
     rw [this, compoundCorrelation, Real.sqrt_div hm]
@@ -322,9 +327,10 @@ theorem compound_put_payoff_eq {S Km K DrF DqF VF : ℝ} (hS : 0 < S) (hK : 0 < 
   max_eq_left (by linarith [daughterPut_lt_strike (VF := VF) hS hK hDr hDq])
 
 /-- **Time-0 value of the put-on-put when no critical spot exists.** Let `Sm` be the (measurable,
-positive) spot at `Tm`, `DrTm` the discount factor to `Tm` (a free real here, tied to no curve), and `price0` the daughter put's time-0 price. Assuming
-the tower property `price0 = DrTm·𝔼[daughterPut(Sm)]` (hypothesis `htower`), for `Km ≥ Kd·DrF`
-and `VF > 0`: `DrTm·𝔼[(Km - daughterPut(Sm))⁺] = Km·DrTm - price0`. Integrability of
+positive) spot at `Tm`, `DrTm` the discount factor to `Tm` (a free real here, tied to no curve),
+and `price0` the daughter put's time-0 price. Assuming the tower property
+`price0 = DrTm·𝔼[daughterPut(Sm)]` (hypothesis `htower`), for `Km ≥ Kd·DrF` and `VF > 0`:
+`DrTm·𝔼[(Km - daughterPut(Sm))⁺] = Km·DrTm - price0`. Integrability of
 `daughterPut(Sm)` is proved (`daughterPut_integrable`). -/
 theorem compound_put_value {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
     [IsProbabilityMeasure P] {Sm : Ω → ℝ} {Km K DrF DqF VF DrTm price0 : ℝ}
