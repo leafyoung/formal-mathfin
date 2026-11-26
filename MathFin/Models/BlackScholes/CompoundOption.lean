@@ -49,7 +49,8 @@ the tower property itself (assumed in `compound_put_value`).
 
 ## References
 
-* [Haug, *The Complete Guide to Option Pricing Formulas*][Haug2007], ch. 4
+* Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed., McGraw-Hill, section 4.13
+  (printed pp. 132-136).
 
 ## Tags
 
@@ -143,6 +144,7 @@ theorem compoundCorrelation_mem_Ioo {Vm Vd : ℝ} (hm : 0 < Vm) (hd : Vm < Vd) :
   exact (div_lt_one hVd).2 hd
 
 omit [IsProbabilityMeasure P] in
+/-- **H1: `ρ² = V(Tm)/V(Td)`.** -/
 theorem compoundCorrelation_sq {Vm Vd : ℝ} (hm : 0 ≤ Vm) (hd : 0 < Vd) :
     compoundCorrelation Vm Vd ^ 2 = Vm / Vd :=
   Real.sq_sqrt (div_nonneg hm hd.le)
