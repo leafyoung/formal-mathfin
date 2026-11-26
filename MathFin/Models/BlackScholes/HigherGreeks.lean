@@ -359,7 +359,6 @@ private lemma hasDerivAt_bsV_veta {K r σ : ℝ} (hσ : 0 < σ)
   have hσ_ne : σ ≠ 0 := hσ.ne'
   have h_sqrt_pos : 0 < Real.sqrt τ := Real.sqrt_pos.mpr hτ
   have h_sqrt_ne : Real.sqrt τ ≠ 0 := h_sqrt_pos.ne'
-  -- the clean L-free form of `∂_τ d₁`
   have hd1 : HasDerivAt (fun t ↦ bsd1 S K r σ t)
       ((r + σ ^ 2 / 2) / (σ * Real.sqrt τ) - bsd1 S K r σ τ / (2 * τ)) τ := by
     have h := hasDerivAt_bsd1_tau S K r σ hσ hτ
