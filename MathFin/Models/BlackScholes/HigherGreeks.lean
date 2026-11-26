@@ -445,7 +445,6 @@ theorem hasDerivAt_deriv_deriv_bsV_sigma {K r : ℝ} (hK : 0 < K)
     ((eventually_gt_nhds hσ).mono fun _ hv ↦ hasDerivAt_deriv_bsV_sigma hK hS hv hτ)
     (hasDerivAt_bsV_ultima hS hσ hτ)
 
-
 /-! ### Chain rule when the volatility is itself a function
 
 These hold for any differentiable vol function `v`: the price's derivative is the Black–Scholes
