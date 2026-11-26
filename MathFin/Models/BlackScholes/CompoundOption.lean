@@ -49,7 +49,7 @@ the tower property itself (assumed in `compound_put_value`).
 
 ## References
 
-* Haug, *The Complete Guide to Option Pricing Formulas*, 2nd ed. (2007), ch. 4,
+* [Haug, *The Complete Guide to Option Pricing Formulas*][Haug2007], 2nd ed. (2007), ch. 4,
   "Options on Options".
 
 ## Tags
