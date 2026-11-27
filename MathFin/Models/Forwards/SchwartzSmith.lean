@@ -34,10 +34,10 @@ The module derives, from that Wiener representation and for $\kappa > 0$, $\rho^
   $\sigma_\chi^2(1-e^{-2\kappa t})/(2\kappa) + \sigma_\xi^2 t + 2\rho\sigma_\chi\sigma_\xi(1-e^{-\kappa t})/\kappa$;
 * $\ln \mathbb{E}[S_t] = \mathbb{E}[\ln S_t] + \frac12\operatorname{Var}[\ln S_t]$, and the
   long-run intercept of $\ln \mathbb{E}[S_t] - \nu t - \frac12\sigma_\xi^2 t$;
-* the futures price $\mathbb{E}[S_T] = $ `schwartzSmithFuturesPrice` (zero interest rate), the
-  Black formula for the option on the futures at the term-structure volatility, and the
-  Gibson–Schwartz change of variables ($\xi_t = \ln S_t - \chi_t$; the convenience-yield reading
-  $\delta_t = \kappa\chi_t$ turns the expected log-spot drift into $\nu - \delta_t$).
+* the futures price $\mathbb{E}[S_T] = $ `schwartzSmithFuturesPrice` (zero interest rate),
+  its detrended long-run intercept, and the Gibson–Schwartz change of variables
+  ($\xi_t = \ln S_t - \chi_t$; the convenience-yield reading $\delta_t = \kappa\chi_t$
+  turns the expected log-spot drift into $\nu - \delta_t$).
 
 The two Gaussian tools the derivation needs are proved here as private helpers: two Wiener
 integrals against one motion are jointly Gaussian with covariance the $L^2$ inner product, and
@@ -62,9 +62,10 @@ Wiener integrals against independent motions are independent.
 * `schwartzSmithExpectedSpot` — $\mathbb{E}[S_t]$, the lognormal mean.
 * `schwartzSmithLnExpectedSpot_tendsto` — the long-run intercept of $\ln\mathbb{E}[S_t]$.
 * `schwartzSmithFuturesPrice_eq_expectedSpot` — the futures price is the expected terminal spot.
-* `schwartzSmithFuturesCall` — the option on the futures at the term-structure volatility.
-* `schwartzSmithXi_eq_logSpot_sub_chi`, `schwartzSmithGsDrift` — the Gibson–Schwartz change
-  of variables and its convenience-yield drift reading.
+* `schwartzSmithLnFuturesPrice_eq`, `schwartzSmithLnFuturesPrice_detrended`,
+  `schwartzSmithLnFuturesPrice_tendsto` — the log futures closed form, its detrended
+  identity and the long-run intercept limit.
+* `schwartzSmithGsDrift` — the convenience-yield drift reading of the expected log spot.
 
 ## References
 
@@ -777,5 +778,24 @@ theorem schwartzSmithLnFuturesPrice_detrended {κ σ₁ σ₂ x₀ ξ₀ ν ρ :
   rw [schwartzSmithLnFuturesPrice_eq T]
   simp only [schwartzSmithTotalVariance, vasicekSDEVariance]
   ring
+
+/-! ### The Gibson–Schwartz change of variables -/
+
+/-- **The Gibson–Schwartz drift reading** (eqs. 12–13): with the convenience yield
+`δ_t := κχ_t`, the expected log spot drifts at the Gibson–Schwartz rate `ν − δ_t`:
+`d/dt 𝔼[ln S_t] = ν − κ𝔼[χ_t]` with `𝔼[χ_t] = χ₀e^{−κt}`. The change of variables
+itself, `ξ_t = ln S_t − χ_t`, holds by `schwartzSmithLogSpot`. -/
+theorem schwartzSmithGsDrift {κ x₀ ξ₀ ν : ℝ} (t : ℝ) :
+    HasDerivAt (fun s : ℝ ↦ x₀ * Real.exp (-(κ * s)) + (ξ₀ + ν * s))
+      (ν - κ * (x₀ * Real.exp (-(κ * t)))) t := by
+  have h1 : HasDerivAt (fun s : ℝ ↦ x₀ * Real.exp (-(κ * s)))
+      (x₀ * (-(κ * Real.exp (-(κ * t))))) t := by
+    have hd := (Real.hasDerivAt_exp (-(κ * t))).comp t
+      (by simpa [mul_comm] using (hasDerivAt_id t).const_mul (-(κ : ℝ)))
+    simpa [mul_comm] using hd.const_mul x₀
+  have h2 : HasDerivAt (fun s : ℝ ↦ ξ₀ + ν * s) ν t := by
+    simpa using (hasDerivAt_id t).const_mul ν
+  have h12 := h1.add h2
+  refine h12.congr_deriv (by ring)
 
 end MathFin
