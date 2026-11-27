@@ -292,4 +292,147 @@ theorem oneFactorPD_tendsto_rho_one_eq {π : ℝ} {f : ℝ} (hf : f = PhiInv π)
   rw [Phi_zero] at hc
   exact hc
 
+/-- **The perfect-correlation end for the worst-case default rate, upper side**: as the asset
+correlation `ρ` approaches `1` from below, the asymptotic single-risk-factor quantile tends to
+`1` when the confidence `α` exceeds the survival rate `1 − π` — the worst case is total loss
+(Vasicek 2002: the zero-one loss distribution with mass `π` at `1`). -/
+theorem asrfQuantile_tendsto_rho_one_lt {π α : ℝ} (hπ : π ∈ Ioo 0 1) (hα : α ∈ Ioo 0 1)
+    (h : 1 - α < π) :
+    Tendsto (fun ρ : ℝ => asrfQuantile π ρ α) (𝓝[Iio 1] 1) (𝓝 1) := by
+  have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
+      = fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hs : 0 < PhiInv π + PhiInv α := by
+    have hπp : (0 : ℝ) < π := hπ.1
+    have hπ1 : π < 1 := hπ.2
+    have hαp : (0 : ℝ) < α := hα.1
+    have hα1 : α < 1 := hα.2
+    have h1α : (1 - α : ℝ) ∈ Ioo 0 1 := ⟨by linarith, by linarith⟩
+    have hmono := strictMonoOn_PhiInv h1α hπ h
+    rw [PhiInv_one_sub hα] at hmono
+    linarith
+  refine tendsto_Phi_div_sqrt_one_sub_atTop
+    (g := fun ρ : ℝ => PhiInv π + Real.sqrt ρ * PhiInv α) (by fun_prop)
+    (by simp only [Real.sqrt_one]; linarith)
+
+/-- **The perfect-correlation end for the worst-case default rate, lower side**: as the asset
+correlation `ρ` approaches `1` from below, the asymptotic single-risk-factor quantile tends to
+`0` when the confidence `α` and the default probability `π` sum to less than `1` — the worst
+case is no loss at all (the mass `1 − π` at `0`). -/
+theorem asrfQuantile_tendsto_rho_one_gt {π α : ℝ} (hπ : π ∈ Ioo 0 1) (hα : α ∈ Ioo 0 1)
+    (h : π + α < 1) :
+    Tendsto (fun ρ : ℝ => asrfQuantile π ρ α) (𝓝[Iio 1] 1) (𝓝 0) := by
+  have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
+      = fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hs : PhiInv π + PhiInv α < 0 := by
+    have hπp : (0 : ℝ) < π := hπ.1
+    have hπ1 : π < 1 := hπ.2
+    have hαp : (0 : ℝ) < α := hα.1
+    have hα1 : α < 1 := hα.2
+    have h1α : (1 - α : ℝ) ∈ Ioo 0 1 := ⟨by linarith, by linarith⟩
+    have hmono := strictMonoOn_PhiInv hπ h1α (by linarith)
+    rw [PhiInv_one_sub hα] at hmono
+    linarith
+  refine tendsto_Phi_div_sqrt_one_sub_atBot
+    (g := fun ρ : ℝ => PhiInv π + Real.sqrt ρ * PhiInv α) (by fun_prop)
+    (by simp only [Real.sqrt_one]; linarith)
+
+/-- **The perfect-correlation end for the worst-case default rate, at the boundary**: when
+`π + α = 1` the quantile sits exactly on the atom of the degenerate limit and tends to `1/2`
+as `ρ → 1⁻`. -/
+theorem asrfQuantile_tendsto_rho_one_eq {π α : ℝ} (hπ : π ∈ Ioo 0 1) (hα : α ∈ Ioo 0 1)
+    (h : π + α = 1) :
+    Tendsto (fun ρ : ℝ => asrfQuantile π ρ α) (𝓝[Iio 1] 1) (𝓝 (1 / 2)) := by
+  have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
+      = fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hπp : (0 : ℝ) < π := hπ.1
+  have hπ1 : π < 1 := hπ.2
+  have hαp : (0 : ℝ) < α := hα.1
+  have hα1 : α < 1 := hα.2
+  have hPhiInv : PhiInv (1 - α) = PhiInv π := by
+    rw [show (1 : ℝ) - α = π from by linarith]
+  have hEq : PhiInv α = -PhiInv π := by
+    have h := PhiInv_one_sub hα
+    rw [show (1 : ℝ) - α = π from by linarith] at h
+    linarith
+  rw [hEq]
+  have harg : Tendsto (fun ρ : ℝ => (PhiInv π + Real.sqrt ρ * -PhiInv π)
+      / Real.sqrt (1 - ρ)) (𝓝[Iio 1] 1) (𝓝 0) := by
+    have hsame : (fun ρ : ℝ => (PhiInv π + Real.sqrt ρ * -PhiInv π) / Real.sqrt (1 - ρ))
+        =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ =>
+          PhiInv π * ((1 - Real.sqrt ρ) / Real.sqrt (1 - ρ)) := by
+      filter_upwards [self_mem_nhdsWithin] with ρ _
+      ring
+    have hR := tendsto_one_sub_sqrt_div_sqrt.const_mul (PhiInv π)
+    simpa using hR.congr' hsame.symm
+  have hc := continuous_Phi.continuousAt.tendsto.comp harg
+  rw [Phi_zero] at hc
+  exact hc
+
+/-! ### The default-probability ends: `π → 0` and `π → 1` -/
+
+/-- **The vanishing end for the conditional default probability**: as the portfolio default
+probability `π` approaches `0`, the conditional default probability `oneFactorPD π ρ f` tends
+to `0` at every factor value `f` and every correlation `ρ < 1` — no loans default anywhere in
+the economy (Vasicek 2002: the loss distribution concentrates at `L = 0`). -/
+theorem oneFactorPD_tendsto_pi_zero {ρ : ℝ} (hρ1 : ρ < 1) (f : ℝ) :
+    Tendsto (fun π : ℝ => oneFactorPD π ρ f) (𝓝[Ioi 0] 0) (𝓝 0) := by
+  have hfun : (fun π : ℝ => oneFactorPD π ρ f)
+      = fun π : ℝ => Phi ((PhiInv π - Real.sqrt ρ * f) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hd : 0 < Real.sqrt (1 - ρ) := Real.sqrt_pos.2 (sub_pos.2 hρ1)
+  refine tendsto_Phi_atBot.comp (tendsto_atBot.2 fun M ↦ ?_)
+  have hK := tendsto_atBot.1 tendsto_PhiInv_atBot (M * Real.sqrt (1 - ρ) + Real.sqrt ρ * f)
+  filter_upwards [hK] with π hp
+  rw [div_le_iff₀ hd]
+  linarith
+
+/-- **The saturated end for the conditional default probability**: as the portfolio default
+probability `π` approaches `1`, the conditional default probability `oneFactorPD π ρ f` tends
+to `1` at every factor value `f` and every correlation `ρ < 1` — every loan defaults
+(Vasicek 2002: the loss distribution concentrates at `L = 1`). -/
+theorem oneFactorPD_tendsto_pi_one {ρ : ℝ} (hρ1 : ρ < 1) (f : ℝ) :
+    Tendsto (fun π : ℝ => oneFactorPD π ρ f) (𝓝[Iio 1] 1) (𝓝 1) := by
+  have hfun : (fun π : ℝ => oneFactorPD π ρ f)
+      = fun π : ℝ => Phi ((PhiInv π - Real.sqrt ρ * f) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hd : 0 < Real.sqrt (1 - ρ) := Real.sqrt_pos.2 (sub_pos.2 hρ1)
+  refine tendsto_Phi_atTop.comp (tendsto_atTop.2 fun M ↦ ?_)
+  have hK := tendsto_atTop.1 tendsto_PhiInv_atTop (M * Real.sqrt (1 - ρ) + Real.sqrt ρ * f)
+  filter_upwards [hK] with π hp
+  rw [le_div_iff₀ hd]
+  linarith
+
+/-- **The vanishing end for the worst-case default rate**: as the portfolio default
+probability `π` approaches `0`, the asymptotic single-risk-factor quantile tends to `0` at
+every confidence `α` and correlation `ρ < 1`. -/
+theorem asrfQuantile_tendsto_pi_zero {ρ : ℝ} (hρ1 : ρ < 1) (α : ℝ) :
+    Tendsto (fun π : ℝ => asrfQuantile π ρ α) (𝓝[Ioi 0] 0) (𝓝 0) := by
+  have hfun : (fun π : ℝ => asrfQuantile π ρ α)
+      = fun π : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hd : 0 < Real.sqrt (1 - ρ) := Real.sqrt_pos.2 (sub_pos.2 hρ1)
+  refine tendsto_Phi_atBot.comp (tendsto_atBot.2 fun M ↦ ?_)
+  have hK := tendsto_atBot.1 tendsto_PhiInv_atBot (M * Real.sqrt (1 - ρ) - Real.sqrt ρ * PhiInv α)
+  filter_upwards [hK] with π hp
+  rw [div_le_iff₀ hd]
+  linarith
+
+/-- **The saturated end for the worst-case default rate**: as the portfolio default
+probability `π` approaches `1`, the asymptotic single-risk-factor quantile tends to `1` at
+every confidence `α` and correlation `ρ < 1`. -/
+theorem asrfQuantile_tendsto_pi_one {ρ : ℝ} (hρ1 : ρ < 1) (α : ℝ) :
+    Tendsto (fun π : ℝ => asrfQuantile π ρ α) (𝓝[Iio 1] 1) (𝓝 1) := by
+  have hfun : (fun π : ℝ => asrfQuantile π ρ α)
+      = fun π : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
+  rw [hfun]
+  have hd : 0 < Real.sqrt (1 - ρ) := Real.sqrt_pos.2 (sub_pos.2 hρ1)
+  refine tendsto_Phi_atTop.comp (tendsto_atTop.2 fun M ↦ ?_)
+  have hK := tendsto_atTop.1 tendsto_PhiInv_atTop (M * Real.sqrt (1 - ρ) - Real.sqrt ρ * PhiInv α)
+  filter_upwards [hK] with π hp
+  rw [le_div_iff₀ hd]
+  linarith
+
 end MathFin
