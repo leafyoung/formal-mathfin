@@ -5,6 +5,7 @@ Authors: Yang Ye
 -/
 module
 
+public import MathFin.Models.BlackScholes.PricingFromBrownian
 public import MathFin.Models.Credit.KMVMerton
 public import MathFin.Risk.Credit.BernoulliMixture
 public import MathFin.Risk.Credit.VasicekIRB
@@ -78,6 +79,7 @@ JEL G32, JEL G33
 namespace MathFin
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
+open scoped NNReal
 
 /-! ### The normal quantile at the ends of its argument -/
 
@@ -216,8 +218,7 @@ theorem oneFactorPD_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (f : ℝ)
   rw [hfun]
   have ht := hcomp.tendsto
   have hval : Phi ((PhiInv π - Real.sqrt 0 * f) / Real.sqrt (1 - 0)) = π := by
-    simp
-    exact Phi_PhiInv hπ
+    rw [Real.sqrt_zero, zero_mul, sub_zero, sub_zero, Real.sqrt_one, div_one, Phi_PhiInv hπ]
   rw [hval] at ht
   exact ht
 
@@ -237,8 +238,7 @@ theorem asrfQuantile_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (α : �
   rw [hfun]
   have ht := hcomp.tendsto
   have hval : Phi ((PhiInv π + Real.sqrt 0 * PhiInv α) / Real.sqrt (1 - 0)) = π := by
-    simp
-    exact Phi_PhiInv hπ
+    rw [Real.sqrt_zero, zero_mul, add_zero, sub_zero, Real.sqrt_one, div_one, Phi_PhiInv hπ]
   rw [hval] at ht
   exact ht
 
@@ -434,5 +434,62 @@ theorem asrfQuantile_tendsto_pi_one {ρ : ℝ} (hρ1 : ρ < 1) (α : ℝ) :
   filter_upwards [hK] with π hp
   rw [le_div_iff₀ hd]
   linarith
+
+/-! ### The risk-neutral probability shift -/
+
+/-- The KMV-Merton distance to default at the drift `m` is the one at the rate `r` displaced
+by the drift difference over the volatility: `(m − r)√T/σ`. -/
+private lemma kmvDistanceToDefault_add_driftShift (V_0 F m r σ T : ℝ) (hV : 0 < V_0) (hF : 0 < F)
+    (hσ : 0 < σ) (hT : 0 < T) :
+    kmvDistanceToDefault V_0 F m σ T
+        = kmvDistanceToDefault V_0 F r σ T + (m - r) * Real.sqrt T / σ := by
+  have hσT : 0 < σ * Real.sqrt T := mul_pos hσ (Real.sqrt_pos.mpr hT)
+  have hlog (a : ℝ) : Real.log (V_0 / (F * Real.exp (-(a * T))))
+      = Real.log (V_0 / F) + a * T := by
+    have hexp : V_0 / (F * Real.exp (-(a * T))) = V_0 / F * Real.exp (a * T) := by
+      rw [Real.exp_neg]
+      field_simp
+    rw [hexp, Real.log_mul (ne_of_gt (div_pos hV hF)) (Real.exp_ne_zero (a * T)),
+      Real.log_div hV.ne' hF.ne', Real.log_exp]
+  rw [kmvDistanceToDefault, kmvDistanceToDefault, gbsd2, gbsd2, gbsd1, gbsd1, hlog, hlog]
+  field_simp
+  rw [Real.sq_sqrt (show (0 : ℝ) ≤ T by linarith)]
+  ring
+
+/-- **The risk-neutral probability shift** (Vasicek 2002, equation (6)): the KMV-Merton default
+probability at the risk-free rate `r` is the one at the drift `m` displaced along the normal
+axis by `(m − r)√T/σ`:
+
+  `kmvPD V₀ F r σ T = Φ(Φ⁻¹(kmvPD V₀ F m σ T) + (m − r)√T/σ)`.
+
+In the paper's notation the displacement is `λ·ρ_M·√T`, with `λ = (µ_M − r)/σ_M` the market
+price of risk and `ρ_M` the correlation of the firm asset value with the market; a firm with
+drift `m` has `m − r = λ·ρ_M·σ`, which makes the two forms the same. The displacement is
+positive exactly when the physical drift exceeds the risk-free rate, so the risk-neutral
+default probability is the larger one. -/
+theorem kmvPD_eq_shift (V_0 F m r σ T : ℝ) (hV : 0 < V_0) (hF : 0 < F) (hσ : 0 < σ)
+    (hT : 0 < T) :
+    kmvPD V_0 F r σ T
+        = Phi (PhiInv (kmvPD V_0 F m σ T) + (m - r) * Real.sqrt T / σ) := by
+  have hPm : kmvPD V_0 F m σ T = Phi (-(kmvDistanceToDefault V_0 F m σ T)) := rfl
+  have hPr : kmvPD V_0 F r σ T = Phi (-(kmvDistanceToDefault V_0 F r σ T)) := rfl
+  rw [hPr, hPm, PhiInv_Phi,
+    kmvDistanceToDefault_add_driftShift V_0 F m r σ T hV hF hσ hT]
+  ring
+
+/-- **The shift from the physical default event**: under a probability measure `μ` whose
+pre-Brownian motion `W` drives the firm's asset value at the drift `m`, the physical default
+probability `1 − μ{V_T > F}` is the risk-neutral `kmvPD V₀ F r σ T` pulled back through the
+same displacement — the event form of `kmvPD_eq_shift`, resting on the Brownian survival
+identification of `kmvPD`. -/
+theorem kmvPD_eq_shift_of_physicalDefault {Ω : Type*} {mΩ : MeasurableSpace Ω}
+    {μ : Measure Ω} [IsProbabilityMeasure μ]
+    (W : ℝ≥0 → Ω → ℝ) (hW : IsPreBrownianReal W μ)
+    {V_0 F m r σ T : ℝ} (hV : 0 < V_0) (hF : 0 < F) (hσ : 0 < σ) (hT : 0 < T) :
+    kmvPD V_0 F r σ T =
+      Phi (PhiInv (1 - (μ {ω | bsTerminal V_0 m σ T
+          (W T.toNNReal ω / Real.sqrt T) > F}).toReal) + (m - r) * Real.sqrt T / σ) := by
+  rw [← kmvPD_eq_one_sub_survival_probability_via_brownian μ W hW hV hF hσ hT (r := m)]
+  exact kmvPD_eq_shift V_0 F m r σ T hV hF hσ hT
 
 end MathFin

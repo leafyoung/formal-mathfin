@@ -910,6 +910,8 @@ public import MathFin.Risk.ComponentVaR
 public import MathFin.Risk.Credit.CreditRiskPlus
 public import MathFin.Risk.Credit.OneFactorCopula
 public import MathFin.Risk.Credit.OneFactorMerton
+-- The ends of the one-factor family and the risk-neutral probability shift
+public import MathFin.Risk.Credit.OneFactorEnds
 
 -- Choice
 public import MathFin.Choice.Portfolio.Markowitz
