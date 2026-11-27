@@ -26,6 +26,30 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### The premium-adjusted delta domain (2026-11-27)
+
+One `full` entry in `benchmarks/exotic_options.json`. The corpus goes from 924 to 925 entries.
+
+- **`mf-premium-adjusted-delta-domain`** (MathFin/Markets/PremiumAdjustedDelta.lean): on the flat
+  Black slice, for total variance `w > 0`, the premium-adjusted forward call delta
+  `paDelta k w = e^k·Φ(d₋)` in log-strike `k` has a derivative `(e^k/√w)·paStat √w d₋` whose sign is
+  that of `paStat s x = s·Φ(x) − φ(x)` (`hasDerivAt_paDelta`). The function `paStat` is negative on
+  `(−∞, −s]` (the Mills bound, with `paStat_strictAntiOn` for strictness at `−s`), strictly
+  increasing on `[−s, ∞)` and positive at large `x`, so it has exactly one root, above `−s`
+  (`paStat_neg_of_le`, `exists_paStat_root`, `paStat_sign_of_root`, `paStat_root_unique`). Hence
+  there is a unique stationary log-strike `k*`, below `w/2` (`exists_isPaMax`, `IsPaMax.unique`;
+  the strike lies below `F·e^{w/2}` whatever delta is requested), the adjusted delta increases
+  strictly up to `k*` and decreases strictly after it (`IsPaMax.strictMonoOn`,
+  `IsPaMax.strictAntiOn`), and `k*` is the global maximiser (`IsPaMax.le`). The delta is positive
+  and tends to `0` at large strikes (`paDelta_pos`, `paDelta_le_of_ge`, `tendsto_paDelta_atTop`),
+  so a delta `δ > 0` has a strike at or right of `k*` iff `δ ≤ paDelta k* w`, that strike is
+  unique, and above the maximum there is no strike (`IsPaMax.exists_right_iff`,
+  `IsPaMax.right_unique`, `IsPaMax.no_strike_of_gt`, bundled as `paDelta_domain`). Not derived: the
+  lognormal dynamics behind the Black delta (the slice is the Gaussian argument `d₋`), the bound
+  by the unadjusted delta `Φ(d₊)`, the put branch, the spot-delta variant and the numerical
+  root-finding. No literature citation is claimed: the statement is elementary calculus on the
+  convention that QuantLib's `BlackDeltaCalculator` implements. Axioms-clean, `full`.
+
 ### The 2026-11-25 merge
 
 Eleven contributed pull requests (#558, #577–#586) landed together. The corpus goes from 906 to

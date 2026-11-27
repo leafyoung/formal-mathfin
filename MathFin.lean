@@ -1010,6 +1010,7 @@ public import MathFin.Models.Binomial.WillowTree
 public import MathFin.Models.ModelFree.CallPriceInterpolation
 public import MathFin.Models.ModelFree.CubicSplineSmile
 public import MathFin.Markets.FxSmileQuotes
+public import MathFin.Markets.PremiumAdjustedDelta
 public import MathFin.Models.ModelFree.SABRChainRuleGreeks
 public import MathFin.Models.BlackScholes.ContinuousLookbackPricing
 public import MathFin.Models.BlackScholes.ShoutFloorMonotonicity

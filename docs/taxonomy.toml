@@ -252,7 +252,8 @@ modules = [
   "MathFin.Models.ModelFree.CallPriceInterpolation", "MathFin.Models.ModelFree.CubicSplineSmile",
   "MathFin.Models.ModelFree.MarketCallPrice", "MathFin.Models.ModelFree.RoperConverse",
   "MathFin.Models.ModelFree.BreedenLitzenberger", "MathFin.Models.ModelFree.CalendarArbitrage",
-  "MathFin.Markets.FxSmileQuotes", "MathFin.Models.BlackScholes.ImpliedVolatility",
+  "MathFin.Markets.FxSmileQuotes", "MathFin.Markets.PremiumAdjustedDelta",
+  "MathFin.Models.BlackScholes.ImpliedVolatility",
   "MathFin.Models.BlackScholes.BisectionIV",
 ]
 subjects = ["MSC 91G20", "JEL G13"]
@@ -493,7 +494,7 @@ title = "Volatility"
 blurb = "local, stochastic and rough volatility, the smile"
 hue = "--fam-volatility"
 modules = ["MathFin.Models.LocalVol", "MathFin.Models.StochVol", "MathFin.Models.ModelFree.SVI",
-  "MathFin.Markets.FxSmileQuotes"]
+  "MathFin.Markets.FxSmileQuotes", "MathFin.Markets.PremiumAdjustedDelta"]
 
 [[family]]
 key = "jumps"

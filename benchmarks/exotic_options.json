@@ -750,6 +750,23 @@
         "formalization_status": "reduced_core",
         "formalization_scope": "Reduced core. Re-export of MathFin.AsianAverageStrike.condBoundCall_one_fixing_eq_marketPrice (MathFin/Models/BlackScholes/AsianArithmeticAverageStrike.lean): condBoundCall_one_fixing (the crossing and the Black-Scholes form for N = 1) composed with price_forwardStartCall_constGirsanovMeasure (MathFin/Models/BlackScholes/ForwardStart.lean). SCOPE: an identity between closed forms for N = 1. NOT PROVED: that the closed form is the discounted expected payoff (it needs the conditional-mean identification), and the N > 1 sign pattern of the rates."
       }
+    },
+    {
+      "id": "mf-premium-adjusted-delta-domain",
+      "name": "Premium-Adjusted Call Delta: Unique Maximum and the Domain of the Strike",
+      "domain": "mathematical_finance",
+      "description": "For total variance w > 0 the premium-adjusted forward call delta e^k Phi(d2) in log-strike k has a unique stationary point k0 < w/2 (the root of sqrt(w) Phi(x) = phi(x) in the normal argument x = d2), is strictly increasing before it and strictly decreasing after it, and tends to 0. Hence a delta > 0 has a strike at or right of k0 iff it is at most the maximum, that strike is unique, and a delta above the maximum has no strike at all.",
+      "code": {
+        "lean": "import MathFin.Markets.PremiumAdjustedDelta\n\nopen MathFin\n\n/-- **The domain of the premium-adjusted strike solve.** For total variance `w > 0` the\npremium-adjusted forward call delta `paDelta k w = e^k·Φ(d₋)` has a maximiser `k₀ < w/2`; a delta\n`δ > 0` has a strike on the right branch iff `δ ≤ paDelta k₀ w`, that strike is unique, and above\nthe maximum there is no strike. Re-exports `MathFin.paDelta_domain`. -/\ntheorem premium_adjusted_delta_domain {w : ℝ} (hw : 0 < w) :\n    ∃ k₀ : ℝ, k₀ < w / 2 ∧ (∀ k, paDelta k w ≤ paDelta k₀ w) ∧\n      (∀ δ, 0 < δ → ((∃ k, k₀ ≤ k ∧ paDelta k w = δ) ↔ δ ≤ paDelta k₀ w)) ∧\n      (∀ k₁ k₂, k₀ ≤ k₁ → k₀ ≤ k₂ → paDelta k₁ w = paDelta k₂ w → k₁ = k₂) ∧\n      (∀ δ, paDelta k₀ w < δ → ∀ k, paDelta k w ≠ δ) :=\n  MathFin.paDelta_domain hw\n"
+      },
+      "metadata": {
+        "chapter": 3,
+        "reference": "Premium-adjusted forward call delta of FX options, as solved for the strike by QuantLib's BlackDeltaCalculator::strikeFromDelta (ql/pricingengines/blackdeltacalculator.cpp)",
+        "citations": [],
+        "difficulty": "intermediate",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof over the reals on the flat Black slice in (log-strike, total-variance) coordinates, with w > 0 as the only hypothesis: unique root of the stationarity function, unimodality of the adjusted delta, the bound k0 < w/2 (strike below F e^{w/2}), vanishing at large strikes, and the solvability and uniqueness of the right-branch strike. NOT PROVED: the lognormal dynamics behind the Black delta (the slice is taken as the Gaussian argument d2), the bound by the unadjusted delta Phi(d1), the put branch, the spot-delta variant, and the numerical root-finding. Lives in MathFin/Markets/PremiumAdjustedDelta.lean. Axioms-clean."
+      }
     }
   ]
 }
