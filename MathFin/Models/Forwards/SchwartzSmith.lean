@@ -161,4 +161,93 @@ private theorem indepFun_wienerIntegral_of_indepFun (hB₁ : IsPreBrownianReal B
   · rw [← hq₂c]
     exact hp₂e.symm
 
+/-! ### Sums of independent Gaussian variables -/
+
+/-- **Sum of independent Gaussian variables**: with `X ~ N(m₁, v₁)`, `Y ~ N(m₂, v₂)`
+independent, `X + Y ~ N(m₁ + m₂, v₁ + v₂)`. -/
+private theorem hasLaw_add_of_indepFun {X Y : Ω → ℝ} {m₁ m₂ : ℝ} {v₁ v₂ : ℝ≥0}
+    (hX : HasLaw X (gaussianReal m₁ v₁) μ) (hY : HasLaw Y (gaussianReal m₂ v₂) μ)
+    (hind : IndepFun X Y μ) :
+    HasLaw (fun ω ↦ X ω + Y ω) (gaussianReal (m₁ + m₂) (v₁ + v₂)) μ := by
+  have hGX : HasGaussianLaw X μ := ⟨hX.aemeasurable, by rw [hX.map_eq]; infer_instance⟩
+  have hGY : HasGaussianLaw Y μ := ⟨hY.aemeasurable, by rw [hY.map_eq]; infer_instance⟩
+  have hG := iIndepFun.hasGaussianLaw_fun_add hGX hGY hind
+  have hmemX : MemLp X 2 μ := hGX.memLp_two
+  have hmemY : MemLp Y 2 μ := hGY.memLp_two
+  have hmean : ∫ ω, (X ω + Y ω) ∂μ = m₁ + m₂ := by
+    have hIX : Integrable X μ := hmemX.integrable one_le_two
+    have hIY : Integrable Y μ := hmemY.integrable one_le_two
+    rw [integral_add hIX hIY, hX.integral_eq.trans integral_id_gaussianReal,
+      hY.integral_eq.trans integral_id_gaussianReal]
+  have hvar : Var[fun ω ↦ X ω + Y ω; μ] = (v₁ + v₂ : ℝ) := by
+    show Var[X + Y; μ] = _
+    rw [IndepFun.variance_add hmemX hmemY hind, hX.variance_eq, variance_id_gaussianReal,
+      hY.variance_eq, variance_id_gaussianReal]
+  refine ⟨hG.aemeasurable, ?_⟩
+  rw [hG.isGaussian_map.eq_gaussianReal]
+  have hid : (μ.map (fun ω ↦ X ω + Y ω))[id] = m₁ + m₂ := by
+    rw [integral_map hG.aemeasurable aestronglyMeasurable_id]
+    simpa using hmean
+  have hvid : Var[id; μ.map (fun ω ↦ X ω + Y ω)] = (v₁ + v₂ : ℝ) := by
+    rw [variance_map aemeasurable_id hG.aemeasurable]
+    simpa using hvar
+  rw [hid, hvid]
+  simp
+
+/-! ### The model -/
+
+/-- **The short-term deviation** `χ_t` of the Schwartz–Smith model: the Ornstein–Uhlenbeck
+integral `HullWhite.integratedRate` at zero forcing, with speed `κ`, volatility `σ_χ` and
+initial value `χ₀`. -/
+noncomputable def schwartzSmithChi (hB : IsPreBrownianReal B μ) (κ σ x₀ : ℝ) (hκ : 0 < κ)
+    (t : ℝ≥0) (ω : Ω) : ℝ :=
+  HullWhite.integratedRate hB (fun _ ↦ 0) κ σ x₀ hκ t ω
+
+/-- **The equilibrium level** `ξ_t` of the Schwartz–Smith model: the drifted Brownian motion
+`ξ₀ + νt` with volatility `σ_ξ`, correlated with the `χ`-driver through `ρ`:
+`ξ_t = ξ₀ + νt + ρσ_ξ B¹_t + √(1−ρ²) σ_ξ B²_t`, both Brownian values carried as Wiener
+integrals of the whole-window indicator. For `ρ² > 1` the square root is junk; the
+correlation constraint `ρ² ≤ 1` is a hypothesis of every theorem below. -/
+noncomputable def schwartzSmithXi (hB₁ : IsPreBrownianReal B₁ μ) (hB₂ : IsPreBrownianReal B₂ μ)
+    (ξ₀ ν ρ σ : ℝ) (t : ℝ≥0) (ω : Ω) : ℝ :=
+  ξ₀ + ν * (t : ℝ)
+    + ρ * σ * (wienerIntegralLp B₁ hB₁ t (stepIndicatorLp t (StepIndex.whole t))) ω
+    + Real.sqrt (1 - ρ ^ 2) * σ
+      * (wienerIntegralLp B₂ hB₂ t (stepIndicatorLp t (StepIndex.whole t))) ω
+
+/-- **The log spot** of the Schwartz–Smith model: `ln S_t = χ_t + ξ_t`. -/
+noncomputable def schwartzSmithLogSpot (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (κ σ₁ x₀ ξ₀ ν ρ σ₂ : ℝ) (hκ : 0 < κ) (t : ℝ≥0) (ω : Ω) :
+    ℝ :=
+  schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω + schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω
+
+/-! ### The kernel integrals the variance formula needs -/
+
+private lemma deterministic_zero_eq (κ x₀ : ℝ) (t : ℝ≥0) :
+    HullWhite.deterministic (fun _ ↦ (0 : ℝ)) κ x₀ (t : ℝ) = x₀ * Real.exp (-(κ * (t : ℝ))) := by
+  simp [HullWhite.deterministic, mul_comm]
+
+private lemma integral_vasicekKernel_eq (κ : ℝ) (hκ : κ ≠ 0) (T : ℝ≥0) :
+    ∫ s in Set.Ioc (0 : ℝ) ((T : ℝ)), vasicekKernel κ (T : ℝ) s ∂volume
+      = (1 - Real.exp (-(κ * (T : ℝ)))) / κ := by
+  rw [← intervalIntegral.integral_of_le T.coe_nonneg]
+  have hd : ∀ u : ℝ, HasDerivAt (fun v ↦ Real.exp (-(κ * ((T : ℝ) - v))) / κ)
+      (vasicekKernel κ (T : ℝ) u) u := by
+    intro u
+    have hh : HasDerivAt (fun v : ℝ ↦ (T : ℝ) - v) (-1) u := by
+      simpa using (hasDerivAt_id u).const_sub (T : ℝ)
+    have hmul : HasDerivAt (fun v : ℝ ↦ -((κ : ℝ) * ((T : ℝ) - v))) κ u := by
+      simpa using hh.const_mul (-(κ : ℝ))
+    have hexp := ((Real.hasDerivAt_exp _).comp u hmul).div_const κ
+    rw [show ∀ x : ℝ, Real.exp x * κ / κ = Real.exp x from fun x ↦ by field_simp] at hexp
+    rw [vasicekKernel]
+    exact hexp
+  have hinteg : IntervalIntegrable (vasicekKernel κ (T : ℝ)) volume 0 (T : ℝ) := by
+    apply Continuous.intervalIntegrable
+    unfold vasicekKernel
+    fun_prop
+  rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (fun x _ ↦ hd x) hinteg]
+  norm_num
+  field_simp
+
 end MathFin
