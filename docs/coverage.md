@@ -35,7 +35,8 @@ One `full` entry in `benchmarks/credit.json`
 
 * The independence end `rho -> 0`: `oneFactorPD_tendsto_rho_zero`,
   `asrfQuantile_tendsto_rho_zero` — both objects tend to the constant `pi` at every factor
-  value, two-sided in the ambient encoding (`sqrt rho = 0` below `0`).
+  value, two-sided in the ambient encoding (`sqrt rho = 0` below `0`); the quantile statement
+  carries `pi in (0, 1)`.
 * The perfect-correlation end `rho -> 1` from the left: `oneFactorPD_tendsto_rho_one_lt`,
   `oneFactorPD_tendsto_rho_one_gt`, `oneFactorPD_tendsto_rho_one_eq` — the conditional default
   probability tends to `1`, `0`, `1/2` on, respectively, `f < PhiInv pi`, `f > PhiInv pi`,
