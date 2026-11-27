@@ -261,10 +261,10 @@ theorem poolValue_eq_rebalancingValue_add_correction
     integral_add hintHedge hintCorrHalf, integral_const_mul]
   ring
 
-
 /-- **The loss-versus-rebalancing process** (the source's eq. (6) with Lemma 2's eq. (7)): the
-rebalancing value exceeds the pool value by exactly the time integral of the instantaneous rate
-`−½·σ²P²V''(P)`, the paper's `ℓ(σ, P) = −(σ²P²/2)·x*′(P)` under Lemma 1 Part 3 (`x*′ = V''`).
+rebalancing value minus the pool value equals the time integral of the instantaneous rate
+`−½·σ²P²V''(P)`, the paper's `ℓ(σ, P) = −(σ²P²/2)·x*′(P)` under Lemma 1 Part 3 (`x*′ = V''`);
+a signed identity, whose sign is the concavity of `V` (`lvr_nonneg`).
 Almost surely, at every `t ∈ [0, T]` at once. -/
 theorem rebalancingValue_sub_poolValue_eq_lvr
     (hv : ∀ p > 0, HasDerivAt V (V' p) p) (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p)
