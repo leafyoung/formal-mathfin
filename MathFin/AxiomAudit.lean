@@ -3350,3 +3350,33 @@ and `uncovered_interest_parity` from the risk-neutral expectation. -/
 /-- info: 'MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff
+
+/-! ### The ends of the one-factor family and the risk-neutral probability shift (2026-11-27) -/
+
+/-- info: 'MathFin.oneFactorPD_tendsto_rho_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.oneFactorPD_tendsto_rho_zero
+
+/-- info: 'MathFin.oneFactorPD_tendsto_rho_one_lt' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.oneFactorPD_tendsto_rho_one_lt
+
+/-- info: 'MathFin.asrfQuantile_tendsto_rho_one_lt' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.asrfQuantile_tendsto_rho_one_lt
+
+/-- info: 'MathFin.asrfQuantile_tendsto_rho_one_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.asrfQuantile_tendsto_rho_one_eq
+
+/-- info: 'MathFin.oneFactorPD_tendsto_pi_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.oneFactorPD_tendsto_pi_one
+
+/-- info: 'MathFin.kmvPD_eq_shift' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.kmvPD_eq_shift
+
+/-- info: 'MathFin.kmvPD_eq_shift_of_physicalDefault' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.kmvPD_eq_shift_of_physicalDefault

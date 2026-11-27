@@ -26,6 +26,34 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### The ends of the one-factor family and the risk-neutral probability shift (2026-11-27)
+
+One `full` entry in `benchmarks/credit.json`
+(`mf-one-factor-ends-pd-shift`), one module
+`MathFin/Risk/Credit/OneFactorEnds.lean` (14 public theorems, all axiom-clean over
+`propext`, `Classical.choice`, `Quot.sound`). What is proved, by theorem name:
+
+* The independence end `rho -> 0`: `oneFactorPD_tendsto_rho_zero`,
+  `asrfQuantile_tendsto_rho_zero` — both objects tend to the constant `pi` at every factor
+  value, two-sided in the ambient encoding (`sqrt rho = 0` below `0`).
+* The perfect-correlation end `rho -> 1` from the left: `oneFactorPD_tendsto_rho_one_lt`,
+  `oneFactorPD_tendsto_rho_one_gt`, `oneFactorPD_tendsto_rho_one_eq` — the conditional default
+  probability tends to `1`, `0`, `1/2` on, respectively, `f < PhiInv pi`, `f > PhiInv pi`,
+  `f = PhiInv pi`; `asrfQuantile_tendsto_rho_one_lt`, `asrfQuantile_tendsto_rho_one_gt`,
+  `asrfQuantile_tendsto_rho_one_eq` — the quantile tends to `1`, `0`, `1/2` on, respectively,
+  `1 - alpha < pi`, `pi + alpha < 1`, `pi + alpha = 1`.
+* The default-probability ends: `oneFactorPD_tendsto_pi_zero`, `oneFactorPD_tendsto_pi_one`,
+  `asrfQuantile_tendsto_pi_zero`, `asrfQuantile_tendsto_pi_one` — collapse to `0` and `1` at
+  every `rho < 1`.
+* The risk-neutral probability shift (Vasicek 2002, eq. (6)): `kmvPD_eq_shift` —
+  `kmvPD V0 F r sigma T = Phi(PhiInv(kmvPD V0 F m sigma T) + (m - r) sqrt(T)/sigma)` — and
+  `kmvPD_eq_shift_of_physicalDefault`, its event form under a pre-Brownian measure.
+
+Not proved: the large-pool loss distribution function `F(x; p, rho)` of Vasicek's eq. (5)
+itself and its symmetry identity — those are separate rows (the large-pool loss law), and the
+paper's `lambda rho_M` form of the shift is connected to `(m - r) sqrt(T)/sigma` only through
+the drift relation `m - r = lambda rho_M sigma`, stated in the docstring, not derived.
+
 ### The 2026-11-25 merge
 
 Eleven contributed pull requests (#558, #577–#586) landed together. The corpus goes from 906 to

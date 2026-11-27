@@ -7,6 +7,7 @@ module
 
 public import MathFin.Models.BlackScholes.PricingFromBrownian
 public import MathFin.Models.Credit.KMVMerton
+public import MathFin.Probability.Gaussian.NormalTail
 public import MathFin.Risk.Credit.BernoulliMixture
 public import MathFin.Risk.Credit.VasicekIRB
 
@@ -83,14 +84,6 @@ open scoped NNReal
 
 /-! ### The normal quantile at the ends of its argument -/
 
-/-- The standard normal CDF tends to `1` at `+∞`. -/
-private lemma tendsto_Phi_atTop : Tendsto Phi atTop (𝓝 1) := by
-  simpa only [cdf_gaussianReal_zero_one] using tendsto_cdf_atTop (μ := gaussianReal 0 1)
-
-/-- The standard normal CDF tends to `0` at `−∞`. -/
-private lemma tendsto_Phi_atBot : Tendsto Phi atBot (𝓝 0) := by
-  simpa only [cdf_gaussianReal_zero_one] using tendsto_cdf_atBot (μ := gaussianReal 0 1)
-
 /-- The normal quantile function tends to `−∞` as its argument approaches `0` from the right. -/
 private lemma tendsto_PhiInv_atBot : Tendsto (fun p : ℝ => PhiInv p) (𝓝[Ioi 0] 0) atBot := by
   refine tendsto_atBot.2 fun M ↦ ?_
@@ -120,29 +113,33 @@ private lemma tendsto_PhiInv_atTop : Tendsto (fun p : ℝ => PhiInv p) (𝓝[Iio
 
 /-! ### The vanishing relative displacement of `√ρ` at `ρ → 1` -/
 
-/-- The relative displacement of `√ρ` from `1`, normalised by `√(1 − ρ)`, vanishes at `ρ → 1⁻`:
-on `0 ≤ ρ < 1` it equals `√(1 − ρ)/(1 + √ρ)`. -/
-private lemma tendsto_one_sub_sqrt_div_sqrt :
-    Tendsto (fun ρ : ℝ => (1 - Real.sqrt ρ) / Real.sqrt (1 - ρ)) (𝓝[Iio 1] 1) (𝓝 0) := by
+/-- The conditional default probability at the threshold factor value `f = Φ⁻¹(π)` has an
+argument of `Φ⁻¹(π)` times the relative displacement `(1 − √ρ)/√(1 − ρ)` of `√ρ` from `1`,
+which vanishes at `ρ → 1⁻`: on `0 ≤ ρ < 1` that displacement equals
+`√(1 − ρ)/(1 + √ρ)`. -/
+private lemma tendsto_oneFactorArg_threshold_eq {π : ℝ} :
+    Tendsto (fun ρ : ℝ => (PhiInv π - Real.sqrt ρ * PhiInv π) / Real.sqrt (1 - ρ))
+      (𝓝[Iio 1] 1) (𝓝 0) := by
   have hsq : Continuous fun ρ : ℝ => Real.sqrt ρ := Real.continuous_sqrt
   have hsq1 : Continuous fun ρ : ℝ => Real.sqrt (1 - ρ) :=
     hsq.comp (continuous_const.sub continuous_id)
   have hρ0mem : {ρ : ℝ | 0 ≤ ρ} ∈ 𝓝[Iio 1] 1 :=
     mem_nhdsWithin.2 ⟨Ioi (0 : ℝ), isOpen_Ioi, mem_Ioi.2 (by norm_num),
       fun p hp ↦ le_of_lt hp.1⟩
-  have hsame : (fun ρ : ℝ => (1 - Real.sqrt ρ) / Real.sqrt (1 - ρ))
-      =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ => Real.sqrt (1 - ρ) / (1 + Real.sqrt ρ) := by
+  have hsame : (fun ρ : ℝ => (PhiInv π - Real.sqrt ρ * PhiInv π) / Real.sqrt (1 - ρ))
+      =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ => PhiInv π * (Real.sqrt (1 - ρ) / (1 + Real.sqrt ρ)) := by
     filter_upwards [hρ0mem, self_mem_nhdsWithin] with ρ hρ0 hρ1
     have hρlt : ρ < 1 := hρ1
     have hs : 0 < Real.sqrt (1 - ρ) := Real.sqrt_pos.2 (by linarith)
     have hs2 : Real.sqrt ρ * Real.sqrt ρ = ρ := Real.mul_self_sqrt hρ0
-    refine (div_eq_div_iff hs.ne'
+    have hfact : PhiInv π - Real.sqrt ρ * PhiInv π = PhiInv π * (1 - Real.sqrt ρ) := by ring
+    have hexp : (1 - Real.sqrt ρ) * (1 + Real.sqrt ρ) = 1 - Real.sqrt ρ * Real.sqrt ρ := by
+      ring
+    rw [mul_div_assoc' (PhiInv π), div_eq_div_iff hs.ne'
       (by have hs0 : (0 : ℝ) ≤ Real.sqrt ρ := Real.sqrt_nonneg ρ
-          linarith : (1 : ℝ) + Real.sqrt ρ ≠ 0)).2 ?_
-    have hexp : (1 - Real.sqrt ρ) * (1 + Real.sqrt ρ)
-        = 1 + Real.sqrt ρ - (Real.sqrt ρ + Real.sqrt ρ * Real.sqrt ρ) := by ring
-    rw [hexp, hs2, Real.mul_self_sqrt (show (0 : ℝ) ≤ 1 - ρ by linarith)]
-    ring
+          linarith : (1 : ℝ) + Real.sqrt ρ ≠ 0)]
+    rw [hfact, mul_assoc, hexp, hs2, mul_assoc, Real.mul_self_sqrt
+      (show (0 : ℝ) ≤ 1 - ρ by linarith)]
   have h3 : Tendsto (fun ρ : ℝ => Real.sqrt (1 - ρ) / (1 + Real.sqrt ρ)) (𝓝[Iio 1] 1) (𝓝 0) := by
     have hnum : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ)) 1 :=
       hsq1.continuousAt
@@ -151,11 +148,8 @@ private lemma tendsto_one_sub_sqrt_div_sqrt :
     have hc : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ) / (1 + Real.sqrt ρ)) 1 :=
       hnum.div hden (by norm_num)
     simpa [sub_zero] using hc.tendsto.mono_left nhdsWithin_le_nhds
-  exact h3.congr' hsame.symm
-
-/-- `√(1 − ρ)` is continuous in `ρ`. -/
-private lemma continuous_sqrt_one_sub : Continuous fun ρ : ℝ => Real.sqrt (1 - ρ) :=
-  Real.continuous_sqrt.comp (continuous_const.sub continuous_id)
+  have h4 := h3.const_mul (PhiInv π)
+  simpa using h4.congr' hsame.symm
 
 /-! ### The normal tail route at `ρ → 1` -/
 
@@ -166,8 +160,9 @@ private lemma tendsto_Phi_div_sqrt_one_sub_atTop {g : ℝ → ℝ} (hg : Continu
     (hg1 : 0 < g 1) :
     Tendsto (fun ρ : ℝ => Phi (g ρ / Real.sqrt (1 - ρ))) (𝓝[Iio 1] 1) (𝓝 1) := by
   refine tendsto_Phi_atTop.comp (tendsto_atTop.2 fun M ↦ ?_)
-  have hcont : ContinuousAt (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 :=
-    hg.sub ((continuous_const.mul continuous_sqrt_one_sub).continuousAt)
+  have hcont : ContinuousAt (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 := by
+    exact hg.sub ((continuous_const.mul (Real.continuous_sqrt.comp
+              (continuous_const.sub continuous_id))).continuousAt)
   have hpos : 0 < (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 := by
     simpa using hg1
   have hmem : Set.Ioi (0 : ℝ) ∈ 𝓝 ((fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1) :=
@@ -185,8 +180,9 @@ private lemma tendsto_Phi_div_sqrt_one_sub_atBot {g : ℝ → ℝ} (hg : Continu
     (hg1 : g 1 < 0) :
     Tendsto (fun ρ : ℝ => Phi (g ρ / Real.sqrt (1 - ρ))) (𝓝[Iio 1] 1) (𝓝 0) := by
   refine tendsto_Phi_atBot.comp (tendsto_atBot.2 fun M ↦ ?_)
-  have hcont : ContinuousAt (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 :=
-    hg.sub ((continuous_const.mul continuous_sqrt_one_sub).continuousAt)
+  have hcont : ContinuousAt (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 := by
+    exact hg.sub ((continuous_const.mul (Real.continuous_sqrt.comp
+              (continuous_const.sub continuous_id))).continuousAt)
   have hneg : (fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1 < 0 := by
     simpa using hg1
   have hmem : Set.Iio (0 : ℝ) ∈ 𝓝 ((fun ρ : ℝ => g ρ - M * Real.sqrt (1 - ρ)) 1) :=
@@ -211,8 +207,8 @@ theorem oneFactorPD_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (f : ℝ)
   have hfun : (fun ρ : ℝ => oneFactorPD π ρ f)
       = fun ρ : ℝ => Phi ((PhiInv π - Real.sqrt ρ * f) / Real.sqrt (1 - ρ)) := rfl
   have hnum : ContinuousAt (fun ρ : ℝ => PhiInv π - Real.sqrt ρ * f) 0 := by fun_prop
-  have hden : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ)) 0 :=
-    continuous_sqrt_one_sub.continuousAt
+  have hden : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ)) 0 := by
+    exact (Real.continuous_sqrt.comp (continuous_const.sub continuous_id)).continuousAt
   have hcomp : ContinuousAt (fun ρ : ℝ => Phi ((PhiInv π - Real.sqrt ρ * f)
       / Real.sqrt (1 - ρ))) 0 := continuous_Phi.continuousAt.comp (hnum.div hden (by simp))
   rw [hfun]
@@ -231,8 +227,8 @@ theorem asrfQuantile_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (α : �
   have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
       = fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
   have hnum : ContinuousAt (fun ρ : ℝ => PhiInv π + Real.sqrt ρ * PhiInv α) 0 := by fun_prop
-  have hden : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ)) 0 :=
-    continuous_sqrt_one_sub.continuousAt
+  have hden : ContinuousAt (fun ρ : ℝ => Real.sqrt (1 - ρ)) 0 := by
+    exact (Real.continuous_sqrt.comp (continuous_const.sub continuous_id)).continuousAt
   have hcomp : ContinuousAt (fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α)
       / Real.sqrt (1 - ρ))) 0 := continuous_Phi.continuousAt.comp (hnum.div hden (by simp))
   rw [hfun]
@@ -279,16 +275,9 @@ theorem oneFactorPD_tendsto_rho_one_eq {π : ℝ} {f : ℝ} (hf : f = PhiInv π)
   have hfun : (fun ρ : ℝ => oneFactorPD π ρ f)
       = fun ρ : ℝ => Phi ((PhiInv π - Real.sqrt ρ * f) / Real.sqrt (1 - ρ)) := rfl
   rw [hfun, hf]
-  have harg : Tendsto (fun ρ : ℝ => (PhiInv π - Real.sqrt ρ * PhiInv π)
-      / Real.sqrt (1 - ρ)) (𝓝[Iio 1] 1) (𝓝 0) := by
-    have hsame : (fun ρ : ℝ => (PhiInv π - Real.sqrt ρ * PhiInv π) / Real.sqrt (1 - ρ))
-        =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ =>
-          PhiInv π * ((1 - Real.sqrt ρ) / Real.sqrt (1 - ρ)) := by
-      filter_upwards [self_mem_nhdsWithin] with ρ _
-      ring
-    have hR := tendsto_one_sub_sqrt_div_sqrt.const_mul (PhiInv π)
-    simpa using hR.congr' hsame.symm
-  have hc := continuous_Phi.continuousAt.tendsto.comp harg
+  have hc : Tendsto (fun ρ : ℝ => Phi ((PhiInv π - Real.sqrt ρ * PhiInv π)
+      / Real.sqrt (1 - ρ))) (𝓝[Iio 1] 1) (𝓝 (Phi (0 : ℝ))) :=
+    continuous_Phi.continuousAt.tendsto.comp tendsto_oneFactorArg_threshold_eq
   rw [Phi_zero] at hc
   exact hc
 
@@ -358,16 +347,15 @@ theorem asrfQuantile_tendsto_rho_one_eq {π α : ℝ} (hπ : π ∈ Ioo 0 1) (h�
     rw [show (1 : ℝ) - α = π from by linarith] at h
     linarith
   rw [hEq]
-  have harg : Tendsto (fun ρ : ℝ => (PhiInv π + Real.sqrt ρ * -PhiInv π)
-      / Real.sqrt (1 - ρ)) (𝓝[Iio 1] 1) (𝓝 0) := by
-    have hsame : (fun ρ : ℝ => (PhiInv π + Real.sqrt ρ * -PhiInv π) / Real.sqrt (1 - ρ))
-        =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ =>
-          PhiInv π * ((1 - Real.sqrt ρ) / Real.sqrt (1 - ρ)) := by
-      filter_upwards [self_mem_nhdsWithin] with ρ _
-      ring
-    have hR := tendsto_one_sub_sqrt_div_sqrt.const_mul (PhiInv π)
-    simpa using hR.congr' hsame.symm
-  have hc := continuous_Phi.continuousAt.tendsto.comp harg
+  have hsame : (fun ρ : ℝ => (PhiInv π + Real.sqrt ρ * -PhiInv π) / Real.sqrt (1 - ρ))
+      =ᶠ[𝓝[Iio 1] 1] fun ρ : ℝ =>
+        (PhiInv π - Real.sqrt ρ * PhiInv π) / Real.sqrt (1 - ρ) := by
+    filter_upwards [self_mem_nhdsWithin] with ρ _
+    ring
+  have hc : Tendsto (fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * -PhiInv π)
+      / Real.sqrt (1 - ρ))) (𝓝[Iio 1] 1) (𝓝 (Phi (0 : ℝ))) :=
+    continuous_Phi.continuousAt.tendsto.comp
+      (tendsto_oneFactorArg_threshold_eq.congr' hsame.symm)
   rw [Phi_zero] at hc
   exact hc
 
