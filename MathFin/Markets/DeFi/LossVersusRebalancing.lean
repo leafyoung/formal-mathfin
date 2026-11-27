@@ -367,16 +367,6 @@ theorem hasDerivAt_cpPoolHedge (L p : ℝ) (hp : 0 < p) :
     ring] at h0
   exact h0
 
-/-- A positive quantity times the square root of its quotient by itself is the square root of
-the product: `b·√(a/b) = √(a·b)`. -/
-private theorem mul_sqrt_div {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
-    b * Real.sqrt (a / b) = Real.sqrt (a * b) := by
-  nth_rewrite 1 [show b = Real.sqrt (b * b) from
-    (Real.sqrt_mul_self (by positivity : (0 : ℝ) ≤ b)).symm]
-  rw [← Real.sqrt_mul (by positivity : (0 : ℝ) ≤ b * b)]
-  congr 1
-  field_simp
-
 /-- **The constant-product value function is the library's static LP portfolio value**: a
 deposit `(x₀, y₀)` at the pool price `y₀/x₀` has liquidity `L = √(x₀·y₀)`, and marking it at
 the absolute price `P` (the price factor `P·x₀/y₀` from the deposit price) is worth exactly
@@ -397,7 +387,13 @@ theorem cpPoolValue_eq_lpPortfolioValue (x0 y0 P : ℝ) (hx0 : 0 < x0) (hy0 : 0 
     _ = 2 * Real.sqrt (P * x0 * y0) := by
           have hcomm : (x0 * y0) * P = P * x0 * y0 := by ring
           rw [hcomm]
-    _ = 2 * (y0 * Real.sqrt (P * x0 / y0)) := by rw [← mul_sqrt_div (mul_pos hP hx0) hy0]
+    _ = 2 * (y0 * Real.sqrt (P * x0 / y0)) := by
+          have hmsd : y0 * Real.sqrt (P * x0 / y0) = Real.sqrt (P * x0 * y0) := by
+            nth_rewrite 1 [show y0 = Real.sqrt (y0 * y0) from (Real.sqrt_mul_self hy0.le).symm]
+            rw [← Real.sqrt_mul (by positivity : (0 : ℝ) ≤ y0 * y0)]
+            congr 1
+            field_simp
+          rw [hmsd]
     _ = 2 * y0 * Real.sqrt (P * x0 / y0) := by rw [mul_assoc]
 
 /-- **The constant-product hedge holding is the pool's X reserve**: at the absolute price `P`,
