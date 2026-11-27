@@ -3372,3 +3372,7 @@ and `uncovered_interest_parity` from the risk-neutral expectation. -/
 /-- info: 'MathFin.DeFi.lvr_constantProduct_eq_sigma_sq_over_eight' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.lvr_constantProduct_eq_sigma_sq_over_eight
+
+/-- info: 'MathFin.DeFi.losses_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.losses_nonneg

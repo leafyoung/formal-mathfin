@@ -57,8 +57,9 @@ One `full` entry in `benchmarks/defi.json`. It adds one entry to the corpus.
   `V(P) = 2L√P` (`cpPoolValue`, with `cpPoolHedge L P = L/√P` and
   `cpPoolCurvature L P = −L/(2P√P)` as named defs with their derivative facts):
   `R_t − V(P_t) = (σ²/4)·L·∫₀ᵗ √P_s ds` (`lvr_constantProduct`) and
-  `= (σ²/8)·∫₀ᵗ V(P_s) ds` (`lvr_constantProduct_eq_sigma_sq_over_eight`) — the paper's loss
-  of `σ²/8` of pool value per unit time, as an identity of processes. Disclosed out of scope:
+  `= (σ²/8)·∫₀ᵗ V(P_s) ds` (`lvr_constantProduct_eq_sigma_sq_over_eight`) — the signed
+  identities of the paper's eq. (19) (no sign hypothesis; for a pool, `0 ≤ L`, they read as a
+  loss of `σ²/8` of pool value per unit time). Disclosed out of scope:
   fees (the paper's Theorem 1 P&L decomposition is not transcribed), concentrated liquidity,
   stochastic volatility in the constant-product specialization (the general theorem carries
   adapted continuous `σ_t`), and any identity with the static `impermanentLoss` — the module

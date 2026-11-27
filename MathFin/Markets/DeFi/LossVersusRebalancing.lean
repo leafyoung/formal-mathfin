@@ -97,7 +97,7 @@ open scoped NNReal ENNReal
 
 variable {Ω : Type*} [mΩ : MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
   {B : ℝ≥0 → Ω → ℝ} (hB : IsPreBrownianReal B μ) (T : ℝ≥0) (hBmeas : ∀ t, Measurable (B t))
-  (hBcont : ∀ ω, Continuous fun t : ℝ≥0 ↦ B t ω) {σ b : ℝ≥0 → Ω → ℝ}
+  (hBcont : ∀ ω, Continuous fun t : ℝ≥0 ↦ B t ω) {σ : ℝ≥0 → Ω → ℝ}
   (hadap : ∀ t, StronglyMeasurable[(natFiltration hBmeas t : MeasurableSpace Ω)] (σ t))
   (hcont : ∀ ω, Continuous (fun t : ℝ≥0 ↦ σ t ω)) {b : ℝ≥0 → Ω → ℝ}
   (hb_adap : ∀ t, StronglyMeasurable[(natFiltration hBmeas t : MeasurableSpace Ω)] (b t))
@@ -105,8 +105,9 @@ variable {Ω : Type*} [mΩ : MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilit
   {V V' V'' : ℝ → ℝ}
 
 /-- The hedge holding `x*(P) = V'(P)` read on the log price, `x ↦ Real.exp x · V'(Real.exp x)`,
-is continuous on all of `ℝ`. Public because the value process of the rebalancing strategy needs
-it in its own definition. -/
+is continuous on all of `ℝ`. Public because the theorems (and the corpus snippet) discharge the
+`hpred` hypothesis of `rebalancingValue` with it: `itoIntegrand_isStronglyPredictable` takes
+exactly this continuity as its last argument. -/
 theorem continuous_rebalancingHolding (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p) :
     Continuous fun x ↦ Real.exp x * V' (Real.exp x) :=
   Differentiable.continuous fun x ↦
@@ -122,7 +123,11 @@ price `X = localItoProcess x₀ b σ`, so `dP = P(b + ½σ²)ds + PσdB` and the
 is the initial value, plus the cash leg's drift integral `∫ x*(P)·P·(b + ½σ²) ds`, plus the
 risky leg's Itô integral of the integrand `x*(P)·P·σ` against `B`. What the module proves about
 it: the pool value exceeds it by exactly `½ ∫₀ᵗ σ²P²V''(P) ds`
-(`poolValue_eq_rebalancingValue_add_correction`). -/
+(`poolValue_eq_rebalancingValue_add_correction`). As a total definition its integrals read `0`
+where the integrand fails to be integrable: `hpred` is satisfiable with `σ ≡ 0` for an
+arbitrary `V'`, and the drift integral then carries no financial meaning. Every theorem here
+discharges `hv'` first, which gives continuity and integrability along the path, before reading
+`R_t` as a value. -/
 noncomputable def rebalancingValue (V V' : ℝ → ℝ)
     (hpred : IsStronglyPredictable (natFiltration hBmeas)
       fun s ω ↦ (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω)
@@ -311,17 +316,20 @@ theorem lvr_nonneg (hv : ∀ p > 0, HasDerivAt V (V' p) p) (hv' : ∀ p > 0, Has
 /-! ### The constant-product pool -/
 
 /-- The constant-product pool value as a function of the price `P` (Example 3, eq. (19) of the
-source): `cpPoolValue L P = 2L√P`, where `L` is the pool's liquidity. Twice differentiable on
+source): `cpPoolValue L P = 2L√P`, with `L` the pool's liquidity, `0 ≤ L` for a pool (the def
+itself is the signed expression and carries no sign hypothesis). Twice differentiable on
 `(0, ∞)`; the derivative facts are `hasDerivAt_cpPoolValue`, `hasDerivAt_cpPoolHedge` and
 `continuousOn_cpPoolCurvature`. -/
 noncomputable def cpPoolValue (L : ℝ) : ℝ → ℝ := fun p ↦ 2 * L * Real.sqrt p
 
-/-- The hedge holding of the constant-product pool: `x*(P) = V'(P) = L/√P` — the pool's own
-reserve of X at price `P` (the source's Lemma 1 Part 2 at this pool). -/
+/-- The hedge holding of the constant-product pool: `x*(P) = V'(P) = L/√P`. For `0 ≤ L` this
+is the pool's own reserve of X at price `P` (the source's Lemma 1 Part 2 at this pool); the
+def itself is the signed expression and carries no sign hypothesis. -/
 noncomputable def cpPoolHedge (L : ℝ) : ℝ → ℝ := fun p ↦ L / Real.sqrt p
 
-/-- The curvature of the constant-product pool value: `V''(P) = −L/(2·P·√P)`, which is
-`x*′(P) ≤ 0` — the marginal liquidity of Lemma 1 Part 3 at this pool. -/
+/-- The curvature of the constant-product pool value: `V''(P) = −L/(2·P·√P)`. For `0 ≤ L` this
+is `x*′(P) ≤ 0`, the marginal liquidity of the source's Lemma 1 Part 3 at this pool; the def
+itself is the signed expression and carries no sign hypothesis. -/
 noncomputable def cpPoolCurvature (L : ℝ) : ℝ → ℝ := fun p ↦ -(L / (2 * (p * Real.sqrt p)))
 
 theorem hasDerivAt_cpPoolValue (L p : ℝ) (hp : 0 < p) :
@@ -413,11 +421,13 @@ private theorem cpCurvature_pointwise {σ L x : ℝ} (hx : 0 < Real.exp x) :
   rw [← hsq]
   field_simp [hne]
 
-/-- **The constant-product pool loses `σ²/8` of its value per unit time** (Lemma 2 at Example 3,
+/-- **The constant-product identity behind the `σ²/8` loss rate** (Lemma 2 at Example 3,
 eq. (19) of the source): for the pool value `V(P) = 2L√P` and a price `P_t = Real.exp X_t` built
 from the log price `X` with log-drift `m − σ²/2` and log-volatility `σ`, the rebalancing value
-exceeds the pool value by `(σ²/4)·L·∫₀ᵗ √P_s ds`. Almost surely, at every `t ∈ [0, T]` at once.
-The loss rate `(σ²/4)·L·√P_s = (σ²/8)·V(P_s)` is the paper's instantaneous LVR. -/
+minus the pool value is `(σ²/4)·L·∫₀ᵗ √P_s ds`. Almost surely, at every `t ∈ [0, T]` at once.
+The statement is the signed identity (`σ`, `m`, `L` arbitrary reals); for a pool, `0 ≤ L`, and
+then `R_t ≥ V(P_t)` with the instantaneous rate `(σ²/4)·L·√P_s = (σ²/8)·V(P_s)` — the paper's
+loss of `σ²/8` of pool value per unit time. -/
 theorem lvr_constantProduct {σ m L : ℝ} :
     ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
       rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
@@ -458,8 +468,9 @@ theorem lvr_constantProduct {σ m L : ℝ} :
   rw [h t ht, setIntegral_congr_fun measurableSet_Ioc hcongr, integral_neg, integral_const_mul]
   ring
 
-/-- **The same loss as `σ²/8` of the pool value** (eq. (19)'s normalized form): for the
-constant-product pool, `R_t − V(P_t) = (σ²/8)·∫₀ᵗ V(P_s) ds` — the loss grows at `σ²/8` of the
+/-- **The same identity as `σ²/8` of the pool value** (eq. (19)'s normalized form): for the
+constant-product pool, `R_t − V(P_t) = (σ²/8)·∫₀ᵗ V(P_s) ds` — a signed identity (`σ`, `m`, `L`
+arbitrary reals); for a pool, `0 ≤ L`, it reads as a loss growing at `σ²/8` of the
 mark-to-market pool value per unit time. Almost surely, at every `t ∈ [0, T]` at once. -/
 theorem lvr_constantProduct_eq_sigma_sq_over_eight {σ m L : ℝ} :
     ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
