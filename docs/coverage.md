@@ -52,9 +52,9 @@ One `full` entry in `benchmarks/contracts.json`. Corpus 919 → 920 (873 full be
 ### Implied correlation and dispersion (2026-11-26)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 924 → 925 on the
-merged tree (877 full before, 878 after; 895 → 896 delivery-ready) — the branch was cut before
-main's 2026-11-25 contributed wave and the 2026-11-26 atlas and backlog waves landed and
-carries them in its merges.
+merged tree (877 full before, 878 after; 895 → 896 delivery-ready) — the delta is measured
+after main's 2026-11-25 contributed merge (#558, #577–#586) and the 2026-11-26 atlas and
+backlog merges (#646, #650–#652).
 
 - **`mf-implied-correlation-dispersion`** (MathFin/Choice/Portfolio/Dispersion.lean): the
   dispersion identities of an index over its components, read off the equicorrelation quadratic
@@ -78,12 +78,12 @@ carries them in its merges.
   (`realisedCorrelation_equicorrelation`). Cited: Jacquier & Slaoui, arXiv:1004.0125 (2010),
   §3.1–§3.2 (the implied correlation, its Bossu proxy, the correlation swap; the static P&L
   identity is §3.1's decomposition rearranged), with §5.1–§5.4 and Appendix D (the dynamic P&L
-  and the weighting schemes) out of scope. Disclosed out of scope: the static,
-  deterministic identities only — no stochastic process, expectation or pricing measure; the
-  dynamic P&L decompositions of the source's section 5 (the vega/volga/vanna volatility terms
-  and the implied-vs-fair-strike correlation spread under stochastic volatility), the
-  vega/gamma/theta-flat weighting strategies, and the realised correlation as a random variable
-  are not treated. Axioms-clean, `full`.
+  and the weighting schemes) out of scope. Scope: the static, deterministic identities only —
+  no stochastic process, expectation or pricing measure. Disclosed out of scope: the dynamic
+  P&L decompositions of the source's section 5 (the vega/volga/vanna volatility terms and the
+  implied-vs-fair-strike correlation spread under stochastic volatility), the
+  vega/gamma/theta-flat weighting strategies, and the realised correlation as a random
+  variable. Axioms-clean, `full`.
 
 ### The 2026-11-25 merge
 
