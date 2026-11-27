@@ -48,7 +48,7 @@ One `full` entry in `benchmarks/exotic_options.json`. The corpus goes from 924 t
   lognormal dynamics behind the Black delta (the slice is the Gaussian argument `d₋`), the bound
   by the unadjusted delta `Φ(d₊)`, the put branch, the spot-delta variant and the numerical
   root-finding. No literature citation is claimed: the statement is elementary calculus on the
-  convention that QuantLib's `BlackDeltaCalculator` implements. Axioms-clean, `full`.
+  premium-adjusted delta `(K/F)·Φ(d₋)`. Axioms-clean, `full`.
 
 ### The 2026-11-25 merge
 

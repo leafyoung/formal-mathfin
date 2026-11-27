@@ -7,6 +7,7 @@ module
 
 public import MathFin.Models.LocalVol.ForwardSmile
 public import MathFin.Probability.Gaussian.GaussianCDFDeriv
+public import MathFin.Models.BlackScholes.American.AmericanQDPlusLimits
 public import MathFin.Probability.Gaussian.NormalTail
 public import Mathlib.Analysis.Calculus.MeanValue
 public import Mathlib.Tactic.Linarith
@@ -19,17 +20,17 @@ public import Mathlib.Tactic.Ring
 
 In FX markets the premium of an option is paid in the foreign currency, and the
 **premium-adjusted** forward delta of a call struck at `K` on forward `F` is the Black
-delta net of the premium, `Δ(K) = (K/F)·Φ(d₋(K))`. A smile builder inverts it: given a
-quoted delta `δ`, find the strike. Unlike the unadjusted delta `Φ(d₊(K))`, which falls
-monotonically from `1` to `0`, the adjusted delta rises from `0`, reaches a maximum and
-then falls back to `0`, so a quoted delta has either two strikes, one, or none; the
-market takes the strike to the right of the maximum, and a quote above the maximum has
-no strike at all.
+delta net of the premium, `Δ(K) = (K/F)·Φ(d₋(K))`. Inverting it for a strike, given a
+delta `δ`, is where its shape matters: for comparison, the unadjusted delta `Φ(d₊(K))` is
+monotone in the strike, while the adjusted delta rises from `0`, reaches a maximum and
+then falls back to `0`. A delta below the maximum therefore has two strikes, one at the
+maximum, and none above it; choosing the strike to the right of the maximum is one way
+to make the inversion single-valued, and the facts proved here are what make that choice
+well posed.
 
 This file proves that picture on the flat Black slice, in the library's `(k, w)`
 coordinates (log-strike `k = log(K/F)`, total variance `w = σ²T`, as in
-`MathFin.Models.LocalVol.ForwardSmile`), where `paDelta k w = e^k·Φ(dmi k w)`. The
-convention is the `PaFwd` call delta of QuantLib's `BlackDeltaCalculator`.
+`MathFin.Models.LocalVol.ForwardSmile`), where `paDelta k w = e^k·Φ(dmi k w)`.
 
 * The stationarity equation `√w·Φ(x) = φ(x)` (the zero of `paStat √w`) in the lower
   normal argument `x = d₋` has exactly one root, and it lies above `−√w`
@@ -118,18 +119,8 @@ theorem paStat_neg_of_le {s x : ℝ} (hx : x ≤ -s) : paStat s x < 0 := by
     rw [h]
     exact lt_trans hlt (hmills _ (by linarith))
 
-/-- The standard normal density tends to `0` at `+∞`. -/
-theorem tendsto_gaussianPDFReal_zero_one_atTop' :
-    Tendsto (gaussianPDFReal 0 1) atTop (𝓝 0) := by
-  have h : Tendsto (fun x : ℝ ↦ -(x - 0) ^ 2 / (2 * ((1 : NNReal) : ℝ))) atTop atBot := by
-    have : Tendsto (fun x : ℝ ↦ x ^ 2) atTop atTop := tendsto_pow_atTop two_ne_zero
-    simpa [neg_div] using (tendsto_neg_atTop_atBot.comp this).atBot_div_const two_pos
-  have := (Real.tendsto_exp_atBot.comp h).const_mul (Real.sqrt (2 * π * ((1 : NNReal) : ℝ)))⁻¹
-  rw [mul_zero] at this
-  exact this
-
 theorem tendsto_paStat_atTop {s : ℝ} : Tendsto (paStat s) atTop (𝓝 s) := by
-  have h := (tendsto_Phi_atTop.const_mul s).sub tendsto_gaussianPDFReal_zero_one_atTop'
+  have h := (tendsto_Phi_atTop.const_mul s).sub tendsto_gaussianPDFReal_zero_one_atTop
   have e : paStat s = fun x ↦ s * Phi x - gaussianPDFReal 0 1 x := rfl
   rw [e]
   simpa using h

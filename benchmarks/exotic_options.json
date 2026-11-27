@@ -761,7 +761,7 @@
       },
       "metadata": {
         "chapter": 3,
-        "reference": "Premium-adjusted forward call delta of FX options, as solved for the strike by QuantLib's BlackDeltaCalculator::strikeFromDelta (ql/pricingengines/blackdeltacalculator.cpp)",
+        "reference": "Premium-adjusted forward call delta (K/F)·Φ(d₋) of FX options; elementary calculus on the Black slice, no literature theorem is transcribed",
         "citations": [],
         "difficulty": "intermediate",
         "formalization_status": "full",
