@@ -102,8 +102,8 @@ variable {Ω : Type*} [mΩ : MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilit
 
 /-! ### The value functions of the log price -/
 
-/-- The pool value read on the log price: `x ↦ V (Real.exp x)`, smooth on all of `ℝ` exactly when `V`
-is twice differentiable on `(0, ∞)`. -/
+/-- The pool value read on the log price: `x ↦ V (Real.exp x)`, smooth on all of `ℝ` exactly
+when `V` is twice differentiable on `(0, ∞)`. -/
 private theorem hasDerivAt_lpv (hv : ∀ p > 0, HasDerivAt V (V' p) p) (x : ℝ) :
     HasDerivAt (fun x ↦ V (Real.exp x)) (Real.exp x * V' (Real.exp x)) x :=
   (HasDerivAt.comp x (hv (Real.exp x) (Real.exp_pos x)) (Real.hasDerivAt_exp x)).congr_deriv
@@ -265,6 +265,201 @@ theorem poolValue_eq_rebalancingValue_add_correction
   rw [rebalancingValue, hpred, hstep,
     setIntegral_congr_fun measurableSet_Ioc hcongr,
     integral_add hintHedge hintCorrHalf, integral_const_mul]
+  ring
+
+
+/-- **The loss-versus-rebalancing process** (the source's eq. (6) with Lemma 2's eq. (7)): the
+rebalancing value exceeds the pool value by exactly the time integral of the instantaneous rate
+`−½·σ²P²V''(P)`, the paper's `ℓ(σ, P) = −(σ²P²/2)·x*′(P)` under Lemma 1 Part 3 (`x*′ = V''`).
+Almost surely, at every `t ∈ [0, T]` at once. -/
+theorem rebalancingValue_sub_poolValue_eq_lvr
+    (hv : ∀ p > 0, HasDerivAt V (V' p) p) (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p)
+    (hv''_cont : ContinuousOn V'' (Ioi 0)) :
+    ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
+      rebalancingValue T hBmeas hadap hcont x₀ V V'
+          (itoIntegrand_isStronglyPredictable hB T hBmeas hBcont hadap hcont hb_adap hb_cont
+            x₀ (f_x := fun _ x ↦ Real.exp x * V' (Real.exp x))
+            ((continuous_rebalancingHolding hv').comp continuous_snd)) t ω
+        - V (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b t ω))
+        = -(1 / 2 * ∫ (s : ℝ≥0) in Ioc 0 t,
+            σ s ω ^ 2 * Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω) ^ 2
+              * V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))
+            ∂timeMeasure) := by
+  have h := poolValue_eq_rebalancingValue_add_correction hB T hBmeas hBcont hadap hcont hb_adap
+    hb_cont x₀ hv hv' hv''_cont
+  filter_upwards [h] with ω h t ht
+  rw [h t ht]
+  ring
+
+/-- **The loss is nonnegative** (Lemma 2's "ℓ(σ, P) is always positive", on the concavity of
+Lemma 1 Part 3): whenever `V'' ≤ 0` on `(0, ∞)`, the pool never runs ahead of the rebalancing
+strategy. Almost surely, at every `t ∈ [0, T]` at once. -/
+theorem lvr_nonneg (hv : ∀ p > 0, HasDerivAt V (V' p) p) (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p)
+    (hv''_cont : ContinuousOn V'' (Ioi 0)) (hv''_nonpos : ∀ p > 0, V'' p ≤ 0) :
+    ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
+      0 ≤ rebalancingValue T hBmeas hadap hcont x₀ V V'
+          (itoIntegrand_isStronglyPredictable hB T hBmeas hBcont hadap hcont hb_adap hb_cont
+            x₀ (f_x := fun _ x ↦ Real.exp x * V' (Real.exp x))
+            ((continuous_rebalancingHolding hv').comp continuous_snd)) t ω
+        - V (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b t ω)) := by
+  have h := rebalancingValue_sub_poolValue_eq_lvr hB T hBmeas hBcont hadap hcont hb_adap hb_cont
+    x₀ hv hv' hv''_cont
+  filter_upwards [h] with ω h t ht
+  rw [h t ht]
+  have hle : ∫ (s : ℝ≥0) in Ioc 0 t,
+      σ s ω ^ 2 * Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω) ^ 2
+        * V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))
+      ∂timeMeasure ≤ 0 := by
+    have hpos : (0 : ℝ) ≤ ∫ (s : ℝ≥0) in Ioc 0 t,
+        -(σ s ω ^ 2
+            * Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω) ^ 2
+          * V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω)))
+        ∂timeMeasure :=
+      setIntegral_nonneg measurableSet_Ioc (fun s (_ : s ∈ Ioc 0 t) ↦ neg_nonneg.mpr
+        (mul_nonpos_of_nonneg_of_nonpos
+          (mul_nonneg (sq_nonneg (σ s ω))
+            (sq_nonneg (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))))
+          (hv''_nonpos (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))
+            (Real.exp_pos _))))
+    rw [integral_neg] at hpos
+    exact neg_nonneg.mp hpos
+  exact neg_nonneg.mpr (mul_nonpos_of_nonneg_of_nonpos (by norm_num) hle)
+
+/-! ### The constant-product pool -/
+
+/-- The constant-product pool value as a function of the price `P` (Example 3, eq. (19) of the
+source): `cpPoolValue L P = 2L√P`, where `L` is the pool's liquidity. Twice differentiable on
+`(0, ∞)`; the derivative facts are `hasDerivAt_cpPoolValue`, `hasDerivAt_cpPoolHedge` and
+`continuousOn_cpPoolCurvature`. -/
+noncomputable def cpPoolValue (L : ℝ) : ℝ → ℝ := fun p ↦ 2 * L * Real.sqrt p
+
+/-- The hedge holding of the constant-product pool: `x*(P) = V'(P) = L/√P` — the pool's own
+reserve of X at price `P` (the source's Lemma 1 Part 2 at this pool). -/
+noncomputable def cpPoolHedge (L : ℝ) : ℝ → ℝ := fun p ↦ L / Real.sqrt p
+
+/-- The curvature of the constant-product pool value: `V''(P) = −L/(2·P·√P)`, which is
+`x*′(P) ≤ 0` — the marginal liquidity of Lemma 1 Part 3 at this pool. -/
+noncomputable def cpPoolCurvature (L : ℝ) : ℝ → ℝ := fun p ↦ -(L / (2 * (p * Real.sqrt p)))
+
+theorem hasDerivAt_cpPoolValue (L p : ℝ) (hp : 0 < p) :
+    HasDerivAt (cpPoolValue L) (cpPoolHedge L p) p := by
+  have h0 : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt p)) p := Real.hasDerivAt_sqrt hp.ne'
+  have h1 : HasDerivAt (fun q : ℝ ↦ (2 * L) * Real.sqrt q)
+      ((2 * L) * (1 / (2 * Real.sqrt p))) p := HasDerivAt.const_mul (2 * L) h0
+  rw [show ((2 * L) * (1 / (2 * Real.sqrt p)) : ℝ) = cpPoolHedge L p by
+    unfold cpPoolHedge
+    field_simp] at h1
+  exact h1
+
+theorem hasDerivAt_cpPoolHedge (L p : ℝ) (hp : 0 < p) :
+    HasDerivAt (cpPoolHedge L) (cpPoolCurvature L p) p := by
+  have hs : Real.sqrt p ^ 2 = p := Real.sq_sqrt hp.le
+  have h0 : HasDerivAt (fun q : ℝ ↦ (L : ℝ) / Real.sqrt q)
+      ((0 * Real.sqrt p - L * (1 / (2 * Real.sqrt p))) / Real.sqrt p ^ 2) p :=
+    HasDerivAt.div (hasDerivAt_const (c := L) p) (Real.hasDerivAt_sqrt hp.ne')
+      ((Real.sqrt_ne_zero').mpr hp)
+  rw [hs] at h0
+  rw [show ((0 * Real.sqrt p - L * (1 / (2 * Real.sqrt p))) / p : ℝ)
+      = cpPoolCurvature L p by
+    unfold cpPoolCurvature
+    field_simp
+    ring] at h0
+  exact h0
+
+theorem continuousOn_cpPoolCurvature (L : ℝ) :
+    ContinuousOn (cpPoolCurvature L) (Ioi 0) := by
+  have hden : ContinuousOn (fun p : ℝ ↦ p * Real.sqrt p) (Ioi 0) :=
+    (continuous_id.mul Real.continuous_sqrt).continuousOn
+  have hinvmul : ContinuousOn (fun p : ℝ ↦ -(L / 2) * (p * Real.sqrt p)⁻¹) (Ioi 0) :=
+    (ContinuousOn.inv₀ hden fun p hp ↦
+      mul_ne_zero (ne_of_gt hp) ((Real.sqrt_ne_zero').mpr hp)).const_mul (-(L / 2))
+  refine hinvmul.congr fun p (hp : p ∈ Ioi 0) ↦ ?_
+  unfold cpPoolCurvature
+  field_simp
+
+/-- The pointwise curvature identity the constant-product specialization rests on:
+`σ²·P²·V''(P) = −(σ²L/2)·√P` at `P = Real.exp x > 0`. -/
+private theorem cpCurvature_pointwise {σ L x : ℝ} (hx : 0 < Real.exp x) :
+    σ ^ 2 * Real.exp x ^ 2 * cpPoolCurvature L (Real.exp x)
+      = -(σ ^ 2 * L / 2 * Real.sqrt (Real.exp x)) := by
+  unfold cpPoolCurvature
+  set S : ℝ := Real.sqrt (Real.exp x) with hS
+  have hsq : S ^ 2 = Real.exp x := Real.sq_sqrt hx.le
+  have hne : S ≠ 0 := by
+    intro hs0
+    exact hx.ne' (by rw [← hsq, hs0, zero_pow (by norm_num : (2 : ℕ) ≠ 0)])
+  rw [← hsq]
+  field_simp [hne]
+
+/-- **The constant-product pool loses `σ²/8` of its value per unit time** (Lemma 2 at Example 3,
+eq. (19) of the source): for the pool value `V(P) = 2L√P` and a price `P_t = Real.exp X_t` built
+from the log price `X` with log-drift `m − σ²/2` and log-volatility `σ`, the rebalancing value
+exceeds the pool value by `(σ²/4)·L·∫₀ᵗ √P_s ds`. Almost surely, at every `t ∈ [0, T]` at once.
+The loss rate `(σ²/4)·L·√P_s = (σ²/8)·V(P_s)` is the paper's instantaneous LVR. -/
+theorem lvr_constantProduct {σ m L : ℝ} :
+    ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
+      rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
+        (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀ (cpPoolValue L)
+        (cpPoolHedge L)
+        (itoIntegrand_isStronglyPredictable (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2)
+          hB T hBmeas hBcont (fun _ ↦ stronglyMeasurable_const)
+          (fun _ ↦ continuous_const) (fun _ ↦ stronglyMeasurable_const)
+          (fun _ ↦ continuous_const) x₀ (f_x := fun _ x ↦ Real.exp x * cpPoolHedge L (Real.exp x))
+          ((continuous_rebalancingHolding (hasDerivAt_cpPoolHedge L)).comp continuous_snd))
+        t ω
+        - cpPoolValue L (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+            (fun _ _ ↦ m - σ ^ 2 / 2) t ω))
+        = σ ^ 2 / 4 * L * ∫ (s : ℝ≥0) in Ioc 0 t,
+            Real.sqrt (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+              (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+              (fun _ _ ↦ m - σ ^ 2 / 2) s ω)) ∂timeMeasure := by
+  have hmain := poolValue_eq_rebalancingValue_add_correction hB T hBmeas hBcont
+    (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const)
+    (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+    (fun p hp ↦ hasDerivAt_cpPoolValue L p hp) (hasDerivAt_cpPoolHedge L)
+    (continuousOn_cpPoolCurvature L) (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2)
+  filter_upwards [hmain] with ω h t ht
+  have hx (s : ℝ≥0) : 0 < Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+      (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+      (fun _ _ ↦ m - σ ^ 2 / 2) s ω) := Real.exp_pos _
+  have hcongr : ∀ u ∈ Ioc 0 t, σ ^ 2
+      * Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+        (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+        (fun _ _ ↦ m - σ ^ 2 / 2) u ω) ^ 2
+      * cpPoolCurvature L (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+        (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+        (fun _ _ ↦ m - σ ^ 2 / 2) u ω))
+      = -(σ ^ 2 * L / 2 * Real.sqrt (Real.exp (localItoProcess (μ := μ) T hBmeas
+        (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+        (fun _ _ ↦ m - σ ^ 2 / 2) u ω))) := fun u _ ↦ cpCurvature_pointwise (hx u)
+  rw [h t ht, setIntegral_congr_fun measurableSet_Ioc hcongr, integral_neg, integral_const_mul]
+  ring
+
+/-- **The same loss as `σ²/8` of the pool value** (eq. (19)'s normalized form): for the
+constant-product pool, `R_t − V(P_t) = (σ²/8)·∫₀ᵗ V(P_s) ds` — the loss grows at `σ²/8` of the
+mark-to-market pool value per unit time. Almost surely, at every `t ∈ [0, T]` at once. -/
+theorem lvr_constantProduct_eq_sigma_sq_over_eight {σ m L : ℝ} :
+    ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
+      rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
+        (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀ (cpPoolValue L)
+        (cpPoolHedge L)
+        (itoIntegrand_isStronglyPredictable (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2)
+          hB T hBmeas hBcont (fun _ ↦ stronglyMeasurable_const)
+          (fun _ ↦ continuous_const) (fun _ ↦ stronglyMeasurable_const)
+          (fun _ ↦ continuous_const) x₀ (f_x := fun _ x ↦ Real.exp x * cpPoolHedge L (Real.exp x))
+          ((continuous_rebalancingHolding (hasDerivAt_cpPoolHedge L)).comp continuous_snd))
+        t ω
+        - cpPoolValue L (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+            (fun _ _ ↦ m - σ ^ 2 / 2) t ω))
+        = σ ^ 2 / 8 * ∫ (s : ℝ≥0) in Ioc 0 t,
+            cpPoolValue L (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+              (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+              (fun _ _ ↦ m - σ ^ 2 / 2) s ω)) ∂timeMeasure := by
+  filter_upwards [lvr_constantProduct hB T hBmeas hBcont x₀] with ω h t ht
+  rw [h t ht]
+  simp only [cpPoolValue, integral_const_mul]
   ring
 
 end DeFi
