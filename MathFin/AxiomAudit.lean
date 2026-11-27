@@ -3376,3 +3376,11 @@ and `uncovered_interest_parity` from the risk-neutral expectation. -/
 /-- info: 'MathFin.DeFi.losses_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.losses_nonneg
+
+/-- info: 'MathFin.DeFi.cpPoolValue_eq_lpPortfolioValue' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.cpPoolValue_eq_lpPortfolioValue
+
+/-- info: 'MathFin.DeFi.cpPoolHedge_eq_reservesX' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.cpPoolHedge_eq_reservesX

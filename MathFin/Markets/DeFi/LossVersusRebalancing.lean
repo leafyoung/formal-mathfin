@@ -70,6 +70,9 @@ proved here is a nonnegative time integral.
 * `losses_nonneg`: for the constant-product pool, the loss against the rebalancing strategy
   and the static `impermanentLoss` at the realized price factor are both nonnegative — the two
   benchmarks of the paper's §8, with no identity between them.
+* `cpPoolValue_eq_lpPortfolioValue`, `cpPoolHedge_eq_reservesX`: the constant-product value
+  function and hedge holding are the library's static reserves objects (`lpPortfolioValue`,
+  `impermanentLossReservesX`), proved equal at the deposit-price normalization.
 * `lvr_constantProduct`: the constant-product pool loses `(σ²/4)·L·∫₀ᵗ √P_s ds`.
 * `lvr_constantProduct_eq_sigma_sq_over_eight`: the same loss as
   `(σ²/8)·∫₀ᵗ V(P_s) ds`.
@@ -327,12 +330,16 @@ noncomputable def cpPoolValue (L : ℝ) : ℝ → ℝ := fun p ↦ 2 * L * Real.
 
 /-- The hedge holding of the constant-product pool: `x*(P) = V'(P) = L/√P`. For `0 ≤ L` this
 is the pool's own reserve of X at price `P` (the source's Lemma 1 Part 2 at this pool); the
-def itself is the signed expression and carries no sign hypothesis. -/
+def itself is the signed expression and carries no sign hypothesis. Junk for `P ≤ 0` (the
+totalized division reads `0` where `x*(P)` diverges); every theorem evaluates it at
+`P = Real.exp … > 0`. -/
 noncomputable def cpPoolHedge (L : ℝ) : ℝ → ℝ := fun p ↦ L / Real.sqrt p
 
 /-- The curvature of the constant-product pool value: `V''(P) = −L/(2·P·√P)`. For `0 ≤ L` this
 is `x*′(P) ≤ 0`, the marginal liquidity of the source's Lemma 1 Part 3 at this pool; the def
-itself is the signed expression and carries no sign hypothesis. -/
+itself is the signed expression and carries no sign hypothesis. Junk for `P ≤ 0` (the
+totalized division reads `0` where `V''(P)` diverges); every theorem evaluates it at
+`P = Real.exp … > 0`. -/
 noncomputable def cpPoolCurvature (L : ℝ) : ℝ → ℝ := fun p ↦ -(L / (2 * (p * Real.sqrt p)))
 
 theorem hasDerivAt_cpPoolValue (L p : ℝ) (hp : 0 < p) :
@@ -360,6 +367,50 @@ theorem hasDerivAt_cpPoolHedge (L p : ℝ) (hp : 0 < p) :
     ring] at h0
   exact h0
 
+/-- A positive quantity times the square root of its quotient by itself is the square root of
+the product: `b·√(a/b) = √(a·b)`. -/
+private theorem mul_sqrt_div {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+    b * Real.sqrt (a / b) = Real.sqrt (a * b) := by
+  nth_rewrite 1 [show b = Real.sqrt (b * b) from
+    (Real.sqrt_mul_self (by positivity : (0 : ℝ) ≤ b)).symm]
+  rw [← Real.sqrt_mul (by positivity : (0 : ℝ) ≤ b * b)]
+  congr 1
+  field_simp
+
+/-- **The constant-product value function is the library's static LP portfolio value**: a
+deposit `(x₀, y₀)` at the pool price `y₀/x₀` has liquidity `L = √(x₀·y₀)`, and marking it at
+the absolute price `P` (the price factor `P·x₀/y₀` from the deposit price) is worth exactly
+`cpPoolValue L P` — the same curve `lpPortfolioValue_eq` gives, so the two encodings are proved
+equal and `losses_nonneg`'s two benchmarks share one parameterization. -/
+theorem cpPoolValue_eq_lpPortfolioValue (x0 y0 P : ℝ) (hx0 : 0 < x0) (hy0 : 0 < y0)
+    (hP : 0 < P) :
+    cpPoolValue (Real.sqrt (x0 * y0)) P
+      = impermanentLossReservesX x0 y0 (P * x0 / y0)
+          * ((P * x0 / y0) * y0 / x0)
+        + impermanentLossReservesY x0 y0 (P * x0 / y0) := by
+  have hrpos : 0 < P * x0 / y0 := div_pos (mul_pos hP hx0) hy0
+  rw [cpPoolValue, lpPortfolioValue_eq x0 y0 (P * x0 / y0) hx0 hy0 hrpos]
+  calc 2 * Real.sqrt (x0 * y0) * Real.sqrt P
+      = 2 * (Real.sqrt (x0 * y0) * Real.sqrt P) := by rw [← mul_assoc]
+    _ = 2 * Real.sqrt ((x0 * y0) * P) := by
+          rw [← Real.sqrt_mul (by positivity : (0 : ℝ) ≤ x0 * y0)]
+    _ = 2 * Real.sqrt (P * x0 * y0) := by
+          have hcomm : (x0 * y0) * P = P * x0 * y0 := by ring
+          rw [hcomm]
+    _ = 2 * (y0 * Real.sqrt (P * x0 / y0)) := by rw [← mul_sqrt_div (mul_pos hP hx0) hy0]
+    _ = 2 * y0 * Real.sqrt (P * x0 / y0) := by rw [mul_assoc]
+
+/-- **The constant-product hedge holding is the pool's X reserve**: at the absolute price `P`,
+the deposit `(x₀, y₀)` at the pool price holds `x*(P) = L/√P` with `L = √(x₀·y₀)`, exactly the
+rebalanced reserve `impermanentLossReservesX x0 y0 (P·x₀/y₀)` — the same curve, proved equal. -/
+theorem cpPoolHedge_eq_reservesX (x0 y0 P : ℝ) (hx0 : 0 < x0) (hy0 : 0 < y0)
+    (hP : 0 < P) :
+    cpPoolHedge (Real.sqrt (x0 * y0)) P = impermanentLossReservesX x0 y0 (P * x0 / y0) := by
+  rw [cpPoolHedge, impermanentLossReservesX,
+    ← Real.sqrt_div (by positivity : (0 : ℝ) ≤ x0 * y0)]
+  congr 1
+  field_simp [hx0.ne', hy0.ne', hP.ne']
+
 /-- The constant-product curvature is nonpositive for a nonnegative liquidity `L`: the pool
 value function is concave on `(0, ∞)` (the source's Lemma 1 Part 3). -/
 private theorem cpPoolCurvature_nonpos {L : ℝ} (hL : 0 ≤ L) (p : ℝ) (hp : 0 < p) :
@@ -378,12 +429,13 @@ theorem continuousOn_cpPoolCurvature (L : ℝ) :
   unfold cpPoolCurvature
   field_simp
 
-/-- **Both loss benchmarks are nonnegative** (the source's Lemma 2 with Proposition 1 of §8):
-for the constant-product pool `V(P) = 2L√P` along the GBM price, the loss against the
-continuously rebalanced strategy and the static loss against holding the initial reserves
-(`impermanentLoss` at the realized price factor, the paper's "loss-versus-holding") are both
-nonnegative, almost surely at every `t ∈ [0, T]` at once. The benchmarks differ, and no
-identity between the two losses is proved here. -/
+/-- **Both loss benchmarks register a loss** (the source's Lemma 2 with Proposition 1 of §8):
+for the constant-product pool `V(P) = 2L√P` along the GBM price, the dynamic loss reads
+`0 ≤ R_t − V(P_t)`, and the static loss against holding the initial reserves reads, in the
+library's signed relative convention, `impermanentLoss (P_t/P₀) ≤ 0` — the paper's absolute
+`LVH_t ≥ 0` in the convention of `impermanentLoss_nonpos`. Almost surely, at every
+`t ∈ [0, T]` at once. The benchmarks differ, and no identity between the two losses is proved
+here. -/
 theorem losses_nonneg {σ m L : ℝ} (hL : 0 ≤ L) :
     ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
       0 ≤ rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
