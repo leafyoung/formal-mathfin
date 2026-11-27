@@ -221,7 +221,8 @@ theorem oneFactorPD_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (f : ℝ)
 /-- **The independence end for the worst-case default rate**: as the asset correlation `ρ`
 approaches `0`, the asymptotic single-risk-factor quantile `asrfQuantile π ρ α` tends to `π`
 at every confidence `α` — the worst-case default rate of a portfolio without systematic risk
-is the average default probability itself. -/
+is the average default probability itself. The statement is the two-sided limit at `0` in the
+ambient encoding, where the formula extends to `ρ ≤ 0` with `√ρ = 0`. -/
 theorem asrfQuantile_tendsto_rho_zero {π : ℝ} (hπ : π ∈ Ioo 0 1) (α : ℝ) :
     Tendsto (fun ρ : ℝ => asrfQuantile π ρ α) (𝓝 0) (𝓝 π) := by
   have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
