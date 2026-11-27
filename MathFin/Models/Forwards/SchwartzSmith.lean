@@ -466,4 +466,211 @@ private theorem hasLaw_linearCombination (hB₁ : IsPreBrownianReal B₁ μ)
   rw [← hℓ]
   exact hshift.congr hae
 
+/-! ### The laws of the model -/
+
+omit [IsProbabilityMeasure μ] in
+private theorem memLp_of_hasLaw {X : Ω → ℝ} {m : ℝ} {v : ℝ≥0}
+    (h : HasLaw X (gaussianReal m v) μ) : MemLp X 2 μ :=
+  (⟨h.aemeasurable, by rw [h.map_eq]; infer_instance⟩ : HasGaussianLaw X μ).memLp_two
+
+omit [IsProbabilityMeasure μ] in
+private theorem variance_of_hasLaw {X : Ω → ℝ} {m : ℝ} {v : ℝ≥0}
+    (h : HasLaw X (gaussianReal m v) μ) : Var[X; μ] = (v : ℝ) := by
+  rw [h.variance_eq, variance_id_gaussianReal]
+
+private theorem gaussianReal_congr {m₁ m₂ : ℝ} {v₁ v₂ : ℝ≥0} (hm : m₁ = m₂) (hv : v₁ = v₂) :
+    gaussianReal m₁ v₁ = gaussianReal m₂ v₂ := by rw [hm, hv]
+
+omit [IsProbabilityMeasure μ] in
+private theorem hasLaw_congr_law {X : Ω → ℝ} {ℓ₁ ℓ₂ : Measure ℝ}
+    (h : HasLaw X ℓ₁ μ) (hℓ : ℓ₁ = ℓ₂) : HasLaw X ℓ₂ μ := by
+  rw [hℓ] at h
+  exact h
+
+omit [IsProbabilityMeasure μ] in
+private theorem hasLaw_congr_var {X Y : Ω → ℝ} {ℓ : Measure ℝ}
+    (h : HasLaw X ℓ μ) (hXY : ∀ ω, X ω = Y ω) : HasLaw Y ℓ μ := by
+  refine ⟨AEMeasurable.congr h.aemeasurable (Filter.Eventually.of_forall hXY), ?_⟩
+  exact (Measure.map_congr (Filter.Eventually.of_forall hXY)).symm.trans h.map_eq
+
+/-- **The law of the short-term deviation**: `χ_t ~ N(χ₀e^{−κt}, vasicekSDEVariance σ_χ κ t)` —
+`HullWhite.integratedRate` at zero forcing, by `integratedRate_hasLaw_gaussian`. -/
+theorem schwartzSmithChi_hasLaw (hB₁ : IsPreBrownianReal B₁ μ) {κ σ₁ x₀ : ℝ} (hκ : 0 < κ)
+    (t : ℝ≥0) :
+    HasLaw (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t)
+      (gaussianReal (x₀ * Real.exp (-(κ * (t : ℝ)))) (vasicekSDEVariance σ₁ κ (t : ℝ)).toNNReal)
+      μ := by
+  have h := HullWhite.integratedRate_hasLaw_gaussian hB₁ (fun _ ↦ 0) κ σ₁ x₀ hκ t
+  have h2 := hasLaw_congr_var h (fun ω ↦ rfl)
+  rw [deterministic_zero_eq] at h2
+  exact h2
+
+/-- **The law of the equilibrium level**: `ξ_t ~ N(ξ₀ + νt, σ_ξ²t)` — the drifted Brownian
+motion, from the linear-combination workhorse at `a = 0, b = 1`. -/
+theorem schwartzSmithXi_hasLaw (hB₁ : IsPreBrownianReal B₁ μ) (hB₂ : IsPreBrownianReal B₂ μ)
+    (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    HasLaw (schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t)
+      (gaussianReal (ξ₀ + ν * (t : ℝ)) ((σ₂ ^ 2 * (t : ℝ)).toNNReal)) μ := by
+  have h := hasLaw_linearCombination hB₁ hB₂ h₁m h₂m hind hκ hρ t
+    (a := 0) (b := 1) (σ₁ := σ₁) (σ₂ := σ₂) (x₀ := x₀) (ξ₀ := ξ₀) (ν := ν)
+  have h3 := hasLaw_congr_var (Y := schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t) h
+    (by intro ω; ring)
+  have hℓ : gaussianReal (0 * (x₀ * Real.exp (-(κ * (t : ℝ)))) + 1 * (ξ₀ + ν * (t : ℝ)))
+      ((0 ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (0 * 1) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+        + 1 ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal)
+    = gaussianReal (ξ₀ + ν * (t : ℝ)) ((σ₂ ^ 2 * (t : ℝ)).toNNReal) :=
+    gaussianReal_congr (by ring) (by
+      push_cast [one_pow, one_mul, zero_mul, zero_add, zero_div]
+      simp)
+  rw [hℓ] at h3
+  exact h3
+
+/-- **The law of the log spot**: `ln S_t ~ N(x₀e^{−κt} + ξ₀ + νt, v_t)` with `v_t` the total
+variance — the workhorse at `a = b = 1`. -/
+theorem schwartzSmithLogSpot_hasLaw (hB₁ : IsPreBrownianReal B₁ μ) (hB₂ : IsPreBrownianReal B₂ μ)
+    (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    HasLaw (schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t)
+      (gaussianReal (x₀ * Real.exp (-(κ * (t : ℝ))) + (ξ₀ + ν * (t : ℝ)))
+        ((vasicekSDEVariance σ₁ κ (t : ℝ)
+            + 2 * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+            + σ₂ ^ 2 * (t : ℝ)).toNNReal)) μ := by
+  have h := hasLaw_linearCombination hB₁ hB₂ h₁m h₂m hind hκ hρ t
+    (a := 1) (b := 1) (σ₁ := σ₁) (σ₂ := σ₂) (x₀ := x₀) (ξ₀ := ξ₀) (ν := ν)
+  have h3 := hasLaw_congr_var
+    (Y := schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t) h (by intro ω; simp [schwartzSmithLogSpot])
+  have hℓ : gaussianReal (1 * (x₀ * Real.exp (-(κ * (t : ℝ)))) + 1 * (ξ₀ + ν * (t : ℝ)))
+      ((1 ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (1 * 1) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+        + 1 ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal)
+    = gaussianReal (x₀ * Real.exp (-(κ * (t : ℝ))) + (ξ₀ + ν * (t : ℝ)))
+      ((vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+        + σ₂ ^ 2 * (t : ℝ)).toNNReal) :=
+    gaussianReal_congr (by ring) (by
+      push_cast [one_pow, one_mul]
+      ring)
+  rw [hℓ] at h3
+  exact h3
+
+/-- **The expected log spot** (eq. 5): `𝔼[ln S_t] = χ₀e^{−κt} + ξ₀ + νt`. -/
+theorem schwartzSmithLogSpot_mean (hB₁ : IsPreBrownianReal B₁ μ) (hB₂ : IsPreBrownianReal B₂ μ)
+    (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    ∫ ω, schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t ω ∂μ
+      = x₀ * Real.exp (-(κ * (t : ℝ))) + (ξ₀ + ν * (t : ℝ)) :=
+  (schwartzSmithLogSpot_hasLaw hB₁ hB₂ h₁m h₂m hind hκ hρ t).integral_eq.trans
+    integral_id_gaussianReal
+
+/-- **The total variance of the log spot** — the squared term-structure volatility `v_T`
+(eqs. 3 and 10): `v_T = σ_χ²(1−e^{−2κT})/(2κ) + σ_ξ²T + 2ρσ_χσ_ξ(1−e^{−κT})/κ`. -/
+noncomputable def schwartzSmithTotalVariance (κ σ₁ σ₂ ρ : ℝ) (t : ℝ≥0) : ℝ :=
+  vasicekSDEVariance σ₁ κ (t : ℝ)
+    + 2 * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ) + σ₂ ^ 2 * (t : ℝ)
+
+/-- **The variance of the log spot is the total variance.** -/
+theorem schwartzSmithLogSpot_variance (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    Var[schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t; μ]
+      = schwartzSmithTotalVariance κ σ₁ σ₂ ρ t := by
+  have h := variance_of_hasLaw (schwartzSmithLogSpot_hasLaw hB₁ hB₂ h₁m h₂m hind hκ hρ t
+    (σ₁ := σ₁) (σ₂ := σ₂) (x₀ := x₀) (ξ₀ := ξ₀) (ν := ν))
+  rw [h]
+  unfold schwartzSmithTotalVariance
+  rw [Real.coe_toNNReal _
+    (by
+      have hq := ssQuadratic_nonneg 1 1 (σ₁ := σ₁) (σ₂ := σ₂) hκ t.coe_nonneg hρ
+      simpa using hq)]
+
+/-- **The cross-covariance of the two factors** (eq. 3b):
+`cov(χ_t, ξ_t) = ρσ_χσ_ξ(1 − e^{−κt})/κ`, by polarizing the variance of the sum. -/
+theorem schwartzSmithChiXi_covariance (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    cov[schwartzSmithChi hB₁ κ σ₁ x₀ hκ t, schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t; μ]
+      = ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ := by
+  have hmemχ := memLp_of_hasLaw (schwartzSmithChi_hasLaw (σ₁ := σ₁) (x₀ := x₀) hB₁ hκ t)
+  have hmemξ := memLp_of_hasLaw (schwartzSmithXi_hasLaw
+    (σ₂ := σ₂) (ξ₀ := ξ₀) (ν := ν) (σ₁ := σ₁) (x₀ := x₀) hB₁ hB₂ h₁m h₂m hind hκ hρ t)
+  have hVχ := variance_of_hasLaw (schwartzSmithChi_hasLaw (σ₁ := σ₁) (x₀ := x₀) hB₁ hκ t)
+  have hVξ := variance_of_hasLaw (schwartzSmithXi_hasLaw
+    (σ₂ := σ₂) (ξ₀ := ξ₀) (ν := ν) (σ₁ := σ₁) (x₀ := x₀) hB₁ hB₂ h₁m h₂m hind hκ hρ t)
+  have hVS := variance_of_hasLaw
+    (schwartzSmithLogSpot_hasLaw (σ₁ := σ₁) (σ₂ := σ₂) (x₀ := x₀) (ξ₀ := ξ₀) (ν := ν)
+      hB₁ hB₂ h₁m h₂m hind hκ hρ t)
+  have hvaradd := variance_add hmemχ hmemξ
+  rw [show (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t + schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t)
+      = schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t from rfl] at hvaradd
+  rw [hVχ, hVS, hVξ] at hvaradd
+  rw [Real.coe_toNNReal
+      (vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ) + σ₂ ^ 2 * (t : ℝ))
+      (by
+        have hq := ssQuadratic_nonneg 1 1 (σ₁ := σ₁) (σ₂ := σ₂) hκ t.coe_nonneg hρ
+        simpa using hq)] at hvaradd
+  rw [Real.coe_toNNReal (σ₂ ^ 2 * (t : ℝ)) (mul_nonneg (sq_nonneg σ₂) t.coe_nonneg)] at hvaradd
+  rw [Real.coe_toNNReal (vasicekSDEVariance σ₁ κ (t : ℝ))
+      (vasicekSDEVariance_nonneg σ₁ hκ t.coe_nonneg)] at hvaradd
+  rw [Real.coe_toNNReal (vasicekSDEVariance σ₁ κ (t : ℝ))
+      (vasicekSDEVariance_nonneg σ₁ hκ t.coe_nonneg)] at hVχ
+  rw [Real.coe_toNNReal (σ₂ ^ 2 * (t : ℝ)) (mul_nonneg (sq_nonneg σ₂) t.coe_nonneg)] at hVξ
+  rw [Real.coe_toNNReal
+      (vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ) + σ₂ ^ 2 * (t : ℝ))
+      (by
+        have hq := ssQuadratic_nonneg 1 1 (σ₁ := σ₁) (σ₂ := σ₂) hκ t.coe_nonneg hρ
+        simpa using hq)] at hVS
+  linarith
+
+/-- **The two factors are jointly Gaussian** with the covariance of eq. 3b — every linear
+functional `a·χ_t + b·ξ_t` is Gaussian (the workhorse). -/
+theorem schwartzSmithChiXi_hasGaussianLaw (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    HasGaussianLaw (fun ω ↦ (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω,
+      schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)) μ := by
+  have hχmeas := (memLp_of_hasLaw (schwartzSmithChi_hasLaw (σ₁ := σ₁) (x₀ := x₀) hB₁ hκ t)).aemeasurable
+  have hξmeas := (memLp_of_hasLaw (schwartzSmithXi_hasLaw
+    (σ₂ := σ₂) (ξ₀ := ξ₀) (ν := ν) (σ₁ := σ₁) (x₀ := x₀) hB₁ hB₂ h₁m h₂m hind hκ hρ t)).aemeasurable
+  refine ⟨hχmeas.prodMk hξmeas, ?_⟩
+  refine isGaussian_of_map_eq_gaussianReal fun L ↦ ?_
+  have hLap (p : ℝ × ℝ) : L p = p.1 * L (1, 0) + p.2 * L (0, 1) := by
+    obtain ⟨p₁, p₂⟩ := p
+    have hp : (p₁, p₂) = p₁ • ((1 : ℝ), 0) + p₂ • ((0 : ℝ), 1) := by
+      simp [Prod.smul_def, smul_eq_mul]
+    rw [hp, map_add, map_smul, map_smul]
+    simp
+  rw [AEMeasurable.map_map_of_aemeasurable (by
+      exact (by fun_prop : Measurable L).aemeasurable : AEMeasurable L (μ.map fun ω ↦
+        (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω, schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)))
+    (AEMeasurable.prodMk hχmeas hξmeas)]
+  rw [show (L ∘ (fun ω ↦ (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω,
+        schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)))
+    = fun ω ↦ L (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω,
+      schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω) from rfl]
+  rw [Measure.map_congr
+    (g := fun ω ↦ schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω * L (1, 0)
+      + schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω * L (0, 1))
+    (Filter.Eventually.of_forall (fun ω ↦ by
+      rw [hLap (schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω,
+        schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)]))]
+  rw [Measure.map_congr
+    (g := fun ω ↦ L (1, 0) * schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω
+      + L (0, 1) * schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)
+    (Filter.Eventually.of_forall (fun ω ↦ by ring))]
+  exact ⟨L (1, 0) * (x₀ * Real.exp (-(κ * (t : ℝ)))) + L (0, 1) * (ξ₀ + ν * (t : ℝ)),
+    ((L (1, 0)) ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+      + 2 * ((L (1, 0)) * (L (0, 1))) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+      + (L (0, 1)) ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal,
+    (hasLaw_linearCombination hB₁ hB₂ h₁m h₂m hind hκ hρ t (L (1, 0)) (L (0, 1))).map_eq⟩
+
 end MathFin
