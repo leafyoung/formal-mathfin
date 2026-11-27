@@ -62,7 +62,7 @@ rate.
 
 ## References
 
-* [O. Vasicek, *Loan portfolio value*][Vasicek2002], equations (5)-(7)
+* [O. Vasicek, *Loan portfolio value*][Vasicek2002], equations (3), (5)-(6)
 * [J. C. Hull, *Options, Futures, and Other Derivatives*][Hull], ch. 24, equation (24.10)
 
 The Hull text locates the worst-case default rate as equation (24.10); the printed forms of the
@@ -330,18 +330,11 @@ theorem asrfQuantile_tendsto_rho_one_gt {π α : ℝ} (hπ : π ∈ Ioo 0 1) (h�
 /-- **The perfect-correlation end for the worst-case default rate, at the boundary**: when
 `π + α = 1` the quantile sits exactly on the atom of the degenerate limit and tends to `1/2`
 as `ρ → 1⁻`. -/
-theorem asrfQuantile_tendsto_rho_one_eq {π α : ℝ} (hπ : π ∈ Ioo 0 1) (hα : α ∈ Ioo 0 1)
-    (h : π + α = 1) :
+theorem asrfQuantile_tendsto_rho_one_eq {π α : ℝ} (hα : α ∈ Ioo 0 1) (h : π + α = 1) :
     Tendsto (fun ρ : ℝ => asrfQuantile π ρ α) (𝓝[Iio 1] 1) (𝓝 (1 / 2)) := by
   have hfun : (fun ρ : ℝ => asrfQuantile π ρ α)
       = fun ρ : ℝ => Phi ((PhiInv π + Real.sqrt ρ * PhiInv α) / Real.sqrt (1 - ρ)) := rfl
   rw [hfun]
-  have hπp : (0 : ℝ) < π := hπ.1
-  have hπ1 : π < 1 := hπ.2
-  have hαp : (0 : ℝ) < α := hα.1
-  have hα1 : α < 1 := hα.2
-  have hPhiInv : PhiInv (1 - α) = PhiInv π := by
-    rw [show (1 : ℝ) - α = π from by linarith]
   have hEq : PhiInv α = -PhiInv π := by
     have h := PhiInv_one_sub hα
     rw [show (1 : ℝ) - α = π from by linarith] at h
@@ -463,6 +456,7 @@ theorem kmvPD_eq_shift (V_0 F m r σ T : ℝ) (hV : 0 < V_0) (hF : 0 < F) (hσ :
   have hPr : kmvPD V_0 F r σ T = Phi (-(kmvDistanceToDefault V_0 F r σ T)) := rfl
   rw [hPr, hPm, PhiInv_Phi,
     kmvDistanceToDefault_add_driftShift V_0 F m r σ T hV hF hσ hT]
+  congr 1
   ring
 
 /-- **The shift from the physical default event**: under a probability measure `μ` whose
