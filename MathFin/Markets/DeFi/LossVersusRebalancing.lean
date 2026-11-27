@@ -7,6 +7,7 @@ module
 
 public import MathFin.Probability.Brownian.Ito.ItoFormulaAdaptedProcess
 public import MathFin.Probability.Brownian.Ito.ItoProductRule
+public import MathFin.Markets.DeFi.UniswapMechanics
 
 /-!
 # Loss-versus-rebalancing for a pool with a smooth value function
@@ -43,13 +44,13 @@ number).
 
 ## Relation to impermanent loss
 
-No identity between the loss-versus-rebalancing process and the library's `impermanentLoss`
-(`Markets/DeFi/UniswapMechanics.lean`) is proved here, and the source proves none: the static
-`impermanentLoss` compares the pool against holding the initial reserves — the paper's
-"loss-versus-holding", whose nonnegativity (Proposition 1 of §8) is the library's
-`impermanentLoss_nonpos` — while `R_t` rebalances continuously and is self-financing. The
-source's §8 shows the two benchmarks behave differently: loss-versus-holding is not cumulative
-over subintervals, while the loss proved here is a nonnegative time integral.
+The library's `impermanentLoss` (`Markets/DeFi/UniswapMechanics.lean`) compares the pool
+against holding the initial reserves — the paper's "loss-versus-holding", whose nonnegativity
+(Proposition 1 of §8) is the library's `impermanentLoss_nonpos` — while `R_t` rebalances
+continuously and is self-financing. `losses_nonneg` proves both benchmarks nonnegative along
+the same GBM price. No identity between the two losses is proved here, and the source proves
+none: its §8 shows the benchmarks behave differently, loss-versus-holding not being cumulative
+over subintervals while the loss proved here is a nonnegative time integral.
 
 ## Main definitions
 
@@ -64,6 +65,9 @@ over subintervals, while the loss proved here is a nonnegative time integral.
   loss-versus-rebalancing process as a time integral of the instantaneous rate
   `−½σ²P²V''(P)`.
 * `lvr_nonneg`: the loss is nonnegative for a concave value function.
+* `losses_nonneg`: for the constant-product pool, the loss against the rebalancing strategy
+  and the static `impermanentLoss` at the realized price factor are both nonnegative — the two
+  benchmarks of the paper's §8, with no identity between them.
 * `lvr_constantProduct`: the constant-product pool loses `(σ²/4)·L·∫₀ᵗ √P_s ds`.
 * `lvr_constantProduct_eq_sigma_sq_over_eight`: the same loss as
   `(σ²/8)·∫₀ᵗ V(P_s) ds`.
@@ -100,59 +104,14 @@ variable {Ω : Type*} [mΩ : MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilit
   (hb_cont : ∀ ω, Continuous fun s ↦ b s ω) (x₀ : ℝ)
   {V V' V'' : ℝ → ℝ}
 
-/-! ### The value functions of the log price -/
-
-/-- The pool value read on the log price: `x ↦ V (Real.exp x)`, smooth on all of `ℝ` exactly
-when `V` is twice differentiable on `(0, ∞)`. -/
-private theorem hasDerivAt_lpv (hv : ∀ p > 0, HasDerivAt V (V' p) p) (x : ℝ) :
-    HasDerivAt (fun x ↦ V (Real.exp x)) (Real.exp x * V' (Real.exp x)) x :=
-  (HasDerivAt.comp x (hv (Real.exp x) (Real.exp_pos x)) (Real.hasDerivAt_exp x)).congr_deriv
-    (mul_comm _ _)
-
-/-- The hedge holding `x*(P) = V'(P)` read on the log price: `x ↦ V' (Real.exp x) · Real.exp x`. -/
-private theorem hasDerivAt_lph (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p) (x : ℝ) :
-    HasDerivAt (fun x ↦ V' (Real.exp x)) (V'' (Real.exp x) * Real.exp x) x :=
-  HasDerivAt.comp x (hv' (Real.exp x) (Real.exp_pos x)) (Real.hasDerivAt_exp x)
-
-/-- The derivative of the hedge holding on the log price is
-`Real.exp x ^ 2 · V''(Real.exp x) + Real.exp x · V'(Real.exp x)`. -/
-private theorem hasDerivAt_lph_mul (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p) (x : ℝ) :
-    HasDerivAt (fun x ↦ Real.exp x * V' (Real.exp x))
-      (Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x)) x := by
-  have h := (Real.hasDerivAt_exp x).mul (hasDerivAt_lph hv' x)
-  rw [Pi.mul_def] at h
-  have h2 : HasDerivAt (fun x ↦ Real.exp x * V' (Real.exp x))
-      (Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x)) x :=
-    h.congr_deriv (by ring)
-  exact h2
-
-/-- `V'` is continuous on the positive axis: it is differentiable there. -/
-private theorem continuousOn_V' (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p) :
-    ContinuousOn V' (Ioi 0) :=
-  DifferentiableOn.continuousOn fun p hp ↦ (hv' p hp).differentiableAt.differentiableWithinAt
-
 /-- The hedge holding `x*(P) = V'(P)` read on the log price, `x ↦ Real.exp x · V'(Real.exp x)`,
 is continuous on all of `ℝ`. Public because the value process of the rebalancing strategy needs
 it in its own definition. -/
 theorem continuous_rebalancingHolding (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p) :
     Continuous fun x ↦ Real.exp x * V' (Real.exp x) :=
-  Differentiable.continuous fun x ↦ (hasDerivAt_lph_mul hv' x).differentiableAt
-
-/-- The `f''` of `V ∘ exp` on the log price, continuous on all of `ℝ`. -/
-private theorem continuous_lph_sq (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p)
-    (hv''_cont : ContinuousOn V'' (Ioi 0)) :
-    Continuous fun x ↦ Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x) := by
-  have h1 : Continuous fun x ↦ V'' (Real.exp x) :=
-    hv''_cont.comp_continuous Real.continuous_exp fun x ↦ mem_Ioi.2 (Real.exp_pos x)
-  have h2 : Continuous fun x ↦ V' (Real.exp x) :=
-    (continuousOn_V' hv').comp_continuous Real.continuous_exp fun x ↦
-      mem_Ioi.2 (Real.exp_pos x)
-  exact ((Real.continuous_exp.pow 2).mul h1).add (Real.continuous_exp.mul h2)
-
-/-- The `V''` of the pool value read on the log price, continuous on all of `ℝ`. -/
-private theorem continuous_V''comp (hv''_cont : ContinuousOn V'' (Ioi 0)) :
-    Continuous fun x ↦ V'' (Real.exp x) :=
-  hv''_cont.comp_continuous Real.continuous_exp fun x ↦ mem_Ioi.2 (Real.exp_pos x)
+  Differentiable.continuous fun x ↦
+    ((Real.hasDerivAt_exp x).mul (HasDerivAt.comp x (hv' (Real.exp x) (Real.exp_pos x))
+      (Real.hasDerivAt_exp x))).differentiableAt
 
 /-! ### The rebalancing strategy and the LVR identity -/
 
@@ -200,11 +159,34 @@ theorem poolValue_eq_rebalancingValue_add_correction
                 * Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω) ^ 2
                 * V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))
               ∂timeMeasure := by
+  have hlpv : ∀ x : ℝ, HasDerivAt (fun x ↦ V (Real.exp x))
+      (Real.exp x * V' (Real.exp x)) x := fun x ↦
+    (HasDerivAt.comp x (hv (Real.exp x) (Real.exp_pos x)) (Real.hasDerivAt_exp x)).congr_deriv
+      (mul_comm _ _)
+  have hlphmul : ∀ x : ℝ, HasDerivAt (fun x ↦ Real.exp x * V' (Real.exp x))
+      (Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x)) x := fun x ↦ by
+    have h := (Real.hasDerivAt_exp x).mul (HasDerivAt.comp x
+      (hv' (Real.exp x) (Real.exp_pos x)) (Real.hasDerivAt_exp x))
+    rw [Pi.mul_def, Function.comp_apply] at h
+    have h2 : HasDerivAt (fun x ↦ Real.exp x * V' (Real.exp x))
+        (Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x)) x :=
+      h.congr_deriv (by ring)
+    exact h2
+  have hcontsq : Continuous fun x ↦ Real.exp x ^ 2 * V'' (Real.exp x)
+      + Real.exp x * V' (Real.exp x) := by
+    have hV''comp : Continuous fun x ↦ V'' (Real.exp x) :=
+      hv''_cont.comp_continuous Real.continuous_exp fun x ↦ mem_Ioi.2 (Real.exp_pos x)
+    have hV'c : ContinuousOn V' (Ioi 0) :=
+      DifferentiableOn.continuousOn fun p hp ↦
+        (hv' p hp).differentiableAt.differentiableWithinAt
+    have h2 : Continuous fun x ↦ V' (Real.exp x) :=
+      hV'c.comp_continuous Real.continuous_exp fun x ↦ mem_Ioi.2 (Real.exp_pos x)
+    exact ((Real.continuous_exp.pow 2).mul hV''comp).add (Real.continuous_exp.mul h2)
   have hito := ito_formula_adapted_unbounded_C2_process hB T hBmeas hBcont hadap hcont hb_adap
     hb_cont x₀
     (f := fun x ↦ V (Real.exp x)) (f' := fun x ↦ Real.exp x * V' (Real.exp x))
     (f'' := fun x ↦ Real.exp x ^ 2 * V'' (Real.exp x) + Real.exp x * V' (Real.exp x))
-    (hasDerivAt_lpv hv) (hasDerivAt_lph_mul hv') (continuous_lph_sq hv' hv''_cont)
+    hlpv hlphmul hcontsq
   have hX := ae_continuousOn_localItoProcess hB T hBmeas hBcont hadap hcont hb_cont x₀
   filter_upwards [hito, hX] with ω hω hXc t ht
   have hXct : ContinuousOn (fun s : ℝ≥0 ↦ localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b
@@ -223,7 +205,8 @@ theorem poolValue_eq_rebalancingValue_add_correction
     (Real.continuous_exp.pow 2).comp_continuousOn hXct
   have hV2 : ContinuousOn (fun s : ℝ≥0 ↦
       V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))) (Icc 0 t) :=
-    (continuous_V''comp hv''_cont).comp_continuousOn hXct
+    (hv''_cont.comp_continuous Real.continuous_exp
+      fun x ↦ mem_Ioi.2 (Real.exp_pos x)).comp_continuousOn hXct
   have hcontCorr : ContinuousOn (fun s : ℝ≥0 ↦ σ s ω ^ 2
       * Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω) ^ 2
       * V'' (Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω))) (Icc 0 t) :=
@@ -244,7 +227,7 @@ theorem poolValue_eq_rebalancingValue_add_correction
         (itoIntegrand_isStronglyPredictable hB T hBmeas hBcont hadap hcont hb_adap hb_cont x₀
           (f_x := fun _ x ↦ Real.exp x * V' (Real.exp x))
           ((Differentiable.continuous fun x ↦
-              (hasDerivAt_lph_mul hv' x).differentiableAt).comp continuous_snd)) t ω :=
+              (hlphmul x).differentiableAt).comp continuous_snd)) t ω :=
     congrArg (fun h ↦ predItoIntegral (μ := μ) T hBmeas h t ω) (proof_irrel _ _)
   have hcongr : ∀ s ∈ Ioc 0 t,
       Real.exp (localItoProcess (μ := μ) T hBmeas hadap hcont x₀ b s ω)
@@ -366,6 +349,13 @@ theorem hasDerivAt_cpPoolHedge (L p : ℝ) (hp : 0 < p) :
     ring] at h0
   exact h0
 
+/-- The constant-product curvature is nonpositive for a nonnegative liquidity `c`: the pool
+value function is concave on `(0, ∞)` (the source's Lemma 1 Part 3). -/
+private theorem cpPoolCurvature_nonpos {c : ℝ} (hc : 0 ≤ c) (p : ℝ) (hp : 0 < p) :
+    cpPoolCurvature c p ≤ 0 := by
+  unfold cpPoolCurvature
+  exact neg_nonpos.mpr (div_nonneg hc (by positivity))
+
 theorem continuousOn_cpPoolCurvature (L : ℝ) :
     ContinuousOn (cpPoolCurvature L) (Ioi 0) := by
   have hden : ContinuousOn (fun p : ℝ ↦ p * Real.sqrt p) (Ioi 0) :=
@@ -376,6 +366,38 @@ theorem continuousOn_cpPoolCurvature (L : ℝ) :
   refine hinvmul.congr fun p (hp : p ∈ Ioi 0) ↦ ?_
   unfold cpPoolCurvature
   field_simp
+
+/-- **Both loss benchmarks are nonnegative** (the source's Lemma 2 with Proposition 1 of §8):
+for the constant-product pool `V(P) = 2L√P` along the GBM price, the loss against the
+continuously rebalanced strategy and the static loss against holding the initial reserves
+(`impermanentLoss` at the realized price factor, the paper's "loss-versus-holding") are both
+nonnegative, almost surely at every `t ∈ [0, T]` at once. The benchmarks differ, and no
+identity between the two losses is proved here. -/
+theorem losses_nonneg {σ m c : ℝ} (hc : 0 ≤ c) :
+    ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
+      0 ≤ rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
+          (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀ (cpPoolValue c)
+          (cpPoolHedge c)
+          (itoIntegrand_isStronglyPredictable (σ := fun _ _ ↦ σ)
+            (b := fun _ _ ↦ m - σ ^ 2 / 2) hB T hBmeas hBcont
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const)
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+            (f_x := fun _ x ↦ Real.exp x * cpPoolHedge c (Real.exp x))
+            ((continuous_rebalancingHolding (hasDerivAt_cpPoolHedge c)).comp continuous_snd))
+          t ω
+        - cpPoolValue c (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+            (fun _ _ ↦ m - σ ^ 2 / 2) t ω))
+        ∧ impermanentLoss (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+            (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
+            (fun _ _ ↦ m - σ ^ 2 / 2) t ω - x₀)) ≤ 0 := by
+  have hdyn := lvr_nonneg hB T hBmeas hBcont (fun _ ↦ stronglyMeasurable_const)
+    (fun _ ↦ continuous_const) (fun _ ↦ stronglyMeasurable_const)
+    (fun _ ↦ continuous_const) x₀ (hasDerivAt_cpPoolValue c) (hasDerivAt_cpPoolHedge c)
+    (continuousOn_cpPoolCurvature c) (cpPoolCurvature_nonpos hc)
+    (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2)
+  filter_upwards [hdyn] with ω hω t ht
+  exact ⟨hω t ht, impermanentLoss_nonpos (Real.exp_nonneg _)⟩
 
 /-- The pointwise curvature identity the constant-product specialization rests on:
 `σ²·P²·V''(P) = −(σ²L/2)·√P` at `P = Real.exp x > 0`. -/

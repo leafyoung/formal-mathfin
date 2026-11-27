@@ -997,6 +997,7 @@ public import MathFin.Markets.Microstructure.GlostenMilgrom
 public import MathFin.Markets.Microstructure.GlostenMilgromModel
 public import MathFin.Markets.Microstructure.RollSpread
 public import MathFin.Markets.DeFi.ConstantProductLPLognormal
+public import MathFin.Markets.DeFi.LossVersusRebalancing
 public import MathFin.Markets.DeFi.LiquidationAsStructuralDefault
 public import MathFin.Markets.DeFi.UniswapV3CoveredCallPrice
 public import MathFin.Markets.DeFi.LPContract

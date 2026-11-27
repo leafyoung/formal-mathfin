@@ -35,6 +35,38 @@ request added. The backlog pass then split `mf-bgk-discrete-barrier-shift` into 
 scaling of `ptDownOutCall` (`mf-barrier-down-out-image-form`) and the BGK shift and limit (918
 entries, 29 reduced cores).
 
+### Loss-versus-rebalancing for a constant-product pool (2026-11-27)
+
+One `full` entry in `benchmarks/defi.json`. It adds one entry to the corpus.
+
+- **`mf-lvr-constant-product`** (MathFin/Markets/DeFi/LossVersusRebalancing.lean): the
+  loss-versus-rebalancing decomposition of Milionis, Moallemi, Roughgarden and Zhang (2022).
+  Proved: for a pool value function `V` twice differentiable on `(0, ∞)` of a price
+  `P_t = exp X_t` built from the log price `X = localItoProcess` (adapted continuous
+  coefficients), the pool value decomposes, almost surely at every `t ≤ T` at once, into the
+  rebalancing strategy's value `R_t` (`rebalancingValue`: start at the pool value, hold
+  `x*(P) = V'(P)` units, self-financing) plus the Itô correction
+  `½∫₀ᵗ σ²P²V''(P) ds` (`poolValue_eq_rebalancingValue_add_correction`, through
+  `ito_formula_adapted_unbounded_C2_process` applied to `V ∘ exp` — nothing at `P = 0` is
+  assumed, which is what lets the constant-product pool instantiate directly); the difference
+  form `R_t − V(P_t) = −½∫₀ᵗ σ²P²V''(P) ds` (`rebalancingValue_sub_poolValue_eq_lvr`, the
+  paper's instantaneous rate `ℓ = −(σ²P²/2)·x*′(P)`); nonnegativity of the loss for concave `V`
+  (`lvr_nonneg`, Lemma 1 Part 3); `losses_nonneg` proves the dynamic loss and the static
+  `impermanentLoss` at the realized price factor jointly nonnegative (the two benchmarks of the
+  paper's §8, no identity between them); and the constant-product specialization
+  `V(P) = 2L√P` (`cpPoolValue`, with `cpPoolHedge L P = L/√P` and
+  `cpPoolCurvature L P = −L/(2P√P)` as named defs with their derivative facts):
+  `R_t − V(P_t) = (σ²/4)·L·∫₀ᵗ √P_s ds` (`lvr_constantProduct`) and
+  `= (σ²/8)·∫₀ᵗ V(P_s) ds` (`lvr_constantProduct_eq_sigma_sq_over_eight`) — the paper's loss
+  of `σ²/8` of pool value per unit time, as an identity of processes. Disclosed out of scope:
+  fees (the paper's Theorem 1 P&L decomposition is not transcribed), concentrated liquidity,
+  stochastic volatility in the constant-product specialization (the general theorem carries
+  adapted continuous `σ_t`), and any identity with the static `impermanentLoss` — the module
+  states plainly that its benchmark is the rebalancing strategy while `impermanentLoss`
+  compares against holding the initial reserves, and that no link is proved. The sign of
+  eq. (8) is stated in the module docstring: the arXiv text layer drops the minus sign that
+  the printed equation carries (Lemma 1.3 and eq. (19) fix it). Axioms-clean, `full`.
+
 ### The Ho–Lee bond price (2026-11-24)
 
 One `full` entry in `benchmarks/interest_rates.json`. It adds one

@@ -3350,3 +3350,25 @@ and `uncovered_interest_parity` from the risk-neutral expectation. -/
 /-- info: 'MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.DeFi.constantMeanPayoff_one_half_eq_constantProductPayoff
+
+/-! ### Loss-versus-rebalancing (2026-11-27) -/
+
+/-- info: 'MathFin.DeFi.poolValue_eq_rebalancingValue_add_correction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.poolValue_eq_rebalancingValue_add_correction
+
+/-- info: 'MathFin.DeFi.rebalancingValue_sub_poolValue_eq_lvr' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.rebalancingValue_sub_poolValue_eq_lvr
+
+/-- info: 'MathFin.DeFi.lvr_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.lvr_nonneg
+
+/-- info: 'MathFin.DeFi.lvr_constantProduct' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.lvr_constantProduct
+
+/-- info: 'MathFin.DeFi.lvr_constantProduct_eq_sigma_sq_over_eight' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.DeFi.lvr_constantProduct_eq_sigma_sq_over_eight
