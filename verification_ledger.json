@@ -4542,9 +4542,9 @@
     "mf-one-factor-ends-pd-shift": {
       "benchmark_file": "credit.json",
       "date": "2026-11-27",
-      "elapsed_s": 3.8,
-      "input_hash": "913c35ea7f8d72dddc4c6ba89e3d8e1c7cff905fc8af7700072536c351320396",
-      "verified_at_commit": "71a52d0"
+      "elapsed_s": 3.4,
+      "input_hash": "b0761eb36ffdb15f5ac63462df07a811cda38dbc3da8e56f2591afcf92083d03",
+      "verified_at_commit": "0a991c9"
     },
     "mf-one-factor-is-merton": {
       "benchmark_file": "credit.json",
