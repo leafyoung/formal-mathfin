@@ -4850,9 +4850,9 @@
     "mf-schwartz-smith-two-factor": {
       "benchmark_file": "commodities.json",
       "date": "2026-11-27",
-      "elapsed_s": 2.8,
-      "input_hash": "503f54d40e1c7f4291674421ad64124f1c311792b20052056babaccf51a874f6",
-      "verified_at_commit": "0b28ebb"
+      "elapsed_s": 5.0,
+      "input_hash": "cf16a48181ced2eb80ca6a7ab2eaef9ba0c79cb91202eacdf8ff12c9326208d2",
+      "verified_at_commit": "f1815fc"
     },
     "mf-sd-principle-gaussian-var-es": {
       "benchmark_file": "risk_measures.json",
