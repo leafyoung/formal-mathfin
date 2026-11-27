@@ -22,11 +22,11 @@ In FX markets the premium of an option is paid in the foreign currency, and the
 **premium-adjusted** forward delta of a call struck at `K` on forward `F` is the Black
 delta net of the premium, `Δ(K) = (K/F)·Φ(d₋(K))`. Inverting it for a strike, given a
 delta `δ`, is where its shape matters: for comparison, the unadjusted delta `Φ(d₊(K))` is
-monotone in the strike, while the adjusted delta rises from `0`, reaches a maximum and
-then falls back to `0`. A delta below the maximum therefore has two strikes, one at the
-maximum, and none above it; choosing the strike to the right of the maximum is one way
-to make the inversion single-valued, and the facts proved here are what make that choice
-well posed.
+monotone in the strike, while the adjusted delta has a single interior maximum. Hence a delta
+below the maximum has at most one strike on each side of the maximiser, a delta equal to
+the maximum has exactly one, and a delta above it has none; choosing the strike to the right
+of the maximiser is one way to make the inversion single-valued, and the facts proved here
+are what make that choice well posed.
 
 This file proves that picture on the flat Black slice, in the library's `(k, w)`
 coordinates (log-strike `k = log(K/F)`, total variance `w = σ²T`, as in
@@ -83,16 +83,13 @@ theorem hasDerivAt_paStat (s x : ℝ) :
 theorem continuous_paStat (s : ℝ) : Continuous (paStat s) :=
   continuous_iff_continuousAt.2 fun x ↦ (hasDerivAt_paStat s x).continuousAt
 
-theorem gaussianPDFReal_zero_one_pos (x : ℝ) : 0 < gaussianPDFReal 0 1 x :=
-  gaussianPDFReal_pos 0 1 x one_ne_zero
-
 /-- `paStat s` is strictly decreasing on `(−∞, −s]`. -/
 theorem paStat_strictAntiOn {s : ℝ} : StrictAntiOn (paStat s) (Iic (-s)) := by
   refine strictAntiOn_of_deriv_neg (convex_Iic _) (continuous_paStat s).continuousOn ?_
   intro y hy
   rw [interior_Iic] at hy
   rw [(hasDerivAt_paStat s y).deriv]
-  exact mul_neg_of_pos_of_neg (gaussianPDFReal_zero_one_pos y) (by simp at hy; linarith)
+  exact mul_neg_of_pos_of_neg (gaussianPDFReal_pos 0 1 y one_ne_zero) (by simp at hy; linarith)
 
 /-- `paStat s` is strictly increasing on `[−s, ∞)`. -/
 theorem paStat_strictMonoOn {s : ℝ} : StrictMonoOn (paStat s) (Ici (-s)) := by
@@ -100,7 +97,7 @@ theorem paStat_strictMonoOn {s : ℝ} : StrictMonoOn (paStat s) (Ici (-s)) := by
   intro y hy
   rw [interior_Ici] at hy
   rw [(hasDerivAt_paStat s y).deriv]
-  exact mul_pos (gaussianPDFReal_zero_one_pos y) (by simp at hy; linarith)
+  exact mul_pos (gaussianPDFReal_pos 0 1 y one_ne_zero) (by simp at hy; linarith)
 
 /-- **`paStat` is negative on `(−∞, −s]`**: the Mills bound gives `paStat s x ≤ (s+x)Φ(x)`,
 and the strict monotonicity on the left of `−s` turns that into strictness at `−s`. -/
