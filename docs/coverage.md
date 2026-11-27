@@ -26,6 +26,29 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 
 ## Current Audit
 
+### Schwartz–Smith two-factor commodity model (2026-11-27)
+
+`mf-schwartz-smith-two-factor` (benchmarks/commodities.json), module
+`MathFin/Models/Forwards/SchwartzSmith.lean`. Corpus counts before/after: 924 → 925 entries
+(878 full, 18 library wrappers, 29 reduced cores). For the constant-parameter Schwartz–Smith
+model (κ > 0, ρ² ≤ 1, two independent pre-Brownian motions, the short-term deviation
+`schwartzSmithChi` carried as `HullWhite.integratedRate` at zero forcing and the equilibrium
+level `schwartzSmithXi` a drifted two-Brownian sum), proved with theorem names: the Gaussian
+laws of both factors and of the log spot `schwartzSmithLogSpot_hasLaw` (mean
+`schwartzSmithLogSpot_mean`, eq. 5; total variance `schwartzSmithLogSpot_variance`, eqs. 3/10);
+the factor covariance `schwartzSmithChiXi_covariance` (eq. 3b); joint Gaussianity
+`schwartzSmithChiXi_hasGaussianLaw`; the expected spot `schwartzSmithExpectedSpot` (eq. 6); the
+futures-price closed form and its law-shape identity
+`schwartzSmithFuturesPrice_eq_expectedSpot` (eq. 9 at zero rate); the log-futures identity
+`schwartzSmithLnFuturesPrice_eq`, its detrended form
+`schwartzSmithLnFuturesPrice_detrended` and the long-run intercept
+`schwartzSmithLnFuturesPrice_tendsto`; the independent-Gaussian sum law
+`hasLaw_add_of_indepFun`; the Gibson–Schwartz drift reading `schwartzSmithGsDrift`
+(eqs. 12–13). Not proved: the option on the futures (eq. 15) and the
+stochastic-convenience-yield SDE system; that `E[S_T]` is the quoted futures price is the
+textbook zero-cost-of-carry identification, not proved (disclosed in the corpus
+`formalization_scope`).
+
 ### The 2026-11-25 merge
 
 Eleven contributed pull requests (#558, #577–#586) landed together. The corpus goes from 906 to

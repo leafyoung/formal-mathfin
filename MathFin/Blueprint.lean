@@ -17,6 +17,8 @@ import MathFin.Probability.Brownian.Ito.ItoFormulaCLM
 import MathFin.Probability.Brownian.Ito.ItoFormulaTD
 import MathFin.Probability.Brownian.Ito.ItoLemma2D
 import MathFin.Probability.Gaussian.FeynmanKacHeatEquation
+import MathFin.Probability.Gaussian.HasLawSum
+import MathFin.Probability.Gaussian.HasLawSum
 import MathFin.Models.BlackScholes.GaussianGirsanov
 import MathFin.Models.BlackScholes.BSCallHypFromBrownian
 import MathFin.Pricing.FTAP.ContinuousFTAP
@@ -36,6 +38,7 @@ import MathFin.Models.Jumps.MertonDominance
 import MathFin.Probability.Discrete.MarkovPathMeasure
 import MathFin.Probability.Brownian.Ito.ItoFormulaAdaptedProcess
 import MathFin.Models.Forwards.SchwartzOneFactor
+import MathFin.Models.Forwards.SchwartzSmith
 import MathFin.Models.Credit.CVA
 import MathFin.Models.Forwards.FxForwardParity
 import MathFin.Models.Forwards.ContangoBackwardation
@@ -131,6 +134,7 @@ import MathFin.Models.Credit.Cox
 import MathFin.Models.Credit.KMVMertonStructural
 import MathFin.Models.Forwards.FxForwardParity
 import MathFin.Models.Forwards.SchwartzOneFactor
+import MathFin.Models.Forwards.SchwartzSmith
 import MathFin.Models.Jumps.JumpDiffusionIncompleteness
 import MathFin.Models.Jumps.JumpDiffusionMixing
 import MathFin.Models.Jumps.JumpDiffusionProcess

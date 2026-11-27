@@ -9,6 +9,7 @@ public import MathFin.Models.Rates.HullWhiteCalibration
 public import MathFin.Models.BlackScholes.Call
 public import MathFin.Models.Forwards.Black76
 public import MathFin.Probability.Brownian.Wiener.WienerIntegralExpMoment
+public import MathFin.Probability.Gaussian.HasLawSum
 public import MathFin.Probability.Brownian.Wiener.WienerIntegralFiltration
 public import MathFin.Probability.Gaussian.GaussianPairLinearLaw
 public import Mathlib.Probability.Independence.Basic
@@ -31,7 +32,8 @@ The module derives, from that Wiener representation and for $\kappa > 0$, $\rho^
 * the joint law of $(\chi_t, \xi_t)$: jointly Gaussian with $\operatorname{cov}(\chi_t,\xi_t)
   = \rho\sigma_\chi\sigma_\xi(1-e^{-\kappa t})/\kappa$;
 * the law of $\ln S_t$: Gaussian with mean $e^{-\kappa t}\chi_0 + \xi_0 + \nu t$ and variance
-  $\sigma_\chi^2(1-e^{-2\kappa t})/(2\kappa) + \sigma_\xi^2 t + 2\rho\sigma_\chi\sigma_\xi(1-e^{-\kappa t})/\kappa$;
+  $\sigma_\chi^2(1-e^{-2\kappa t})/(2\kappa) + \sigma_\xi^2 t$
+  $+\ 2\rho\sigma_\chi\sigma_\xi(1-e^{-\kappa t})/\kappa$;
 * $\ln \mathbb{E}[S_t] = \mathbb{E}[\ln S_t] + \frac12\operatorname{Var}[\ln S_t]$, and the
   long-run intercept of $\ln \mathbb{E}[S_t] - \nu t - \frac12\sigma_\xi^2 t$;
 * the futures price $\mathbb{E}[S_T] = $ `schwartzSmithFuturesPrice` (zero interest rate),
@@ -71,6 +73,8 @@ Wiener integrals against independent motions are independent.
 
 * [E. Schwartz, J. E. Smith, *Short-Term Derivatives and Long-Term Fundamentals and Their
   Applications in Commodity Markets*][SchwartzSmith2000]
+* [E. S. Schwartz, *The Stochastic Behavior of Commodity Prices: Implications for Valuation
+  and Hedging*][Schwartz1997] (the one-factor predecessor)
 * [K. Binkowski, P. He, N. Kordzakhia, P. Shevchenko, *On the Parameter Estimation in the
   Schwartz-Smith's Two-Factor Model*][BinkowskiEtAl2021], §2 (the open reproduction of the
   model and the closed forms used here; the 2000 paper itself was not read)
@@ -161,39 +165,6 @@ private theorem indepFun_wienerIntegral_of_indepFun (hB₁ : IsPreBrownianReal B
     exact hp₁e.symm
   · rw [← hq₂c]
     exact hp₂e.symm
-
-/-! ### Sums of independent Gaussian variables -/
-
-/-- **Sum of independent Gaussian variables**: with `X ~ N(m₁, v₁)`, `Y ~ N(m₂, v₂)`
-independent, `X + Y ~ N(m₁ + m₂, v₁ + v₂)`. -/
-theorem hasLaw_add_of_indepFun {X Y : Ω → ℝ} {m₁ m₂ : ℝ} {v₁ v₂ : ℝ≥0}
-    (hX : HasLaw X (gaussianReal m₁ v₁) μ) (hY : HasLaw Y (gaussianReal m₂ v₂) μ)
-    (hind : IndepFun X Y μ) :
-    HasLaw (fun ω ↦ X ω + Y ω) (gaussianReal (m₁ + m₂) (v₁ + v₂)) μ := by
-  have hGX : HasGaussianLaw X μ := ⟨hX.aemeasurable, by rw [hX.map_eq]; infer_instance⟩
-  have hGY : HasGaussianLaw Y μ := ⟨hY.aemeasurable, by rw [hY.map_eq]; infer_instance⟩
-  have hG := iIndepFun.hasGaussianLaw_fun_add hGX hGY hind
-  have hmemX : MemLp X 2 μ := hGX.memLp_two
-  have hmemY : MemLp Y 2 μ := hGY.memLp_two
-  have hmean : ∫ ω, (X ω + Y ω) ∂μ = m₁ + m₂ := by
-    have hIX : Integrable X μ := hmemX.integrable one_le_two
-    have hIY : Integrable Y μ := hmemY.integrable one_le_two
-    rw [integral_add hIX hIY, hX.integral_eq.trans integral_id_gaussianReal,
-      hY.integral_eq.trans integral_id_gaussianReal]
-  have hvar : Var[fun ω ↦ X ω + Y ω; μ] = (v₁ + v₂ : ℝ) := by
-    show Var[X + Y; μ] = _
-    rw [IndepFun.variance_add hmemX hmemY hind, hX.variance_eq, variance_id_gaussianReal,
-      hY.variance_eq, variance_id_gaussianReal]
-  refine ⟨hG.aemeasurable, ?_⟩
-  rw [hG.isGaussian_map.eq_gaussianReal]
-  have hid : (μ.map (fun ω ↦ X ω + Y ω))[id] = m₁ + m₂ := by
-    rw [integral_map hG.aemeasurable aestronglyMeasurable_id]
-    simpa using hmean
-  have hvid : Var[id; μ.map (fun ω ↦ X ω + Y ω)] = (v₁ + v₂ : ℝ) := by
-    rw [variance_map aemeasurable_id hG.aemeasurable]
-    simpa using hvar
-  rw [hid, hvid]
-  simp
 
 /-! ### The model -/
 
@@ -756,7 +727,7 @@ theorem schwartzSmithLnFuturesPrice_tendsto {κ σ₁ σ₂ x₀ ξ₀ _ν ρ : 
 
 /-- **The detrended log futures identity** (for `T ≥ 0`): the closed form of
 `ln F(0,T) − νT − σ_ξ²T/2`. -/
-theorem schwartzSmithLnFuturesPrice_detrended {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (T : ℝ≥0) :
+private theorem schwartzSmithLnFuturesPrice_detrended {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (T : ℝ≥0) :
     Real.log (schwartzSmithFuturesPrice κ σ₁ σ₂ x₀ ξ₀ ν ρ T) - ν * (T : ℝ)
         - σ₂ ^ 2 * (T : ℝ) / 2
       = x₀ * Real.exp (-(κ * (T : ℝ))) + ξ₀

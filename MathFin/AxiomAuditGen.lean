@@ -26,7 +26,7 @@ pick up `sorryAx` (a `sorry`) or a non-standard axiom without breaking
 
 The curated, storied audit is MathFin/AxiomAudit.lean (headliners + dated
 narrative); THIS file is its machine-written closure over the benchmark
-corpus (1168 MathFin constants, 29 upstream). Citations
+corpus (1174 MathFin constants, 29 upstream). Citations
 are resolved by declaration (tools/verify/mathfin_index.py), so a name cited
 unqualified under `open`, by dot notation on a hypothesis, or declared
 outside the MathFin namespace is pinned like any other. Statement-position
@@ -4072,6 +4072,18 @@ namespace MathFin.AxiomAuditGen
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.schwartzFuturesPrice_eq_integral
 
+/-- info: 'MathFin.schwartzSmithChiXi_covariance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.schwartzSmithChiXi_covariance
+
+/-- info: 'MathFin.schwartzSmithExpectedSpot' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.schwartzSmithExpectedSpot
+
+/-- info: 'MathFin.schwartzSmithLogSpot_hasLaw' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.schwartzSmithLogSpot_hasLaw
+
 /-- info: 'MathFin.secondMoment_terminal' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.secondMoment_terminal
@@ -4579,6 +4591,18 @@ namespace MathFin.AxiomAuditGen
 /-- info: 'MathFin.vasicekDeterministic_solves_ODE' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.vasicekDeterministic_solves_ODE
+
+/-- info: 'MathFin.vasicekKernelLp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.vasicekKernelLp
+
+/-- info: 'MathFin.vasicekSDEMean' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.vasicekSDEMean
+
+/-- info: 'MathFin.vasicekSDEVariance' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.vasicekSDEVariance
 
 /-- info: 'MathFin.vasicekShortRate_hasLaw_gaussian' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in

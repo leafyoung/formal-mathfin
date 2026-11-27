@@ -23,6 +23,7 @@ public import MathFin.Init
 
 -- Probability
 public import MathFin.Probability.Gaussian.StandardNormal
+public import MathFin.Probability.Gaussian.HasLawSum
 public import MathFin.Probability.Discrete.DoobDecomposition
 public import MathFin.Probability.Discrete.SnellDoobDecomposition
 public import MathFin.Probability.Discrete.SnellEnvelope
@@ -578,6 +579,7 @@ public import MathFin.Models.BlackScholes.NewtonConvergence
 public import MathFin.Models.Forwards.Black76
 public import MathFin.Models.Forwards.Black76Greeks
 public import MathFin.Models.Forwards.SchwartzOneFactor
+public import MathFin.Models.Forwards.SchwartzSmith
 -- Phase 13 additions:
 public import MathFin.Models.Binomial.Model
 public import MathFin.Models.Binomial.American
