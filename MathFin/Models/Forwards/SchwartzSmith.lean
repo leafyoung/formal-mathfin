@@ -87,7 +87,7 @@ MSC 91G20, MSC 60G15, JEL Q02
 
 namespace MathFin
 
-open MeasureTheory ProbabilityTheory Real
+open MeasureTheory ProbabilityTheory Real Filter Topology
 open scoped NNReal InnerProductSpace
 open WienerIntegralL2
 
@@ -672,5 +672,110 @@ theorem schwartzSmithChiXi_hasGaussianLaw (hB₁ : IsPreBrownianReal B₁ μ)
       + 2 * ((L (1, 0)) * (L (0, 1))) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
       + (L (0, 1)) ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal,
     (hasLaw_linearCombination hB₁ hB₂ h₁m h₂m hind hκ hρ t (L (1, 0)) (L (0, 1))).map_eq⟩
+
+/-! ### The expected spot, the futures price and the long-run intercept -/
+
+/-- **The expected spot** (eq. 6): `ln 𝔼[S_t] = 𝔼[ln S_t] + v_t/2` — the Gaussian
+moment-generating function at 1, with the total variance nonnegative. -/
+theorem schwartzSmithExpectedSpot (hB₁ : IsPreBrownianReal B₁ μ) (hB₂ : IsPreBrownianReal B₂ μ)
+    (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) :
+    ∫ ω, Real.exp (schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ t ω) ∂μ
+      = Real.exp (x₀ * Real.exp (-(κ * (t : ℝ))) + (ξ₀ + ν * (t : ℝ))
+        + schwartzSmithTotalVariance κ σ₁ σ₂ ρ t / 2) := by
+  have hL := schwartzSmithLogSpot_hasLaw hB₁ hB₂ h₁m h₂m hind hκ hρ t
+    (σ₁ := σ₁) (σ₂ := σ₂) (x₀ := x₀) (ξ₀ := ξ₀) (ν := ν)
+  have hpos : 0 ≤ schwartzSmithTotalVariance κ σ₁ σ₂ ρ t := by
+    unfold schwartzSmithTotalVariance
+    have hq := ssQuadratic_nonneg 1 1 (σ₁ := σ₁) (σ₂ := σ₂) hκ t.coe_nonneg hρ
+    simpa using hq
+  have hmgf := congrFun (mgf_fun_id_gaussianReal
+    (μ := x₀ * Real.exp (-(κ * (t : ℝ))) + (ξ₀ + ν * (t : ℝ)))
+    (v := (schwartzSmithTotalVariance κ σ₁ σ₂ ρ t).toNNReal)) 1
+  simp only [mgf, one_mul, mul_one, one_pow] at hmgf
+  rw [← Real.coe_toNNReal _ hpos, ← hmgf]
+  exact hL.integral_comp (f := Real.exp) Real.continuous_exp.aestronglyMeasurable
+
+/-- **The futures price** (eq. 9 at zero interest rate): the closed form
+`exp(χ₀e^{−κT} + ξ₀ + νT + v_T/2)`. `schwartzSmithFuturesPrice_eq_expectedSpot` shows it is
+`𝔼[S_T]`, the law-shape statement; the identification of `𝔼[S_T]` with the quoted futures
+price is the textbook zero-cost-of-carry reading, not proved here. -/
+noncomputable def schwartzSmithFuturesPrice (κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ) (T : ℝ≥0) : ℝ :=
+  Real.exp (x₀ * Real.exp (-(κ * (T : ℝ))) + (ξ₀ + ν * (T : ℝ))
+    + schwartzSmithTotalVariance κ σ₁ σ₂ ρ T / 2)
+
+/-- **The futures price is the expected terminal spot** (eq. 9's law shape, zero rate). -/
+theorem schwartzSmithFuturesPrice_eq_expectedSpot (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (T : ℝ≥0) :
+    ∫ ω, Real.exp (schwartzSmithLogSpot hB₁ hB₂ κ σ₁ x₀ ξ₀ ν ρ σ₂ hκ T ω) ∂μ
+      = schwartzSmithFuturesPrice κ σ₁ σ₂ x₀ ξ₀ ν ρ T :=
+  schwartzSmithExpectedSpot hB₁ hB₂ h₁m h₂m hind hκ hρ T
+
+/-- **The log futures price** (for `T ≥ 0`): `ln F(0,T) = χ₀e^{−κT} + ξ₀ + νT + v_T/2`. -/
+theorem schwartzSmithLnFuturesPrice_eq {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (T : ℝ≥0) :
+    Real.log (schwartzSmithFuturesPrice κ σ₁ σ₂ x₀ ξ₀ ν ρ T)
+      = x₀ * Real.exp (-(κ * (T : ℝ))) + (ξ₀ + ν * (T : ℝ))
+        + schwartzSmithTotalVariance κ σ₁ σ₂ ρ T / 2 := by
+  simp only [schwartzSmithFuturesPrice]
+  rw [Real.log_exp]
+
+/-- **The long-run intercept**: the detrended log futures price — for `T ≥ 0` the
+`schwartzSmithLnFuturesPrice_eq` identity gives
+`ln F(0,T) − νT − σ_ξ²T/2 = χ₀e^{−κT} + ξ₀ + σ_χ²(1−e^{−2κT})/(4κ) + ρσ_χσ_ξ(1−e^{−κT})/κ` —
+converges to `ξ₀ + σ_χ²/(4κ) + ρσ_χσ_ξ/κ`: the short-term deviation's contributions
+(the `e^{−κT}`-terms) vanish, leaving the long-run level inflated by half the saturated
+OU variance and the covariance term. -/
+theorem schwartzSmithLnFuturesPrice_tendsto {κ σ₁ σ₂ x₀ ξ₀ _ν ρ : ℝ} (hκ : 0 < κ) :
+    Tendsto (fun T : ℝ ↦ x₀ * Real.exp (-(κ * T)) + ξ₀
+        + σ₁ ^ 2 / (4 * κ) * (1 - Real.exp (-(2 * κ * T)))
+        + ρ * σ₁ * σ₂ / κ * (1 - Real.exp (-(κ * T))))
+      atTop (𝓝 (ξ₀ + σ₁ ^ 2 / (4 * κ) + ρ * σ₁ * σ₂ / κ)) := by
+  have hE1 : Tendsto (fun T : ℝ ↦ Real.exp (-(κ * T))) atTop (𝓝 0) :=
+    Real.tendsto_exp_neg_atTop_nhds_zero.comp
+      ((tendsto_const_mul_atTop_of_pos hκ).2 tendsto_id)
+  have hE2 : Tendsto (fun T : ℝ ↦ Real.exp (-(2 * κ * T))) atTop (𝓝 0) :=
+    Real.tendsto_exp_neg_atTop_nhds_zero.comp
+      ((tendsto_const_mul_atTop_of_pos (by linarith : (0 : ℝ) < 2 * κ)).2 tendsto_id)
+  have hx : Tendsto (fun T : ℝ ↦ x₀ * Real.exp (-(κ * T))) atTop (𝓝 (x₀ * 0)) :=
+    Tendsto.const_mul x₀ hE1
+  have hσ : Tendsto (fun T : ℝ ↦ σ₁ ^ 2 / (4 * κ) * (1 - Real.exp (-(2 * κ * T)))) atTop
+      (𝓝 (σ₁ ^ 2 / (4 * κ) * (1 - 0))) :=
+    Tendsto.mul tendsto_const_nhds (Tendsto.sub tendsto_const_nhds hE2)
+  have hρ : Tendsto (fun T : ℝ ↦ ρ * σ₁ * σ₂ / κ * (1 - Real.exp (-(κ * T)))) atTop
+      (𝓝 (ρ * σ₁ * σ₂ / κ * (1 - 0))) :=
+    Tendsto.mul tendsto_const_nhds (Tendsto.sub tendsto_const_nhds hE1)
+  have hlim : x₀ * 0 + ξ₀ + σ₁ ^ 2 / (4 * κ) * (1 - 0) + ρ * σ₁ * σ₂ / κ * (1 - 0)
+      = ξ₀ + σ₁ ^ 2 / (4 * κ) + ρ * σ₁ * σ₂ / κ := by
+    norm_num
+  rw [← hlim]
+  exact Tendsto.add
+    (f := fun T : ℝ ↦ (x₀ * Real.exp (-(κ * T)) + ξ₀)
+      + σ₁ ^ 2 / (4 * κ) * (1 - Real.exp (-(2 * κ * T))))
+    (g := fun T : ℝ ↦ ρ * σ₁ * σ₂ / κ * (1 - Real.exp (-(κ * T))))
+    (a := (x₀ * 0 + ξ₀) + σ₁ ^ 2 / (4 * κ) * (1 - 0))
+    (b := ρ * σ₁ * σ₂ / κ * (1 - 0))
+    (Tendsto.add (f := fun T : ℝ ↦ x₀ * Real.exp (-(κ * T)) + ξ₀)
+      (g := fun T : ℝ ↦ σ₁ ^ 2 / (4 * κ) * (1 - Real.exp (-(2 * κ * T))))
+      (a := x₀ * 0 + ξ₀)
+      (b := σ₁ ^ 2 / (4 * κ) * (1 - 0))
+      (Tendsto.add (f := fun T : ℝ ↦ x₀ * Real.exp (-(κ * T)))
+        (g := fun _ : ℝ ↦ ξ₀) (a := x₀ * 0) (b := ξ₀) hx tendsto_const_nhds)
+      hσ)
+    hρ
+
+/-- **The detrended log futures identity** (for `T ≥ 0`): the closed form of
+`ln F(0,T) − νT − σ_ξ²T/2`. -/
+theorem schwartzSmithLnFuturesPrice_detrended {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (T : ℝ≥0) :
+    Real.log (schwartzSmithFuturesPrice κ σ₁ σ₂ x₀ ξ₀ ν ρ T) - ν * (T : ℝ)
+        - σ₂ ^ 2 * (T : ℝ) / 2
+      = x₀ * Real.exp (-(κ * (T : ℝ))) + ξ₀
+        + σ₁ ^ 2 / (4 * κ) * (1 - Real.exp (-(2 * κ * (T : ℝ))))
+        + ρ * σ₁ * σ₂ / κ * (1 - Real.exp (-(κ * (T : ℝ)))) := by
+  rw [schwartzSmithLnFuturesPrice_eq T]
+  simp only [schwartzSmithTotalVariance, vasicekSDEVariance]
+  ring
 
 end MathFin
