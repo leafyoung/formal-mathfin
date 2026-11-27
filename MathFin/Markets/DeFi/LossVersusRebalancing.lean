@@ -31,11 +31,10 @@ self-financing), the module proves, almost surely at every `t ∈ [0, T]` at onc
 the Itô-correction term of the paper's eq. (31) against eq. (5). Equivalently
 `R_t − V(P_t) = −½ ∫₀ᵗ σ_s² P_s² V''(P_s) ds`: the loss-versus-rebalancing process, which is
 nonnegative whenever `V'' ≤ 0` on `(0, ∞)` — Lemma 1 Part 3, `V'' = x*′ ≤ 0`. The instantaneous
-rate is `ℓ(σ, P) = −(σ²P²/2)·x*′(P)`. The text layer of the arXiv page renders eq. (8) without
-the minus sign; the printed equation carries it, and the formula holds only as
-`ℓ = −(σ²P²/2)·x*′(P)`: with Lemma 1.3 (`x*′(P) ≤ 0`) the rate is nonnegative, and eq. (19)
-confirms the sign for the constant-product pool (`ℓ = (Lσ²/4)·√P ≥ 0`). That is the sign proved
-here.
+rate is `ℓ(σ, P) = −(σ²P²/2)·x*′(P)`. Eq. (8) as printed omits that minus sign, in the PDF and
+in its text layer alike; the formula holds only as `ℓ = −(σ²P²/2)·x*′(P)`: with Lemma 1.3
+(`x*′(P) ≤ 0`) the rate is nonnegative, and eq. (19) confirms the sign for the constant-product
+pool (`ℓ = (Lσ²/4)·√P ≥ 0`). That is the sign proved here.
 
 For the constant-product pool (`V(P) = 2L√P`, Example 3, eq. (19)), the specialization reads
 `R_t − V(P_t) = (σ²/4)·L·∫₀ᵗ √P_s ds = (σ²/8)·∫₀ᵗ V(P_s) ds`: the paper's loss of `σ²/8` of
@@ -58,6 +57,9 @@ proved here is a nonnegative time integral.
 
 * `rebalancingValue`: the value process `R_t` of the rebalancing strategy, in the library's
   log-price construction.
+* `cpPoolValue`: the constant-product pool's mark-to-market value, `2L√P`.
+* `cpPoolHedge`: the rebalancing strategy's holding for that pool, `V′(P) = L/√P`.
+* `cpPoolCurvature`: the pool value's second derivative, `−L/(2·P·√P)`.
 
 ## Main results
 

@@ -68,8 +68,8 @@ One `full` entry in `benchmarks/defi.json`. It adds one entry to the corpus.
   adapted continuous `σ_t`), and any identity with the static `impermanentLoss` — the module
   states plainly that its benchmark is the rebalancing strategy while `impermanentLoss`
   compares against holding the initial reserves, and that no link is proved. The sign of
-  eq. (8) is stated in the module docstring: the arXiv text layer drops the minus sign that
-  the printed equation carries (Lemma 1.3 and eq. (19) fix it). Axioms-clean, `full`.
+  eq. (8) is stated in the module docstring: the equation as printed (PDF and text layer
+  alike) omits the minus sign (Lemma 1.3 and eq. (19) fix it). Axioms-clean, `full`.
 
 ### The Ho–Lee bond price (2026-11-24)
 
