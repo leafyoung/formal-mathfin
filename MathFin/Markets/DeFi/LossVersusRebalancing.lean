@@ -45,12 +45,14 @@ number).
 ## Relation to impermanent loss
 
 The library's `impermanentLoss` (`Markets/DeFi/UniswapMechanics.lean`) compares the pool
-against holding the initial reserves — the paper's "loss-versus-holding", whose nonnegativity
-(Proposition 1 of §8) is the library's `impermanentLoss_nonpos` — while `R_t` rebalances
-continuously and is self-financing. `losses_nonneg` proves both benchmarks nonnegative along
-the same GBM price. No identity between the two losses is proved here, and the source proves
-none: its §8 shows the benchmarks behave differently, loss-versus-holding not being cumulative
-over subintervals while the loss proved here is a nonnegative time integral.
+against holding the initial reserves, the paper's "loss-versus-holding": Proposition 1 of §8
+states the absolute loss `LVH_t ≥ 0`, the library states the signed relative return
+`impermanentLoss r ≤ 0` (`impermanentLoss_nonpos`) — the finance content is the same, the pool
+never runs ahead of holding. `R_t` rebalances continuously and is self-financing instead.
+`losses_nonneg` proves both benchmarks nonnegative along the same GBM price. No identity
+between the two losses is proved here, and the source proves none: its §8 shows the benchmarks
+behave differently, loss-versus-holding not being cumulative over subintervals while the loss
+proved here is a nonnegative time integral.
 
 ## Main definitions
 
@@ -75,7 +77,7 @@ over subintervals while the loss proved here is a nonnegative time integral.
 ## References
 
 * [J. Milionis, C. C. Moallemi, T. Roughgarden and A. L. Zhang, *Automated market making and
-  loss-versus-rebalancing*][MilionisMoallemiRoughgardenZhang2022], §2–5 (Lemma 1, Lemma 2,
+  loss-versus-rebalancing*][MilionisMoallemiRoughgardenZhang2022], §3–4 (Lemma 1, Lemma 2,
   eq. (8)), Example 3 (eq. (19)), §8
 
 ## Tags
@@ -122,7 +124,7 @@ self-financing. In the library's construction the price is `P_t = Real.exp X_t` 
 price `X = localItoProcess x₀ b σ`, so `dP = P(b + ½σ²)ds + PσdB` and the self-financing value
 is the initial value, plus the cash leg's drift integral `∫ x*(P)·P·(b + ½σ²) ds`, plus the
 risky leg's Itô integral of the integrand `x*(P)·P·σ` against `B`. What the module proves about
-it: the pool value exceeds it by exactly `½ ∫₀ᵗ σ²P²V''(P) ds`
+it: the pool value differs from it by exactly `½ ∫₀ᵗ σ²P²V''(P) ds`
 (`poolValue_eq_rebalancingValue_add_correction`). As a total definition its integrals read `0`
 where the integrand fails to be integrable: `hpred` is satisfiable with `σ ≡ 0` for an
 arbitrary `V'`, and the drift integral then carries no financial meaning. Every theorem here
@@ -142,8 +144,9 @@ noncomputable def rebalancingValue (V V' : ℝ → ℝ)
     + predItoIntegral (μ := μ) T hBmeas hpred t ω
 
 /-- **The loss-versus-rebalancing decomposition** (the source's eq. (31) against eq. (5)): the
-pool value exceeds the rebalancing value by exactly half the volatility-weighted curvature
-integral. Almost surely, for every `t ∈ [0, T]` at once,
+pool value differs from the rebalancing value by exactly half the volatility-weighted curvature
+integral, a signed identity whose sign is the concavity of `V`. Almost surely, for every
+`t ∈ [0, T]` at once,
 
 `V(P_t) = R_t + ½ ∫₀ᵗ σ_s² P_s² V''(P_s) ds`,
 
@@ -357,12 +360,12 @@ theorem hasDerivAt_cpPoolHedge (L p : ℝ) (hp : 0 < p) :
     ring] at h0
   exact h0
 
-/-- The constant-product curvature is nonpositive for a nonnegative liquidity `c`: the pool
+/-- The constant-product curvature is nonpositive for a nonnegative liquidity `L`: the pool
 value function is concave on `(0, ∞)` (the source's Lemma 1 Part 3). -/
-private theorem cpPoolCurvature_nonpos {c : ℝ} (hc : 0 ≤ c) (p : ℝ) (hp : 0 < p) :
-    cpPoolCurvature c p ≤ 0 := by
+private theorem cpPoolCurvature_nonpos {L : ℝ} (hL : 0 ≤ L) (p : ℝ) (hp : 0 < p) :
+    cpPoolCurvature L p ≤ 0 := by
   unfold cpPoolCurvature
-  exact neg_nonpos.mpr (div_nonneg hc (by positivity))
+  exact neg_nonpos.mpr (div_nonneg hL (by positivity))
 
 theorem continuousOn_cpPoolCurvature (L : ℝ) :
     ContinuousOn (cpPoolCurvature L) (Ioi 0) := by
@@ -381,19 +384,19 @@ continuously rebalanced strategy and the static loss against holding the initial
 (`impermanentLoss` at the realized price factor, the paper's "loss-versus-holding") are both
 nonnegative, almost surely at every `t ∈ [0, T]` at once. The benchmarks differ, and no
 identity between the two losses is proved here. -/
-theorem losses_nonneg {σ m c : ℝ} (hc : 0 ≤ c) :
+theorem losses_nonneg {σ m L : ℝ} (hL : 0 ≤ L) :
     ∀ᵐ ω ∂μ, ∀ t ∈ Icc 0 T,
       0 ≤ rebalancingValue (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2) T hBmeas
-          (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀ (cpPoolValue c)
-          (cpPoolHedge c)
+          (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀ (cpPoolValue L)
+          (cpPoolHedge L)
           (itoIntegrand_isStronglyPredictable (σ := fun _ _ ↦ σ)
             (b := fun _ _ ↦ m - σ ^ 2 / 2) hB T hBmeas hBcont
             (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const)
             (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
-            (f_x := fun _ x ↦ Real.exp x * cpPoolHedge c (Real.exp x))
-            ((continuous_rebalancingHolding (hasDerivAt_cpPoolHedge c)).comp continuous_snd))
+            (f_x := fun _ x ↦ Real.exp x * cpPoolHedge L (Real.exp x))
+            ((continuous_rebalancingHolding (hasDerivAt_cpPoolHedge L)).comp continuous_snd))
           t ω
-        - cpPoolValue c (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
+        - cpPoolValue L (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
             (fun _ ↦ stronglyMeasurable_const) (fun _ ↦ continuous_const) x₀
             (fun _ _ ↦ m - σ ^ 2 / 2) t ω))
         ∧ impermanentLoss (Real.exp (localItoProcess (μ := μ) (σ := fun _ _ ↦ σ) T hBmeas
@@ -401,8 +404,8 @@ theorem losses_nonneg {σ m c : ℝ} (hc : 0 ≤ c) :
             (fun _ _ ↦ m - σ ^ 2 / 2) t ω - x₀)) ≤ 0 := by
   have hdyn := lvr_nonneg hB T hBmeas hBcont (fun _ ↦ stronglyMeasurable_const)
     (fun _ ↦ continuous_const) (fun _ ↦ stronglyMeasurable_const)
-    (fun _ ↦ continuous_const) x₀ (hasDerivAt_cpPoolValue c) (hasDerivAt_cpPoolHedge c)
-    (continuousOn_cpPoolCurvature c) (cpPoolCurvature_nonpos hc)
+    (fun _ ↦ continuous_const) x₀ (hasDerivAt_cpPoolValue L) (hasDerivAt_cpPoolHedge L)
+    (continuousOn_cpPoolCurvature L) (cpPoolCurvature_nonpos hL)
     (σ := fun _ _ ↦ σ) (b := fun _ _ ↦ m - σ ^ 2 / 2)
   filter_upwards [hdyn] with ω hω t ht
   exact ⟨hω t ht, impermanentLoss_nonpos (Real.exp_nonneg _)⟩
