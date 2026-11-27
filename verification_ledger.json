@@ -4045,9 +4045,9 @@
     "mf-lvr-constant-product": {
       "benchmark_file": "defi.json",
       "date": "2026-11-27",
-      "elapsed_s": 3.7,
-      "input_hash": "63ad0e59e7ef85cddf8c1cc5c9266d74b15c00b84b943cfcf50044a8faa92e39",
-      "verified_at_commit": "8a5e5dc"
+      "elapsed_s": 3.6,
+      "input_hash": "3392015f65ef23d3c8341f5357b6398e670f511b7f3a1ee72c6b0bd936493f40",
+      "verified_at_commit": "a5cc5e3"
     },
     "mf-macaulay-modified-discrete": {
       "benchmark_file": "interest_rates.json",
