@@ -18,7 +18,7 @@ public import Mathlib.Tactic.Ring
 /-!
 # The premium-adjusted call delta has a unique maximum in the strike
 
-In FX markets the premium of an option is paid in the foreign currency, and the
+When the premium of an FX option is paid in the foreign currency, the
 **premium-adjusted** forward delta of a call struck at `K` on forward `F` is the Black
 delta net of the premium, `Δ(K) = (K/F)·Φ(d₋(K))`. Inverting it for a strike, given a
 delta `δ`, is where its shape matters: for comparison, the unadjusted delta `Φ(d₊(K))` is
@@ -51,7 +51,8 @@ coordinates (log-strike `k = log(K/F)`, total variance `w = σ²T`, as in
 What is proved is the shape of the delta function over the reals, with `w > 0` as the
 only hypothesis. Not proved: the lognormal dynamics behind the Black delta (the slice is
 taken as the Gaussian argument `d₋`); the bound of the adjusted delta by the unadjusted
-delta `Φ(d₊)` (which places the unadjusted strike to the right of the root); the put
+delta `Φ(d₊)` (which, for an attainable delta, places the unadjusted strike at or to the right of the
+right-branch strike); the put
 branch (its adjusted delta is monotone in the strike); the spot-delta variant (it scales
 the same function by a foreign discount factor); and the numerical root-finding that a
 library routine runs on this function.
@@ -168,9 +169,8 @@ noncomputable def paDelta (k w : ℝ) : ℝ := exp k * Phi (dmi k w)
 
 theorem paDelta_pos (k w : ℝ) : 0 < paDelta k w := mul_pos (exp_pos k) (Phi_pos _)
 
-theorem hasDerivAt_dmi {w : ℝ} (hw : 0 < w) (k : ℝ) :
+theorem hasDerivAt_dmi (w k : ℝ) :
     HasDerivAt (fun k ↦ dmi k w) (-1 / √w) k := by
-  have hs : √w ≠ 0 := (Real.sqrt_pos.2 hw).ne'
   have e : (fun k ↦ dmi k w) = fun k ↦ -k / √w - √w / 2 := funext fun k ↦ dmi_eq k w
   rw [e]
   exact (((hasDerivAt_id k).neg.div_const (√w)).sub_const (√w / 2)).congr_deriv (by simp)
@@ -180,7 +180,7 @@ of `paStat`, whose unique zero is the stationarity condition `√w·Φ(d₋) = �
 theorem hasDerivAt_paDelta {w : ℝ} (hw : 0 < w) (k : ℝ) :
     HasDerivAt (fun k ↦ paDelta k w) (exp k / √w * paStat (√w) (dmi k w)) k := by
   have hs : √w ≠ 0 := (Real.sqrt_pos.2 hw).ne'
-  have h := (hasDerivAt_exp k).mul ((hasDerivAt_Phi (dmi k w)).comp k (hasDerivAt_dmi hw k))
+  have h := (hasDerivAt_exp k).mul ((hasDerivAt_Phi (dmi k w)).comp k (hasDerivAt_dmi w k))
   refine h.congr_deriv ?_
   simp only [Function.comp_apply, paStat]
   field_simp
@@ -225,9 +225,8 @@ theorem exists_isPaMax {w : ℝ} (hw : 0 < w) : ∃ k, IsPaMax w k ∧ k < w / 2
     linarith
 
 theorem IsPaMax.unique {w k₁ k₂ : ℝ} (hw : 0 < w) (h₁ : IsPaMax w k₁) (h₂ : IsPaMax w k₂) :
-    k₁ = k₂ := by
-  have := (dmi_strictAnti hw).injective (paStat_root_unique h₁ h₂)
-  exact this
+    k₁ = k₂ :=
+  (dmi_strictAnti hw).injective (paStat_root_unique h₁ h₂)
 
 theorem IsPaMax.strictMonoOn {w k₀ : ℝ} (hw : 0 < w) (h : IsPaMax w k₀) :
     StrictMonoOn (fun k ↦ paDelta k w) (Iic k₀) := by
@@ -338,17 +337,23 @@ theorem IsPaMax.no_strike_of_gt {w k₀ δ : ℝ} (hw : 0 < w) (h : IsPaMax w k�
   fun e ↦ absurd (e ▸ h.le hw k) (not_le.2 hδ)
 
 /-- **The domain of the premium-adjusted strike solve** (headline). For every total variance
-`w > 0` there is a log-strike `k₀ < w/2` (the maximiser, `K* < F·e^{w/2}` independently of
-any delta) such that the adjusted delta never exceeds its value at `k₀`, a delta `δ > 0` has
-a strike at or right of `k₀` iff `δ ≤ Δ(k₀, w)`, that strike is unique, and a delta above
-`Δ(k₀, w)` has no strike at all. -/
+`w > 0` there is a log-strike `k₀ < w/2` (`K* < F·e^{w/2}`, independently of any delta) that is
+the unique stationary point of the adjusted delta (`IsPaMax`), with the delta strictly
+increasing on `(−∞, k₀]`, strictly decreasing on `[k₀, ∞)`, tending to `0` at large strikes and
+never exceeding its value at `k₀`; a delta `δ > 0` has a strike at or right of `k₀` iff
+`δ ≤ Δ(k₀, w)`, that strike is unique, and a delta above `Δ(k₀, w)` has no strike at all. -/
 theorem paDelta_domain {w : ℝ} (hw : 0 < w) :
-    ∃ k₀ : ℝ, k₀ < w / 2 ∧ (∀ k, paDelta k w ≤ paDelta k₀ w) ∧
+    ∃ k₀ : ℝ, k₀ < w / 2 ∧ IsPaMax w k₀ ∧ (∀ k, IsPaMax w k → k = k₀) ∧
+      StrictMonoOn (fun k ↦ paDelta k w) (Iic k₀) ∧
+      StrictAntiOn (fun k ↦ paDelta k w) (Ici k₀) ∧
+      Tendsto (fun k ↦ paDelta k w) atTop (𝓝 0) ∧
+      (∀ k, paDelta k w ≤ paDelta k₀ w) ∧
       (∀ δ, 0 < δ → ((∃ k, k₀ ≤ k ∧ paDelta k w = δ) ↔ δ ≤ paDelta k₀ w)) ∧
       (∀ k₁ k₂, k₀ ≤ k₁ → k₀ ≤ k₂ → paDelta k₁ w = paDelta k₂ w → k₁ = k₂) ∧
       (∀ δ, paDelta k₀ w < δ → ∀ k, paDelta k w ≠ δ) := by
   obtain ⟨k₀, h, hlt⟩ := exists_isPaMax hw
-  exact ⟨k₀, hlt, h.le hw, fun δ hδ ↦ h.exists_right_iff hw hδ,
+  exact ⟨k₀, hlt, h, fun k hk ↦ hk.unique hw h, h.strictMonoOn hw, h.strictAntiOn hw,
+    tendsto_paDelta_atTop hw, h.le hw, fun δ hδ ↦ h.exists_right_iff hw hδ,
     fun _ _ h₁ h₂ e ↦ h.right_unique hw h₁ h₂ e, fun _ hδ k ↦ h.no_strike_of_gt hw hδ k⟩
 
 end MathFin
