@@ -52,9 +52,10 @@ One `full` entry in `benchmarks/defi.json`. It adds one entry to the corpus.
   assumed, which is what lets the constant-product pool instantiate directly); the difference
   form `R_t − V(P_t) = −½∫₀ᵗ σ²P²V''(P) ds` (`rebalancingValue_sub_poolValue_eq_lvr`, the
   paper's instantaneous rate `ℓ = −(σ²P²/2)·x*′(P)`); nonnegativity of the loss for concave `V`
-  (`lvr_nonneg`, Lemma 1 Part 3); `losses_nonneg` proves the dynamic loss and the static
-  `impermanentLoss` at the realized price factor jointly nonnegative (the two benchmarks of the
-  paper's §8, no identity between them); the constant-product value function and hedge holding
+  (`lvr_nonneg`, Lemma 1 Part 3); `losses_nonneg` proves the dynamic loss nonnegative and the
+  static `impermanentLoss` at the realized price factor nonpositive, the library's signed
+  relative convention (the two benchmarks of the paper's §8, no identity between them); the
+  constant-product value function and hedge holding
   are proved equal to the library's static reserves objects
   (`cpPoolValue_eq_lpPortfolioValue`, `cpPoolHedge_eq_reservesX`); and the constant-product
   specialization

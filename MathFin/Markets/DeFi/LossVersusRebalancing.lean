@@ -70,8 +70,9 @@ proved here is a nonnegative time integral.
   `−½σ²P²V''(P)`.
 * `lvr_nonneg`: the loss is nonnegative for a concave value function.
 * `losses_nonneg`: for the constant-product pool, the loss against the rebalancing strategy
-  and the static `impermanentLoss` at the realized price factor are both nonnegative — the two
-  benchmarks of the paper's §8, with no identity between them.
+  is nonnegative and the static `impermanentLoss` at the realized price factor is nonpositive
+  (the library's signed relative convention) — the two benchmarks of the paper's §8, with no
+  identity between them.
 * `cpPoolValue_eq_lpPortfolioValue`, `cpPoolHedge_eq_reservesX`: the constant-product value
   function and hedge holding are the library's static reserves objects (`lpPortfolioValue`,
   `impermanentLossReservesX`), proved equal at the deposit-price normalization.
