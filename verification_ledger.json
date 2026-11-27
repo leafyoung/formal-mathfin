@@ -3405,13 +3405,6 @@
       "input_hash": "08306a04ea3df84997b3de9c5fa9bc04a1c92dbc7c17b85cb95f05da0625635f",
       "verified_at_commit": "73c7bea"
     },
-    "mf-implied-correlation-dispersion": {
-      "benchmark_file": "portfolio_and_performance.json",
-      "date": "2026-11-27",
-      "elapsed_s": 4.5,
-      "input_hash": "440f97deb5d2c47c3f2bd110a650504f98963b2926db0cb6e891636e47d63e57",
-      "verified_at_commit": "5fcf1a0"
-    },
     "mf-implied-vol-exists-above-reference": {
       "benchmark_file": "black_scholes.json",
       "date": "2026-11-27",
