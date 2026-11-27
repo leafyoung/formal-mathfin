@@ -64,9 +64,8 @@ Wiener integrals against independent motions are independent.
 * `schwartzSmithExpectedSpot` — $\mathbb{E}[S_t]$, the lognormal mean.
 * `schwartzSmithLnExpectedSpot_tendsto` — the long-run intercept of $\ln\mathbb{E}[S_t]$.
 * `schwartzSmithFuturesPrice_eq_expectedSpot` — the futures price is the expected terminal spot.
-* `schwartzSmithLnFuturesPrice_eq`, `schwartzSmithLnFuturesPrice_detrended`,
-  `schwartzSmithLnFuturesPrice_tendsto` — the log futures closed form, its detrended
-  identity and the long-run intercept limit.
+* `schwartzSmithLnFuturesPrice_eq`, `schwartzSmithLnFuturesPrice_tendsto` — the log
+  futures closed form and the long-run intercept limit.
 * `schwartzSmithGsDrift` — the convenience-yield drift reading of the expected log spot.
 
 ## References
