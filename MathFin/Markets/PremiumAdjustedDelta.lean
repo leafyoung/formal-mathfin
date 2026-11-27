@@ -21,12 +21,11 @@ public import Mathlib.Tactic.Ring
 When the premium of an FX option is paid in the foreign currency, the
 **premium-adjusted** forward delta of a call struck at `K` on forward `F` is the Black
 delta net of the premium, `Δ(K) = (K/F)·Φ(d₋(K))`. Inverting it for a strike, given a
-delta `δ`, is where its shape matters: for comparison, the unadjusted delta `Φ(d₊(K))` is
-monotone in the strike, while the adjusted delta has a single interior maximum. Hence a delta
-below the maximum has at most one strike on each side of the maximiser, a delta equal to
-the maximum has exactly one, and a delta above it has none; choosing the strike to the right
-of the maximiser is one way to make the inversion single-valued, and the facts proved here
-are what make that choice well posed.
+delta `δ`, is where its shape matters: the adjusted delta has a single interior maximum
+(proved below). Hence a delta below the maximum has at most one strike on each side of the
+maximiser, a delta equal to the maximum has exactly one, and a delta above it has none;
+choosing the strike to the right of the maximiser is one way to make the inversion
+single-valued, and the facts proved here are what make that choice well posed.
 
 This file proves that picture on the flat Black slice, in the library's `(k, w)`
 coordinates (log-strike `k = log(K/F)`, total variance `w = σ²T`, as in
@@ -51,11 +50,9 @@ coordinates (log-strike `k = log(K/F)`, total variance `w = σ²T`, as in
 What is proved is the shape of the delta function over the reals, with `w > 0` as the
 only hypothesis. Not proved: the lognormal dynamics behind the Black delta (the slice is
 taken as the Gaussian argument `d₋`); the bound of the adjusted delta by the unadjusted
-delta `Φ(d₊)` (which, for an attainable delta, places the unadjusted strike at or to the right of the
-right-branch strike); the put
-branch (its adjusted delta is monotone in the strike); the spot-delta variant (it scales
-the same function by a foreign discount factor); and the numerical root-finding that a
-library routine runs on this function.
+delta `Φ(d₊)`; the put branch; the spot-delta variant (the same function scaled by a
+foreign discount factor); and the numerical root-finding that a library routine runs on
+this function.
 
 ## Tags
 
