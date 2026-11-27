@@ -49,6 +49,7 @@ One `full` entry in `benchmarks/contracts.json`. Corpus 919 → 920 (873 full be
   `pathPV`s directly); no strict-convexity or strict-monotonicity form; the convexity hypothesis
   is almost everywhere, not pointwise. Each proof is the matching order property of the Bochner
   integral applied to `Contract.value`; no new machinery.
+
 ### Implied correlation and dispersion (2026-11-26)
 
 One `full` entry in `benchmarks/portfolio_and_performance.json`. Corpus 924 → 925 on the
