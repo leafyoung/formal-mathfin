@@ -127,7 +127,7 @@ theorem continuous_rebalancingHolding (hv' : ∀ p > 0, HasDerivAt V' (V'' p) p)
 pool value `V (Real.exp x₀) = V(P₀)` and hold `x*(P_t) = V'(P_t)` units of the risky asset,
 self-financing. In the library's construction the price is `P_t = Real.exp X_t` with the log
 price `X = localItoProcess x₀ b σ`, so `dP = P(b + ½σ²)ds + PσdB` and the self-financing value
-is the initial value, plus the cash leg's drift integral `∫ x*(P)·P·(b + ½σ²) ds`, plus the
+is the initial value, plus the drift integral of the gain, `∫ x*(P)·P·(b + ½σ²) ds`, plus the
 risky leg's Itô integral of the integrand `x*(P)·P·σ` against `B`. What the module proves about
 it: the pool value differs from it by exactly `½ ∫₀ᵗ σ²P²V''(P) ds`
 (`poolValue_eq_rebalancingValue_add_correction`). As a total definition its integrals read `0`
@@ -327,7 +327,9 @@ theorem lvr_nonneg (hv : ∀ p > 0, HasDerivAt V (V' p) p) (hv' : ∀ p > 0, Has
 source): `cpPoolValue L P = 2L√P`, with `L` the pool's liquidity, `0 ≤ L` for a pool (the def
 itself is the signed expression and carries no sign hypothesis). Twice differentiable on
 `(0, ∞)`; the derivative facts are `hasDerivAt_cpPoolValue`, `hasDerivAt_cpPoolHedge` and
-`continuousOn_cpPoolCurvature`. -/
+`continuousOn_cpPoolCurvature`. Junk for `P ≤ 0` (the totalized square root reads `0`, a
+pool's value at a price that cannot exist); every theorem evaluates it at
+`P = Real.exp … > 0`. -/
 noncomputable def cpPoolValue (L : ℝ) : ℝ → ℝ := fun p ↦ 2 * L * Real.sqrt p
 
 /-- The hedge holding of the constant-product pool: `x*(P) = V'(P) = L/√P`. For `0 ≤ L` this

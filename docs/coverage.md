@@ -41,9 +41,10 @@ One `full` entry in `benchmarks/defi.json`. It adds one entry to the corpus.
 
 - **`mf-lvr-constant-product`** (MathFin/Markets/DeFi/LossVersusRebalancing.lean): the
   loss-versus-rebalancing decomposition of Milionis, Moallemi, Roughgarden and Zhang (2022).
-  Proved: for a pool value function `V` twice differentiable on `(0, ∞)` of a price
-  `P_t = exp X_t` built from the log price `X = localItoProcess` (adapted continuous
-  coefficients), the pool value decomposes, almost surely at every `t ≤ T` at once, into the
+  Proved: for a pool value function `V` twice differentiable with `V''` continuous on
+  `(0, ∞)` of a price `P_t = exp X_t` built from the log price `X = localItoProcess`
+  (adapted continuous coefficients), the pool value decomposes, almost surely at every
+  `t ≤ T` at once, into the
   rebalancing strategy's value `R_t` (`rebalancingValue`: start at the pool value, hold
   `x*(P) = V'(P)` units, self-financing) plus the Itô correction
   `½∫₀ᵗ σ²P²V''(P) ds` (`poolValue_eq_rebalancingValue_add_correction`, through
