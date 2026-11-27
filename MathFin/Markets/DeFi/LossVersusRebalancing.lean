@@ -338,10 +338,10 @@ totalized division reads `0` where `x*(P)` diverges); every theorem evaluates it
 noncomputable def cpPoolHedge (L : ℝ) : ℝ → ℝ := fun p ↦ L / Real.sqrt p
 
 /-- The curvature of the constant-product pool value: `V''(P) = −L/(2·P·√P)`. For `0 ≤ L` this
-is `x*′(P) ≤ 0`, the marginal liquidity of the source's Lemma 1 Part 3 at this pool; the def
-itself is the signed expression and carries no sign hypothesis. Junk for `P ≤ 0` (the
-totalized division reads `0` where `V''(P)` diverges); every theorem evaluates it at
-`P = Real.exp … > 0`. -/
+is `x*′(P) ≤ 0` (Lemma 1 Part 3); `|x*′(P)|`, its absolute value, is the marginal liquidity
+the source names in §4. The def itself is the signed expression and carries no sign
+hypothesis. Junk for `P ≤ 0` (the totalized division reads `0` where `V''(P)` diverges);
+every theorem evaluates it at `P = Real.exp … > 0`. -/
 noncomputable def cpPoolCurvature (L : ℝ) : ℝ → ℝ := fun p ↦ -(L / (2 * (p * Real.sqrt p)))
 
 theorem hasDerivAt_cpPoolValue (L p : ℝ) (hp : 0 < p) :
