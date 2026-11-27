@@ -88,7 +88,7 @@ MSC 91G20, MSC 60G15, JEL Q02
 namespace MathFin
 
 open MeasureTheory ProbabilityTheory Real
-open scoped NNReal
+open scoped NNReal InnerProductSpace
 open WienerIntegralL2
 
 variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabilityMeasure μ]
@@ -249,5 +249,221 @@ private lemma integral_vasicekKernel_eq (κ : ℝ) (hκ : κ ≠ 0) (T : ℝ≥0
   rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (fun x _ ↦ hd x) hinteg]
   norm_num
   field_simp
+
+/-- The quadratic form of the log-spot variance is nonnegative: the covariance matrix of
+`(χ_t, ξ_t)` is positive semidefinite, which here rests on `2(1 − e^{−x})² ≤ x(1 − e^{−2x})`. -/
+private lemma ssQuadratic_nonneg (a b : ℝ) {κ σ₁ σ₂ ρ : ℝ} {t : ℝ} (hκ : 0 < κ) (ht : 0 ≤ t)
+    (hρ : ρ ^ 2 ≤ 1) :
+    0 ≤ a ^ 2 * vasicekSDEVariance σ₁ κ t
+      + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * t))) / κ) + b ^ 2 * σ₂ ^ 2 * t := by
+  by_cases hσ₂ : σ₂ = 0
+  · subst hσ₂
+    simp
+    exact mul_nonneg (sq_nonneg a) (vasicekSDEVariance_nonneg σ₁ hκ ht)
+  by_cases ht0 : t = 0
+  · subst ht0
+    simp
+    exact mul_nonneg (sq_nonneg a) (vasicekSDEVariance_nonneg σ₁ hκ ht)
+  have hx : 0 < κ * t := by positivity
+  -- the core inequality `2(1 − e^{−x})² ≤ x(1 − e^{−2x})`
+  have hcore : 2 * (1 - Real.exp (-(κ * t))) ^ 2
+      ≤ (κ * t) * (1 - Real.exp (-(2 * (κ * t)))) := by
+    have he2 : Real.exp (-(2 * (κ * t))) = Real.exp (-(κ * t)) ^ 2 := by
+      rw [pow_two, ← Real.exp_add]
+      congr 1
+      ring
+    rw [he2]
+    have hsle : 0 ≤ 1 - Real.exp (-(κ * t)) :=
+      sub_nonneg.mpr (Real.exp_le_one_iff.mpr (neg_nonpos.mpr (by positivity)))
+    have hgs : 2 ≤ (κ * t) * (1 + Real.exp (-(κ * t))) + 2 * Real.exp (-(κ * t)) := by
+      have hg' : ∀ u : ℝ, HasDerivAt
+          (fun v ↦ v * (1 + Real.exp (-v)) + 2 * Real.exp (-v))
+          (1 * (1 + Real.exp (-u)) + u * (0 + (-Real.exp (-u))) + 2 * (-Real.exp (-u))) u := by
+        intro u
+        have hexp : HasDerivAt (fun v : ℝ ↦ Real.exp (-v)) (-Real.exp (-u)) u := by
+          simpa using (hasDerivAt_id u).neg.exp
+        have hadd : HasDerivAt (fun v : ℝ ↦ 1 + Real.exp (-v))
+            (0 + (-Real.exp (-u))) u := (hasDerivAt_const u (1 : ℝ)).add hexp
+        have h1 : HasDerivAt (fun v : ℝ ↦ v * (1 + Real.exp (-v)))
+            (1 * (1 + Real.exp (-u)) + u * (0 + (-Real.exp (-u)))) u :=
+          (hasDerivAt_id u).mul hadd
+        have h2 : HasDerivAt (fun v : ℝ ↦ 2 * Real.exp (-v))
+            (2 * (-Real.exp (-u))) u := hexp.const_mul 2
+        have h := h1.add h2
+        have hfun : ((fun v : ℝ ↦ v * (1 + Real.exp (-v))) + fun v : ℝ ↦ 2 * Real.exp (-v))
+            = fun v : ℝ ↦ v * (1 + Real.exp (-v)) + 2 * Real.exp (-v) := rfl
+        rw [hfun] at h
+        exact h
+      have hng : ∀ u : ℝ, 0 ≤ 1 - (1 + u) * Real.exp (-u) := by
+        intro u
+        have hle : u + 1 ≤ Real.exp u := Real.add_one_le_exp u
+        have hs' : 0 < Real.exp (-u) := Real.exp_pos _
+        have heq : Real.exp u * Real.exp (-u) = 1 := by
+          rw [← Real.exp_add]
+          norm_num
+        nlinarith [hle, hs', heq]
+      have hinteg : IntervalIntegrable
+          (fun u : ℝ ↦ 1 * (1 + Real.exp (-u)) + u * (0 + (-Real.exp (-u)))
+            + 2 * (-Real.exp (-u))) volume 0 (κ * t) := by
+        apply Continuous.intervalIntegrable
+        fun_prop
+      have hng2 : ∀ u : ℝ,
+          0 ≤ 1 * (1 + Real.exp (-u)) + u * (0 + (-Real.exp (-u))) + 2 * (-Real.exp (-u)) := by
+        intro u
+        rw [show (1 * (1 + Real.exp (-u)) + u * (0 + (-Real.exp (-u)))
+              + 2 * (-Real.exp (-u)))
+            = 1 - (1 + u) * Real.exp (-u) from by ring]
+        exact hng u
+      have hint := intervalIntegral.integral_nonneg (μ := volume) hx.le (fun u _ ↦ hng2 u)
+      have hsub := intervalIntegral.integral_eq_sub_of_hasDerivAt
+        (fun u _ ↦ hg' u) hinteg
+      have h0 : (0 : ℝ) * (1 + Real.exp (-(0 : ℝ))) + 2 * Real.exp (-(0 : ℝ)) = 2 := by
+        norm_num
+      rw [h0] at hsub
+      nlinarith [hint, hsub]
+    have hsplit : (κ * t) * (1 - Real.exp (-(κ * t)) ^ 2)
+          - 2 * (1 - Real.exp (-(κ * t))) ^ 2
+        = (1 - Real.exp (-(κ * t)))
+          * ((κ * t) * (1 + Real.exp (-(κ * t))) - 2 * (1 - Real.exp (-(κ * t)))) := by
+      ring
+    have hp2 : 0 ≤ (1 - Real.exp (-(κ * t)))
+        * ((κ * t) * (1 + Real.exp (-(κ * t))) - 2 * (1 - Real.exp (-(κ * t)))) :=
+      mul_nonneg hsle (by linarith)
+    calc 2 * (1 - Real.exp (-(κ * t))) ^ 2
+        ≤ 2 * (1 - Real.exp (-(κ * t))) ^ 2
+          + (1 - Real.exp (-(κ * t)))
+            * ((κ * t) * (1 + Real.exp (-(κ * t)))
+              - 2 * (1 - Real.exp (-(κ * t)))) := by linarith
+      _ = (κ * t) * (1 - Real.exp (-(κ * t)) ^ 2) := by rw [← hsplit]; ring
+  -- the bracket `κt·F − 2ρ²E²` is nonnegative
+  have hbr : 0 ≤ (κ * t) * (1 - Real.exp (-(2 * (κ * t))))
+      - ρ ^ 2 * (2 * (1 - Real.exp (-(κ * t))) ^ 2) := by
+    have h1 : ρ ^ 2 * (1 - Real.exp (-(κ * t))) ^ 2
+        ≤ (1 - Real.exp (-(κ * t))) ^ 2 := by
+      nlinarith [sq_nonneg (1 - Real.exp (-(κ * t)))]
+    nlinarith [hcore, h1, hx]
+  -- the completed square: multiply the quadratic by `2 * κ ^ 2 * t` (positive here)
+  have hκ2t : 0 < 2 * κ ^ 2 * t := by positivity
+  have hsq : 0 ≤ (b * (σ₂ * (κ * t))
+      + a * (ρ * σ₁ * (1 - Real.exp (-(κ * t))))) ^ 2 :=
+    sq_nonneg _
+  have hident : 2 * κ ^ 2 * t * (a ^ 2 * vasicekSDEVariance σ₁ κ t
+      + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * t))) / κ) + b ^ 2 * σ₂ ^ 2 * t)
+      = 2 * (b * (σ₂ * (κ * t)) + a * (ρ * σ₁ * (1 - Real.exp (-(κ * t))))) ^ 2
+        + a ^ 2 * σ₁ ^ 2 * ((κ * t) * (1 - Real.exp (-(2 * (κ * t))))
+          - ρ ^ 2 * (2 * (1 - Real.exp (-(κ * t))) ^ 2)) := by
+    unfold vasicekSDEVariance
+    field_simp
+    ring
+  refine le_of_mul_le_mul_right ?_ hκ2t
+  rw [zero_mul, mul_comm (a ^ 2 * vasicekSDEVariance σ₁ κ t
+      + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * t))) / κ)
+      + b ^ 2 * σ₂ ^ 2 * t) (2 * κ ^ 2 * t), hident]
+  nlinarith [hsq, hbr, mul_nonneg (mul_nonneg (sq_nonneg a) (sq_nonneg σ₁)) hbr,
+    sq_nonneg a, sq_nonneg σ₁]
+
+private lemma norm_vasicekKernelLp_sq (κ : ℝ) (hκ : 0 < κ) (t : ℝ≥0) :
+    ‖(vasicekKernelLp κ hκ.le t : Lp ℝ 2 (volume.restrict (Set.Ioc (0 : ℝ) ((t : ℝ)))))‖ ^ 2
+      = vasicekSDEVariance 1 κ (t : ℝ) := by
+  rw [lp_two_norm_sq, vasicekKernelLp,
+    MemLp.integral_sq_toLp (vasicekKernel_memLp κ hκ.le t),
+    vasicekKernel_integral_sq κ hκ.ne' t]
+  unfold vasicekSDEVariance
+  ring
+
+private lemma inner_kernel_stepIndicator (κ : ℝ) (hκ : 0 < κ) (t : ℝ≥0) :
+    ⟪vasicekKernelLp κ hκ.le t, stepIndicatorLp t (StepIndex.whole t)⟫_ℝ
+      = (1 - Real.exp (-(κ * (t : ℝ)))) / κ := by
+  rw [real_inner_comm, inner_stepIndicatorLp_whole, vasicekKernelLp,
+    MeasureTheory.integral_congr_ae (MemLp.coeFn_toLp (vasicekKernel_memLp κ hκ.le t))]
+  exact integral_vasicekKernel_eq κ hκ.ne' t
+
+/-- **Linear combinations of the two factors are Gaussian.** For every `a b`, the variable
+`a·χ_t + b·ξ_t` is Gaussian with mean `a·χ₀e^{−κt} + b·(ξ₀ + νt)` and variance
+`a²·v_χ + 2ab·cov + b²·v_ξ`, where `v_χ = vasicekSDEVariance σ_χ κ t`, `v_ξ = σ_ξ²t` and
+`cov = ρσ_χσ_ξ(1−e^{−κt})/κ` — the independence of the two motions feeding the
+`√(1−ρ²)`-leg and the Vasicek isometry feeding the rest. -/
+private theorem hasLaw_linearCombination (hB₁ : IsPreBrownianReal B₁ μ)
+    (hB₂ : IsPreBrownianReal B₂ μ) (h₁m : ∀ s, Measurable (B₁ s)) (h₂m : ∀ s, Measurable (B₂ s))
+    (hind : IndepFun (fun ω s ↦ B₁ s ω) (fun ω s ↦ B₂ s ω) μ)
+    {κ σ₁ σ₂ x₀ ξ₀ ν ρ : ℝ} (hκ : 0 < κ) (hρ : ρ ^ 2 ≤ 1) (t : ℝ≥0) (a b : ℝ) :
+    HasLaw (fun ω ↦ a * schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω
+        + b * schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)
+      (gaussianReal
+        (a * (x₀ * Real.exp (-(κ * (t : ℝ)))) + b * (ξ₀ + ν * (t : ℝ)))
+        ((a ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+            + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+            + b ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal)) μ := by
+  set k : Lp ℝ 2 (volume.restrict (Set.Ioc (0 : ℝ) ((t : ℝ)))) :=
+    vasicekKernelLp κ hκ.le t with hkeq
+  set w : Lp ℝ 2 (volume.restrict (Set.Ioc (0 : ℝ) ((t : ℝ)))) :=
+    stepIndicatorLp t (StepIndex.whole t) with hweq
+  set A : ℝ := a * σ₁ with hA
+  set Bc : ℝ := b * ρ * σ₂ with hBc
+  set C : ℝ := b * Real.sqrt (1 - ρ ^ 2) * σ₂ with hC
+  set c₀ : ℝ := a * (x₀ * Real.exp (-(κ * (t : ℝ)))) + b * (ξ₀ + ν * (t : ℝ)) with hc₀
+  have hk2 : ‖k‖ ^ 2 = vasicekSDEVariance 1 κ (t : ℝ) := by
+    rw [hkeq]; exact norm_vasicekKernelLp_sq κ hκ t
+  have hkw : ⟪k, w⟫_ℝ = (1 - Real.exp (-(κ * (t : ℝ)))) / κ := by
+    rw [hkeq, hweq]; exact inner_kernel_stepIndicator κ hκ t
+  have hw2 : ‖w‖ ^ 2 = (t : ℝ) := by rw [hweq]; exact norm_stepIndicatorLp_whole_sq t
+  have hu : ‖A • k + Bc • w‖ ^ 2
+      = A ^ 2 * ‖k‖ ^ 2 + 2 * (A * Bc) * ⟪k, w⟫_ℝ + Bc ^ 2 * ‖w‖ ^ 2 :=
+    norm_smul_add_smul_sq_real A Bc k w
+  have hintu : ∫ s in Set.Ioc (0 : ℝ) ((t : ℝ)), ((A • k + Bc • w) s) ^ 2 ∂volume
+      = A ^ 2 * vasicekSDEVariance 1 κ (t : ℝ)
+        + 2 * (A * Bc) * ((1 - Real.exp (-(κ * (t : ℝ)))) / κ) + Bc ^ 2 * (t : ℝ) := by
+    rw [← lp_two_norm_sq, hu, hk2, hkw, hw2]
+  have hIu := wienerIntegralLp_hasLaw_gaussian_of_integral_sq hB₁ t (A • k + Bc • w) hintu
+  have hintv : ∫ s in Set.Ioc (0 : ℝ) ((t : ℝ)), ((C • w) s) ^ 2 ∂volume = C ^ 2 * (t : ℝ) := by
+    rw [← lp_two_norm_sq, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs, hw2]
+  have hIv := wienerIntegralLp_hasLaw_gaussian_of_integral_sq hB₂ t (C • w) hintv
+  have hinds := indepFun_wienerIntegral_of_indepFun hB₁ hB₂ h₁m h₂m hind t (A • k + Bc • w) (C • w)
+  have hsum := hasLaw_add_of_indepFun hIu hIv hinds
+  have hshift := gaussianReal_const_add hsum c₀
+  have hae : (fun ω ↦ a * schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω
+      + b * schwartzSmithXi hB₁ hB₂ ξ₀ ν ρ σ₂ t ω)
+      =ᵐ[μ] (fun ω ↦ c₀ + ((wienerIntegralLp B₁ hB₁ t (A • k + Bc • w)) ω
+        + (wienerIntegralLp B₂ hB₂ t (C • w)) ω)) := by
+    filter_upwards [wienerIntegralLp_smul_add_smul_ae hB₁ t A Bc k w,
+      wienerIntegralLp_smul_ae hB₂ t C w] with ω h1 h2
+    have hchi : schwartzSmithChi hB₁ κ σ₁ x₀ hκ t ω
+        = x₀ * Real.exp (-(κ * (t : ℝ))) + σ₁ * (wienerIntegralLp B₁ hB₁ t k) ω := by
+      rw [schwartzSmithChi, HullWhite.integratedRate, deterministic_zero_eq]
+    rw [hchi, hkeq]
+    simp only [schwartzSmithXi, hweq]
+    rw [h1, h2]
+    ring
+  have hℓ : gaussianReal ((0 : ℝ) + 0 + c₀)
+      (((A ^ 2 * vasicekSDEVariance 1 κ (t : ℝ)
+          + 2 * (A * Bc) * ((1 - Real.exp (-(κ * (t : ℝ)))) / κ) + Bc ^ 2 * (t : ℝ)).toNNReal
+        + (C ^ 2 * (t : ℝ)).toNNReal : ℝ≥0))
+      = gaussianReal c₀
+        ((a ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+          + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+          + b ^ 2 * σ₂ ^ 2 * (t : ℝ)).toNNReal) := by
+    refine congr (congrArg gaussianReal
+      (show ((0 : ℝ) + 0 + c₀) = c₀ from by norm_num)) (NNReal.eq ?_)
+    rw [NNReal.coe_add]
+    rw [Real.coe_toNNReal
+      (A ^ 2 * vasicekSDEVariance 1 κ (t : ℝ)
+        + 2 * (A * Bc) * ((1 - Real.exp (-(κ * (t : ℝ)))) / κ) + Bc ^ 2 * (t : ℝ))
+      (by
+        have h := ssQuadratic_nonneg A Bc (σ₁ := 1) (σ₂ := 1) (ρ := 1) hκ t.coe_nonneg
+          (by norm_num : (1 : ℝ) ^ 2 ≤ 1)
+        simpa using h)]
+    rw [Real.coe_toNNReal (C ^ 2 * (t : ℝ)) (mul_nonneg (sq_nonneg C) t.coe_nonneg)]
+    rw [Real.coe_toNNReal
+      (a ^ 2 * vasicekSDEVariance σ₁ κ (t : ℝ)
+        + 2 * (a * b) * (ρ * σ₁ * σ₂ * (1 - Real.exp (-(κ * (t : ℝ)))) / κ)
+        + b ^ 2 * σ₂ ^ 2 * (t : ℝ)) (ssQuadratic_nonneg a b hκ t.coe_nonneg hρ)]
+    simp only [hA, hBc, hC, vasicekSDEVariance]
+    rw [show (b * Real.sqrt (1 - ρ ^ 2) * σ₂) ^ 2
+        = b ^ 2 * (1 - ρ ^ 2) * σ₂ ^ 2 from by
+      rw [mul_pow, mul_pow, Real.sq_sqrt (sub_nonneg.mpr hρ : (0 : ℝ) ≤ 1 - ρ ^ 2)]]
+    field_simp
+    ring
+  rw [← hℓ]
+  exact hshift.congr hae
 
 end MathFin
