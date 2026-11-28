@@ -30,9 +30,9 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 ### Jensen's inequality for the mixed survival (2026-11-28)
 
 Corpus entry `mf-mixed-hazard-jensen` (`benchmarks/credit.json`), module
-`MathFin/Models/Credit/MixedHazardJensen.lean`. For a random hazard rate `h` with nonnegative,
-jointly measurable sections whose paths are interval-integrable on `[0, T]` almost surely and
-whose integrated intensity has an integrable mean: `cox_mixingSurvival_ge_meanIntensitySurvival`
+`MathFin/Models/Credit/MixedHazardJensen.lean`. For a random hazard rate `h` with nonnegative
+sections, jointly measurable in `(s, ω)`, whose paths are interval-integrable on `[0, T]`
+almost surely and whose integrated intensity has an integrable mean: `cox_mixingSurvival_ge_meanIntensitySurvival`
 proves the mixed survival integral `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least
 `hazardSurvival` of the mean-intensity hazard (Jensen for `Real.exp` through
 `ConvexOn.map_integral_le`, plus Fubini moving the mean inside the time integral);

@@ -17,9 +17,10 @@ Bagaria ch. 16, Calculation 16.10: under a random intensity the survival curve (
 bootstrapping a deterministic curve from quotes is recovering something below the mean
 intensity, by an amount that is a pure convexity.
 
-Here the random intensity is a hazard rate `h` with nonnegative, jointly measurable sections
-whose paths are interval-integrable on `[0, T]` almost surely and whose integrated intensity has
-an integrable mean; the mixed survival is the Cox mixing integral of `Models/Credit/Cox.lean`,
+Here the random intensity is a hazard rate `h` with nonnegative sections, jointly measurable in
+`(s, ω)`, whose paths are interval-integrable on `[0, T]` almost surely and whose integrated
+intensity has an integrable mean; the mixed survival is the Cox mixing integral of
+`Models/Credit/Cox.lean`,
 and the survival of the mean-intensity hazard is
 `hazardSurvival (fun s ↦ ∫ ω, h s ω dμ₁) T` (`Models/Credit/HazardCurve.lean`). The measure
 theory is the exponential-Jensen pair and the running-integral exchange of
@@ -79,10 +80,11 @@ open MeasureTheory ProbabilityTheory Real MathFin
 open scoped NNReal ENNReal
 
 /-- **Jensen's inequality for the mixed survival** — Bagaria ch. 16, eq. 16.7 and Calc. 16.10:
-for a random hazard rate `h` with nonnegative, jointly measurable sections whose paths are
-interval-integrable on `[0, T]` almost surely and whose integrated intensity has an integrable
-mean, the mixed survival integral `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least the survival curve of
-the mean-intensity hazard, `hazardSurvival (fun s ↦ ∫ ω, h s ω) T`; the dichotomy's equality
+for a random hazard rate `h` with nonnegative sections, jointly measurable in `(s, ω)`, whose
+paths are interval-integrable on `[0, T]` almost surely and whose integrated intensity has an
+integrable mean, the mixed survival integral `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least the
+survival curve of the mean-intensity hazard, `hazardSurvival (fun s ↦ ∫ ω, h s ω) T`; the
+dichotomy's equality
 branch (`exp_jensen_eq_of_ae_const`) covers the deterministic case. -/
 theorem cox_mixingSurvival_ge_meanIntensitySurvival
     {Ω₁ : Type*} {_m₁ : MeasurableSpace Ω₁} {μ₁ : Measure Ω₁} [IsProbabilityMeasure μ₁]

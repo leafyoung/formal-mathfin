@@ -33,7 +33,8 @@ Two measure-theoretic facts used by convexity arguments on expectations of expon
 
 ## Main definitions
 
-The module adds no definition; its six results are inequalities and identifications.
+The module adds no definition; its seven results are inequalities, dichotomies and
+identifications.
 
 ## Main results
 
