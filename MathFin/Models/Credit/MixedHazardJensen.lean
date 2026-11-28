@@ -17,9 +17,10 @@ Bagaria ch. 16, Calculation 16.10: under a random intensity the survival curve (
 bootstrapping a deterministic curve from quotes is recovering something below the mean
 intensity, by an amount that is a pure convexity.
 
-Here the random intensity is a hazard rate `h` with nonnegative sections, jointly measurable in
-`(s, ω)`, whose paths are interval-integrable on `[0, T]` almost surely and whose integrated
-intensity has an integrable mean; the mixed survival is the Cox mixing integral of
+Here the mixing law is a probability measure `μ₁` and the horizon satisfies `0 ≤ T`; the random
+intensity is a hazard rate `h` with nonnegative sections, jointly measurable in `(s, ω)`, whose
+paths are interval-integrable on `[0, T]` almost surely and whose integrated intensity has an
+integrable mean. The mixed survival is the Cox mixing integral of
 `Models/Credit/Cox.lean`,
 and the survival of the mean-intensity hazard is
 `hazardSurvival (fun s ↦ ∫ ω, h s ω dμ₁) T` (`Models/Credit/HazardCurve.lean`). The measure
@@ -49,9 +50,10 @@ objects.
 
 ## Main results
 
-* `cox_mixingSurvival_ge_meanIntensitySurvival`: for a nonnegative jointly measurable hazard `h`
-  whose paths are interval-integrable on `[0, T]` almost surely and whose integrated intensity
-  has an integrable mean, the mixed survival integral
+* `cox_mixingSurvival_ge_meanIntensitySurvival`: under a probability mixing law at a horizon
+  `T ≥ 0`, for a nonnegative jointly measurable hazard `h` whose paths are interval-integrable
+  on `[0, T]` almost surely and whose integrated intensity has an integrable mean, the mixed
+  survival integral
   `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least `hazardSurvival` of the mean-intensity hazard at `T`.
 * `cox_mixingSurvival_gt_or_intensityConst`: under the same hypotheses, either the integrated
   intensity equals its own mean almost surely, or the mixed survival integral is strictly

@@ -27,7 +27,7 @@ Two measure-theoretic facts used by convexity arguments on expectations of expon
 * **The running integral.** For a family `h : ℝ → α → ℝ` of nonnegative functions, the
   pathwise integral `ω ↦ ∫ s in (0)..T, h s ω` is nonnegative (`runningIntegral_nonneg`);
   for a jointly measurable family it is measurable (`runningIntegral_measurable`) and — under
-  a σ-finite measure on the paths and interval-integrable paths — its mean is the running
+  a σ-finite measure on the outcome space and interval-integrable paths — its mean is the running
   integral of the means (`runningIntegral_mean_eq`, Fubini–Tonelli on the product with the
   restricted Lebesgue measure).
 
