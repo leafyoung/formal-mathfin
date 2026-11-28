@@ -592,7 +592,12 @@
           "blueprint": "thm:kyle-equilibrium-unique",
           "needs": [],
           "lean": "MathFinFrontier.kyle_equilibrium_unique",
-          "note": "Stated after Monteiro–Tourky, Theorem 1.1 (uniqueness direction), closed by sorry; a proof settles the problem (#537)."
+          "note": "Stated after Monteiro–Tourky, Theorem 1.1 (uniqueness direction), closed by sorry; a proof settles the problem (#537).",
+          "pinned": {
+            "commit": "09f0f85ebf5afcbbe8badf166f136603bbc92834",
+            "pr": 555,
+            "statement_sha256": "c3ba738d5c32dc0da7f44caa6283cf46443e9193abe5ad8ff0fe5670f7364898"
+          }
         }
       },
       "known_results": [
@@ -619,7 +624,12 @@
         "nearby_results_checked": [
           "Continuous-time Kyle–Back uniqueness is a different question."
         ],
-        "conclusion": "Do not publish this as an unqualified open problem. Track the reported resolution and review status separately."
+        "conclusion": "Do not publish this as an unqualified open problem. Track the reported resolution and review status separately.",
+        "referee": {
+          "verdict": "faithful",
+          "date": "2026-11-26",
+          "comment": "https://github.com/formal-applied-math/formal-mathfin/issues/537#issuecomment-7208420387"
+        }
       },
       "related_problems": [],
       "issue_number": 537,
@@ -635,7 +645,10 @@
           "status": "resolution_reported",
           "reason": "Stated in Lean from Theorem 1.1 of the reported resolution (MathFinFrontier/OpenProblems/KyleUniqueness.lean)."
         }
-      ]
+      ],
+      "attempts": {
+        "referee": 1
+      }
     },
     {
       "id": "MF-OP-009",
@@ -966,7 +979,8 @@
       "known_results": [
         "Gerber 1969, Azcue-Muler: d=1 band strategies.",
         "Albrecher-Azcue-Muler (AAP 2017, arXiv 1505.03980): two insurers, value function smallest viscosity supersolution, curve strategies numerically optimal in an example.",
-        "Azcue-Muler (arXiv 1804.02547): n-dim switching problem, convergent numerical scheme, verification result; conjectures for optimal local control on boundaries."
+        "Azcue-Muler (arXiv 1804.02547): n-dim switching problem, convergent numerical scheme, verification result; conjectures for optimal local control on boundaries.",
+        "Argument here (2026-11-27, n = 2, not formalised, not refereed outside this project), conditional on the value function being C¹ near the boundary point and on the local shape of the waiting region N: if N lies below a C¹ graph x₂ = φ(x₁) with p₂ − p₁φ′ > 0, company 2 paying at rate p₂ − p₁φ′, so that the surplus slides along the graph, is the unique optimal control until the next claim; if the boundary overhangs (N to the left of a graph x₁ = g(x₂) that the drift outruns, including the rightmost point), no finite-rate control is optimal and a lump straight down to the first point of N is optimal. This gives AM18's Example 1 conjecture and contradicts the Example 2 description on its overhang, where value iteration also finds lumps. C¹ regularity of V for n = 2 (only local Lipschitz continuity is known) and the boundary geometry are not proved."
       ],
       "sources": [
         {
@@ -1011,6 +1025,11 @@
           "date": "2026-11-19",
           "status": "open",
           "reason": "Added in round 6 after resolution search and an adversarial check."
+        },
+        {
+          "date": "2026-11-27",
+          "status": "open",
+          "reason": "A rate-or-lump dichotomy for the boundary control, proved conditional on C¹ regularity of the value function and on the local boundary geometry; the problem stays open until that regularity is established."
         }
       ],
       "issue_number": 549,
@@ -1231,7 +1250,12 @@
           "Mutti-Semeraro 2309.17346 (symmetric Bernoulli minimal convex sums; text grepped, no resolution)",
           "Adversarial check 2026-11-19: survives. Finite-dimensional probability: Lean-statable now (volume.restrict C, identically distributed R^d-valued random variables with a.s. constant sum). S2 coverage of citations is incomplete (rate-limited)."
         ],
-        "conclusion": "Class A source is 11 years old, so by the catalogue's rule the status is 'lead', not 'open': my searches (web search only; arXiv API was rate-limited) found no resolution, but I did not do a citation-graph sweep of papers citing Wang 2015."
+        "conclusion": "Class A source is 11 years old, so by the catalogue's rule the status is 'lead', not 'open': my searches (web search only; arXiv API was rate-limited) found no resolution, but I did not do a citation-graph sweep of papers citing Wang 2015.",
+        "referee": {
+          "verdict": "faithful",
+          "date": "2026-11-26",
+          "comment": "https://github.com/formal-applied-math/formal-mathfin/issues/552#issuecomment-7208419609"
+        }
       },
       "related_problems": [
         "MF-OP-017",
@@ -1263,8 +1287,16 @@
           "blueprint": "thm:uniform-convex-complete-mixability",
           "needs": [],
           "lean": "MathFinFrontier.uniform_convex_completelyMixable",
-          "note": "Stated with couplings on Fin n → ℝᵈ; uses only Mathlib."
+          "note": "Stated with couplings on Fin n → ℝᵈ; uses only Mathlib.",
+          "pinned": {
+            "commit": "09f0f85ebf5afcbbe8badf166f136603bbc92834",
+            "pr": 555,
+            "statement_sha256": "649bd3eda4bd660c0f8d6267cfe518ccbcc782e52c041abea20c0dc669b61757"
+          }
         }
+      },
+      "attempts": {
+        "referee": 1
       }
     },
     {
@@ -1330,7 +1362,12 @@
           "Mutti-Semeraro 2309.17346 (symmetric Bernoulli minimal convex sums; text grepped, no resolution)",
           "Adversarial check 2026-11-19: killed provisionally by Shmalo (Thm 1.1–1.2); unrefereed, so recorded as resolution_reported."
         ],
-        "conclusion": "Two unrefereed claims conflict: Yin–Zhu (arXiv 1706.05499) report a counterexample; Shmalo (Zenodo 24070253, 2026-11-08, self-declared AI-generated) reports a proof and disputes that example. Neither is checked here."
+        "conclusion": "Two unrefereed claims conflict: Yin–Zhu (arXiv 1706.05499) report a counterexample; Shmalo (Zenodo 24070253, 2026-11-08, self-declared AI-generated) reports a proof and disputes that example. Neither is checked here.",
+        "referee": {
+          "verdict": "faithful",
+          "date": "2026-11-26",
+          "comment": "https://github.com/formal-applied-math/formal-mathfin/issues/553#issuecomment-7208419951"
+        }
       },
       "related_problems": [
         "MF-OP-016",
@@ -1354,8 +1391,17 @@
           "blueprint": "thm:bounded-law-complete-mixability",
           "needs": [],
           "lean": "MathFinFrontier.absolutelyContinuous_eventually_completelyMixable",
-          "note": "Stated in the positive direction; a proof settles the conflict between the two unrefereed claims."
+          "note": "Stated in the positive direction; a proof settles the conflict between the two unrefereed claims.",
+          "pinned": {
+            "commit": "09f0f85ebf5afcbbe8badf166f136603bbc92834",
+            "pr": 555,
+            "statement_sha256": "d3d62c34577fa72f5e143e7ea4fd488476e78e8309920d8695690692c64cf22d"
+          }
         }
+      },
+      "attempts": {
+        "referee": 1,
+        "prover": 1
       }
     },
     {
