@@ -4409,9 +4409,9 @@
     "mf-mixed-hazard-jensen": {
       "benchmark_file": "credit.json",
       "date": "2026-11-28",
-      "elapsed_s": 3.2,
-      "input_hash": "583c907cf80e21d98f28c3d6535725be358b0ef4a64172a7a4fdf3837e1943e0",
-      "verified_at_commit": "2af388a"
+      "elapsed_s": 3.1,
+      "input_hash": "7f60974b9a9b9d8f6de1975ba0587a56eccb8f34921ecbfdfdbf7945ae9cf079",
+      "verified_at_commit": "25d3a59"
     },
     "mf-mm-matrix-riccati": {
       "benchmark_file": "market_microstructure.json",
