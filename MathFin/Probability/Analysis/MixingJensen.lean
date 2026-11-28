@@ -24,10 +24,10 @@ Two measure-theoretic facts used by convexity arguments on expectations of expon
   lintegral). Since `exp` is strictly convex, the dichotomy
   `exp_jensen_strict_of_nonneg` gives equality exactly when `Λ` is a.s. its own mean.
 
-* **The running integral.** For a jointly measurable family `h : ℝ → α → ℝ` of nonnegative
-  functions, the pathwise integral `ω ↦ ∫ s in (0)..T, h s ω` is nonnegative
-  (`runningIntegral_nonneg`), measurable (`runningIntegral_measurable`), and — under a
-  probability measure on the paths and interval-integrable paths — its mean is the running
+* **The running integral.** For a family `h : ℝ → α → ℝ` of nonnegative functions, the
+  pathwise integral `ω ↦ ∫ s in (0)..T, h s ω` is nonnegative (`runningIntegral_nonneg`);
+  for a jointly measurable family it is measurable (`runningIntegral_measurable`) and — under
+  a probability measure on the paths and interval-integrable paths — its mean is the running
   integral of the means (`runningIntegral_mean_eq`, Fubini–Tonelli on the product with the
   restricted Lebesgue measure).
 
@@ -147,11 +147,10 @@ theorem exp_jensen_eq_of_ae_const {Ω : Type*} {m : MeasurableSpace Ω} {μ : Me
     lintegral_congr_ae (hconst.mono fun ω hω ↦ by dsimp only; rw [hω])
   rw [hae, lintegral_const, IsProbabilityMeasure.measure_univ, mul_one]
 
-/-! ### The running integral of a jointly measurable nonnegative family -/
+/-! ### The running integral of a nonnegative family -/
 
-/-- **The pathwise running integral is nonnegative**: for a jointly measurable family
-`h : ℝ → Ω → ℝ` with `0 ≤ h s ω`, the integral over `(0)..T` is nonnegative for every `T ≥ 0`
-and every path. -/
+/-- **The pathwise running integral is nonnegative**: for any family `h : ℝ → Ω → ℝ` with
+`0 ≤ h s ω`, the integral over `(0)..T` is nonnegative for every `T ≥ 0` and every path. -/
 theorem runningIntegral_nonneg {Ω : Type*} {_m : MeasurableSpace Ω} {h : ℝ → Ω → ℝ}
     (hnn : ∀ s ω, 0 ≤ h s ω) {T : ℝ} (hT : 0 ≤ T) (ω : Ω) :
     0 ≤ ∫ s in (0)..T, h s ω := by
