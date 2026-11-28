@@ -27,7 +27,7 @@ Two measure-theoretic facts used by convexity arguments on expectations of expon
 * **The running integral.** For a family `h : ℝ → α → ℝ` of nonnegative functions, the
   pathwise integral `ω ↦ ∫ s in (0)..T, h s ω` is nonnegative (`runningIntegral_nonneg`);
   for a jointly measurable family it is measurable (`runningIntegral_measurable`) and — under
-  a probability measure on the paths and interval-integrable paths — its mean is the running
+  a σ-finite measure on the paths and interval-integrable paths — its mean is the running
   integral of the means (`runningIntegral_mean_eq`, Fubini–Tonelli on the product with the
   restricted Lebesgue measure).
 
@@ -172,11 +172,11 @@ theorem runningIntegral_measurable {Ω : Type*} {m : MeasurableSpace Ω}
   exact hsm.measurable
 
 /-- **The mean of the running integral is the running integral of the means** (Fubini–Tonelli):
-for a probability measure `μ`, a jointly measurable nonnegative family `h` with
+for a σ-finite measure `μ`, a jointly measurable nonnegative family `h` with
 interval-integrable paths and an integrable running integral at `T`,
 `∫ ω, (∫ s in (0)..T, h s ω) dμ = ∫ s in (0)..T, (∫ ω, h s ω dμ) ds`. -/
 theorem runningIntegral_mean_eq {Ω : Type*} {m : MeasurableSpace Ω} {μ : Measure Ω}
-    [IsProbabilityMeasure μ] {h : ℝ → Ω → ℝ} {T : ℝ} (hT : 0 ≤ T)
+    [SigmaFinite μ] {h : ℝ → Ω → ℝ} {T : ℝ} (hT : 0 ≤ T)
     (hmeas : Measurable fun p : Ω × ℝ ↦ h p.2 p.1)
     (hnn : ∀ s ω, 0 ≤ h s ω)
     (hωint : ∀ᵐ ω ∂μ, IntervalIntegrable (fun s ↦ h s ω) volume 0 T)
