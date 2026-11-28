@@ -31,9 +31,9 @@ Report `reduced_core` and `placeholder` separately. **Spec-with-axiomatized-conc
 One `full` entry in `benchmarks/jumps_and_variance_swaps.json` (85 entries in that file).
 
 - **`mf-gamma-swap-replication`** (MathFin/Models/ModelFree/GammaSwap.lean): the gamma swap
-  (Jacquier-Slaoui arXiv:1004.0125, section 2) runs on the payoff
+  (Jacquier–Slaoui arXiv:1004.0125, section 2) runs on the payoff
   `phi(x) = x log(x/kappa) - x + kappa`, whose convexity `phi'' = 1/K` is the gamma swap's
-  strip weight -- where the log payoff's Carr-Madan weight is `-1/K^2` (the variance swap's
+  strip weight -- where the log payoff's Carr–Madan weight is `-1/K^2` (the variance swap's
   strip), the gamma swap's is `1/K`. `gammaSwapPayoff_eq_strip` proves the payoff equals its
   own `1/K`-weighted strip of OTM puts on `[L, kappa]` and calls on `[kappa, U]`, pathwise on
   a positive compact strike range: `phi(kappa) = phi'(kappa) = 0`, so no cash or forward leg
@@ -49,11 +49,12 @@ One `full` entry in `benchmarks/jumps_and_variance_swaps.json` (85 entries in th
   its zero-rate Itô dynamics at the at-the-money-forward instance `kappa = F_0` (the
   dynamics step is the source's, not proved here).
 
-  Corpus counts: 924 before, 925 after.
+  Corpus counts: 926 before, 927 after on this integration tree (the one entry this topic adds over the tree it lands on; 880 full).
   Disclosed out of scope: the unbounded strip, the nonzero-rate factor `e^{2rT}`, the
   mark-to-market formula, the Greeks and the dynamic dispersion decomposition of the source's
   §5 (they need the forward dynamics of `S` and a multi-asset index; the static dispersion
   identities of §3.1 are the sibling `Dispersion.lean`'s subject). Axioms-clean, `full`.
+
 ### The order on contract values (2026-11-26)
 
 One `full` entry in `benchmarks/contracts.json`. Corpus 919 → 920 (873 full before, 874 after;
