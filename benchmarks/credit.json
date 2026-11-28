@@ -718,6 +718,32 @@
         "formalization_status": "full",
         "formalization_scope": "Full formal proof of condDefault_eq_oneFactorPD in MathFin/Risk/Credit/OneFactorMerton.lean: the default event is {sqrt(rho) M + sqrt(1 - rho) eps < -d2} (bsTerminal_lt_iff), -d2 = PhiInv(kmvPD), and the conditional freezing lemma condExp_comp_prodMk_of_indep integrates out eps. SCOPE: a single name, M assumed measurable (not only a.e. measurable), the identity is almost sure; no portfolio loss or tranche statement."
       }
+    },
+    {
+      "id": "mf-mixed-hazard-jensen",
+      "name": "A Random Intensity Survives Better Than Its Own Average (Jensen)",
+      "domain": "mathematical_finance",
+      "description": "For a random hazard rate h with nonnegative, jointly measurable sections and an integrable integrated intensity, the mixed survival integral ∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁ is at least the survival curve of the mean-intensity hazard, hazardSurvival (fun s ↦ ∫ ω, h s ω) T: either the integrated intensity equals its own mean almost surely or the inequality is strict, and the survival probability of a Cox default time tied to the clock beating the integrated intensity obeys the same lower bound.",
+      "code": {
+        "lean": "import MathFin.Models.Credit.MixedHazardJensen\n\nopen MeasureTheory ProbabilityTheory Real\nopen scoped NNReal ENNReal\nopen MathFin\n\n/-- Jensen for the mixed survival: a random intensity survives better than its own average. -/\ntheorem mixed_survival_jensen {Ω₁ : Type*} [MeasurableSpace Ω₁] {μ₁ : Measure Ω₁}\n    [IsProbabilityMeasure μ₁] {h : ℝ → Ω₁ → ℝ} {T : ℝ} (hT : 0 ≤ T)\n    (hmeas : Measurable fun p : Ω₁ × ℝ ↦ h p.2 p.1) (hnn : ∀ s ω, 0 ≤ h s ω)\n    (hωint : ∀ᵐ ω ∂μ₁, IntervalIntegrable (fun s ↦ h s ω) volume 0 T)\n    (hΛint : Integrable (fun ω ↦ ∫ s in (0)..T, h s ω) μ₁) :\n    ENNReal.ofReal (hazardSurvival (fun s ↦ ∫ ω : Ω₁, h s ω ∂μ₁) T)\n      ≤ ∫⁻ ω : Ω₁, ENNReal.ofReal (Real.exp (-(∫ s in (0)..T, h s ω))) ∂μ₁ :=\n  MathFin.Cox.cox_mixingSurvival_ge_meanIntensitySurvival hT hmeas hnn hωint hΛint\n"
+      },
+      "metadata": {
+        "chapter": 16,
+        "reference": "S. Bagaria, Notes on Fixed Income Derivative Pricing (lecture notes), ch. 16, eq. 16.7 and Calc. 16.10; D. Lando, Credit Risk Modeling (2004), ch. 5",
+        "citations": [
+          {
+            "key": "BagariaFIDP",
+            "locator": "ch. 16, eq. 16.7 and Calc. 16.10"
+          },
+          {
+            "key": "Lando2004",
+            "locator": "ch. 5"
+          }
+        ],
+        "difficulty": "advanced",
+        "formalization_status": "full",
+        "formalization_scope": "Full formal proof of MathFin.Cox.cox_mixingSurvival_ge_meanIntensitySurvival, MathFin.Cox.cox_mixingSurvival_gt_or_intensityConst and MathFin.Cox.cox_mixedSurvival_ge_meanIntensitySurvival (MathFin/Models/Credit/MixedHazardJensen.lean). SCOPE: one horizon T with a probability mixing law μ₁, a jointly measurable nonnegative hazard whose paths are interval-integrable on [0, T] almost surely and whose integrated intensity has an integrable mean; the lower bound is the survival curve of the mean-intensity hazard at T, and Bagaria's strict reading (Calc. 16.10) is delivered as a dichotomy — strict unless the integrated intensity equals its own mean almost surely — not as an unconditional strict inequality; a lower bound on the strictness gap is not derived. Per-time integrability of h follows almost surely from the hypotheses, so the mean hazard's junk on a null set of times does not affect the time integral; the default time in the probability form is hypothesized at the single horizon (the Cox mixing identity needs no construction)."
+      }
     }
   ]
 }

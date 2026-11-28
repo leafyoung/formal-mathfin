@@ -2752,6 +2752,18 @@ The landmarks of `docs/blueprint.md` that no section above pins: one `#print axi
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.Cox.cox_survival_timeVarying
 
+/-- info: 'MathFin.Cox.cox_mixingSurvival_ge_meanIntensitySurvival' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Cox.cox_mixingSurvival_ge_meanIntensitySurvival
+
+/-- info: 'MathFin.Cox.cox_mixingSurvival_gt_or_intensityConst' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Cox.cox_mixingSurvival_gt_or_intensityConst
+
+/-- info: 'MathFin.Cox.cox_mixedSurvival_ge_meanIntensitySurvival' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms MathFin.Cox.cox_mixedSurvival_ge_meanIntensitySurvival
+
 /-- info: 'MathFin.sum_componentVaR_eq_valueAtRisk_sub' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms MathFin.sum_componentVaR_eq_valueAtRisk_sub

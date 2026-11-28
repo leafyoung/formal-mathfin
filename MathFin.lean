@@ -106,6 +106,8 @@ public import MathFin.Probability.Brownian.Wiener.WienerIntegralFiltration
 -- Structural / principle modules:
 public import MathFin.Probability.Gaussian.StandardGaussianMGF
 public import MathFin.Probability.Analysis.ExponentialDiscount
+-- Jensen for the exponential in ENNReal form, and the running integral of a random family
+public import MathFin.Probability.Analysis.MixingJensen
 public import MathFin.Probability.Analysis.Bisection
 -- The quantile function (generalized inverse CDF): Galois connection, quantile transform,
 -- probability integral transform, equivariance; and the standard normal quantile Φ⁻¹
@@ -666,6 +668,8 @@ public import MathFin.Models.Credit.CDSTimeVarying
 public import MathFin.Models.Credit.Cox
 -- Default-time density of a deterministic hazard curve (law of τ as Lebesgue density)
 public import MathFin.Models.Credit.DefaultDensity
+-- Jensen's inequality for the mixed survival: a random intensity survives better than its mean
+public import MathFin.Models.Credit.MixedHazardJensen
 -- CVA under exposure independent of default (Fubini reduction; Gaussian expected exposure in
 -- closed form)
 public import MathFin.Models.Credit.CVA
