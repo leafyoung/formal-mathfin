@@ -3022,10 +3022,10 @@
     },
     "mf-gamma-swap-replication": {
       "benchmark_file": "jumps_and_variance_swaps.json",
-      "date": "2026-11-27",
+      "date": "2026-11-28",
       "elapsed_s": 3.8,
-      "input_hash": "5cd7586ff84b677f88e527a0a50b6879ec28ecae7916a1d77d2a64b4e76b1cc6",
-      "verified_at_commit": "81d523f"
+      "input_hash": "44066e6d462745e837fc89dbbf5e0aed3eaee855e639678a20391022a5082bce",
+      "verified_at_commit": "77c0afc"
     },
     "mf-garman-kohlhagen": {
       "benchmark_file": "black_scholes.json",
