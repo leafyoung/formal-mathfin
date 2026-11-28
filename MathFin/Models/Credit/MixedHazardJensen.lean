@@ -49,7 +49,8 @@ objects.
 ## Main results
 
 * `cox_mixingSurvival_ge_meanIntensitySurvival`: for a nonnegative jointly measurable hazard `h`
-  whose integrated intensity has an integrable mean, the mixed survival integral
+  whose paths are interval-integrable on `[0, T]` almost surely and whose integrated intensity
+  has an integrable mean, the mixed survival integral
   `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least `hazardSurvival` of the mean-intensity hazard at `T`.
 * `cox_mixingSurvival_gt_or_intensityConst`: under the same hypotheses, either the integrated
   intensity equals its own mean almost surely, or the mixed survival integral is strictly
@@ -81,8 +82,8 @@ open scoped NNReal ENNReal
 for a random hazard rate `h` with nonnegative, jointly measurable sections whose paths are
 interval-integrable on `[0, T]` almost surely and whose integrated intensity has an integrable
 mean, the mixed survival integral `∫⁻ ω, e^(−∫₀ᵀ h s ω) dμ₁` is at least the survival curve of
-the mean-intensity hazard, `hazardSurvival (fun s ↦ ∫ ω, h s ω) T`. A deterministic intensity
-gives equality, so the bound is sharp. -/
+the mean-intensity hazard, `hazardSurvival (fun s ↦ ∫ ω, h s ω) T`; the dichotomy's equality
+branch (`exp_jensen_eq_of_ae_const`) covers the deterministic case. -/
 theorem cox_mixingSurvival_ge_meanIntensitySurvival
     {Ω₁ : Type*} {_m₁ : MeasurableSpace Ω₁} {μ₁ : Measure Ω₁} [IsProbabilityMeasure μ₁]
     {h : ℝ → Ω₁ → ℝ} {T : ℝ} (hT : 0 ≤ T)

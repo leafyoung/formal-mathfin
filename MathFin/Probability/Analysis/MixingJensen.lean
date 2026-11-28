@@ -37,10 +37,11 @@ The module adds no definition; its six results are inequalities and identificati
 
 ## Main results
 
-* `integrable_exp_neg_of_nonneg`: the exponential of a nonnegative random variable is
-  integrable (bounded by 1).
-* `exp_jensen_of_nonneg`, `exp_jensen_strict_of_nonneg`: the Jensen inequality and its strict
-  dichotomy for `exp ∘ (−·)`, in `ENNReal` form.
+* `integrable_exp_neg_of_nonneg`: the exponential of the negative of a nonnegative random
+  variable is integrable (bounded by 1).
+* `exp_jensen_of_nonneg`, `exp_jensen_strict_of_nonneg`, `exp_jensen_eq_of_ae_const`: the
+  Jensen inequality, its strict dichotomy, and its equality case for an a.s. constant
+  intensity, for `exp ∘ (−·)`, in `ENNReal` form.
 * `runningIntegral_nonneg`, `runningIntegral_measurable`, `runningIntegral_mean_eq`: the
   pathwise running integral of a jointly measurable nonnegative family is nonnegative,
   measurable, and its mean is the running integral of the means.
@@ -65,8 +66,8 @@ open scoped NNReal ENNReal
 
 /-! ### Jensen for the exponential, in `ENNReal` form -/
 
-/-- The exponential of a nonnegative random variable is integrable under a probability
-measure: `rexp (-Λ)` is measurable and bounded by `1`. -/
+/-- The exponential of the negative of a nonnegative random variable is integrable under a
+probability measure: `rexp (-Λ)` is measurable and bounded by `1`. -/
 theorem integrable_exp_neg_of_nonneg {Ω : Type*} {m : MeasurableSpace Ω} {μ : Measure Ω}
     [IsProbabilityMeasure μ] {Λ : Ω → ℝ} (hmeas : Measurable Λ) (hnn : ∀ ω, 0 ≤ Λ ω) :
     Integrable (fun ω ↦ rexp (-Λ ω)) μ := by
@@ -132,6 +133,18 @@ theorem exp_jensen_strict_of_nonneg {Ω : Type*} {m : MeasurableSpace Ω} {μ : 
         (Filter.Eventually.of_forall fun ω ↦ Real.exp_nonneg _)
     rw [hident, ← hconv, ← havg2]
     exact (ENNReal.ofReal_lt_ofReal_iff_of_nonneg (Real.exp_nonneg _)).2 hstrict
+
+/-- **Equality in `exp_jensen_of_nonneg` for an a.s. constant intensity**: if `Λ` equals its
+own mean almost surely, the two sides of `exp_jensen_of_nonneg` are equal — the degenerate
+branch of `exp_jensen_strict_of_nonneg`. -/
+theorem exp_jensen_eq_of_ae_const {Ω : Type*} {m : MeasurableSpace Ω} {μ : Measure Ω}
+    [IsProbabilityMeasure μ] {Λ : Ω → ℝ}
+    (hconst : ∀ᵐ ω ∂μ, Λ ω = ∫ ω' : Ω, Λ ω' ∂μ) :
+    ENNReal.ofReal (rexp (-(∫ ω, Λ ω ∂μ))) = ∫⁻ ω, ENNReal.ofReal (rexp (-Λ ω)) ∂μ := by
+  have hae : ∫⁻ ω, ENNReal.ofReal (rexp (-Λ ω)) ∂μ
+      = ∫⁻ ω, ENNReal.ofReal (rexp (-(∫ ω' : Ω, Λ ω' ∂μ))) ∂μ :=
+    lintegral_congr_ae (hconst.mono fun ω hω ↦ by dsimp only; rw [hω])
+  rw [hae, lintegral_const, IsProbabilityMeasure.measure_univ, mul_one]
 
 /-! ### The running integral of a jointly measurable nonnegative family -/
 
